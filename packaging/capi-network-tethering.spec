@@ -1,6 +1,6 @@
 Name:       capi-network-tethering
 Summary:    Tethering Framework
-Version:    0.0.8
+Version:    0.0.9
 Release:    1
 Group:      TO_BE/FILLED_IN
 License:    TO_BE/FILLED_IN
@@ -42,6 +42,7 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %files
+%manifest capi-network-tethering.manifest
 %defattr(-,root,root,-)
 %{_libdir}/*.so.*
 
@@ -52,6 +53,9 @@ rm -rf %{buildroot}
 %{_libdir}/*.so
 
 %changelog
+* Fri Nov 02 2012 Seungyoun Ju <sy39.ju@samsung.com> 0.0.9-1
+- Manifest file is added for SMACK
+
 * Mon Aug 20 2012 Seungyoun Ju <sy39.ju@samsung.com> 0.0.8-1
 - Deprecated APIs are removed
 
