@@ -235,6 +235,9 @@ static void __handle_wifi_tether_off(DBusGProxy *proxy, const char *value_name, 
 
 	if (!g_strcmp0(value_name, SIGNAL_MSG_NOT_AVAIL_INTERFACE))
 		code = TETHERING_DISABLED_BY_WIFI_ON;
+	else if (!g_strcmp0(value_name, SIGNAL_MSG_TIMEOUT))
+		code = TETHERING_DISABLED_BY_TIMEOUT;
+
 	dcb(TETHERING_ERROR_NONE, type, code, data);
 
 	return;
@@ -279,6 +282,7 @@ static void __handle_usb_tether_off(DBusGProxy *proxy, const char *value_name, g
 
 	if (!g_strcmp0(value_name, SIGNAL_MSG_NOT_AVAIL_INTERFACE))
 		code = TETHERING_DISABLED_BY_USB_DISCONNECTION;
+
 	dcb(TETHERING_ERROR_NONE, type, code, data);
 
 	return;
@@ -323,6 +327,9 @@ static void __handle_bt_tether_off(DBusGProxy *proxy, const char *value_name, gp
 
 	if (!g_strcmp0(value_name, SIGNAL_MSG_NOT_AVAIL_INTERFACE))
 		code = TETHERING_DISABLED_BY_BT_OFF;
+	else if (!g_strcmp0(value_name, SIGNAL_MSG_TIMEOUT))
+		code = TETHERING_DISABLED_BY_TIMEOUT;
+
 	dcb(TETHERING_ERROR_NONE, type, code, data);
 
 	return;
@@ -416,6 +423,7 @@ static void __cfm_cb(DBusGProxy *remoteobj, guint event, guint info,
 
 	if (g_error) {
 		ERR("DBus error [%s]\n", g_error->message);
+		g_error_free(g_error);
 		return;
 	}
 
@@ -650,6 +658,58 @@ static bool __get_gateway_addr(tethering_type_e type, char *buf, unsigned int le
 	return true;
 }
 
+static void __deinit_cb(DBusGProxy *remoteobj,
+		GError *error, gpointer user_data)
+{
+	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
+
+	if (error) {
+		ERR("DBus fail [%s]\n", error->message);
+		g_error_free(error);
+	}
+
+	return;
+}
+
+static void __wifi_set_security_type_cb(DBusGProxy *remoteobj,
+		GError *error, gpointer user_data)
+{
+	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
+
+	if (error) {
+		ERR("DBus fail [%s]\n", error->message);
+		g_error_free(error);
+	}
+
+	return;
+}
+
+static void __wifi_set_ssid_visibility_cb(DBusGProxy *remoteobj,
+		GError *error, gpointer user_data)
+{
+	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
+
+	if (error) {
+		ERR("DBus fail [%s]\n", error->message);
+		g_error_free(error);
+	}
+
+	return;
+}
+
+static void __wifi_set_passphrase_cb(DBusGProxy *remoteobj,
+		GError *error, gpointer user_data)
+{
+	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
+
+	if (error) {
+		ERR("DBus fail [%s]\n", error->message);
+		g_error_free(error);
+	}
+
+	return;
+}
+
 /**
  * @brief  Creates the handle of tethering.
  * @remarks  The @a tethering must be released tethering_destroy() by you.
@@ -715,15 +775,12 @@ API int tethering_destroy(tethering_h tethering)
 			"parameter(tethering) is NULL\n");
 
 	__tethering_h *th = (__tethering_h *)tethering;
-	GError *error = NULL;
 
 	DBG("Tethering Handle : 0x%X\n", th);
-	com_samsung_mobileap_deinit(th->client_bus_proxy, &error);
-	if (error) {
-		ERR("tethering_destroy is failed [%s]", error->message);
-		g_error_free(error);
-	}
 	__disconnect_signals(tethering);
+
+	com_samsung_mobileap_deinit_async(th->client_bus_proxy, __deinit_cb,
+			(gpointer)tethering);
 
 	g_object_unref(th->client_bus_proxy);
 	dbus_g_connection_unref(th->client_bus);
@@ -1479,14 +1536,10 @@ API int tethering_wifi_set_security_type(tethering_h tethering, tethering_wifi_s
 {
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
-	_retvm_if(tethering_is_enabled(tethering, TETHERING_TYPE_WIFI) == true,
-			TETHERING_ERROR_INVALID_OPERATION,
-			"Wi-Fi tethering is enabled\n");
 	DBG("+\n");
 
 	__tethering_h *th = (__tethering_h *)tethering;
 	DBusGProxy *proxy = th->client_bus_proxy;
-	GError *error = NULL;
 	char *type_str = NULL;
 
 	if (type == TETHERING_WIFI_SECURITY_TYPE_NONE) {
@@ -1498,12 +1551,8 @@ API int tethering_wifi_set_security_type(tethering_h tethering, tethering_wifi_s
 		return TETHERING_ERROR_INVALID_PARAMETER;
 	}
 
-	com_samsung_mobileap_set_wifi_tethering_security_type(proxy, type_str, &error);
-	if (error != NULL) {
-		ERR("DBus fail : %s\n", error->message);
-		g_error_free(error);
-		return TETHERING_ERROR_OPERATION_FAILED;
-	}
+	com_samsung_mobileap_set_wifi_tethering_security_type_async(proxy, type_str,
+			__wifi_set_security_type_cb, (gpointer)tethering);
 
 	DBG("-\n");
 	return TETHERING_ERROR_NONE;
@@ -1624,14 +1673,10 @@ int tethering_wifi_set_ssid_visibility(tethering_h tethering, bool visible)
 {
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
-	_retvm_if(tethering_is_enabled(tethering, TETHERING_TYPE_WIFI) == true,
-			TETHERING_ERROR_INVALID_OPERATION,
-			"Wi-Fi tethering is enabled\n");
 	DBG("+\n");
 
 	__tethering_h *th = (__tethering_h *)tethering;
 	DBusGProxy *proxy = th->client_bus_proxy;
-	GError *error = NULL;
 	int hide_mode = 0;
 
 	if (visible)
@@ -1639,12 +1684,8 @@ int tethering_wifi_set_ssid_visibility(tethering_h tethering, bool visible)
 	else
 		hide_mode = VCONFKEY_MOBILE_AP_HIDE_ON;
 
-	com_samsung_mobileap_set_wifi_tethering_hide_mode(proxy, hide_mode, &error);
-	if (error != NULL) {
-		ERR("dbus fail : %s\n", error->message);
-		g_error_free(error);
-		return TETHERING_ERROR_OPERATION_FAILED;
-	}
+	com_samsung_mobileap_set_wifi_tethering_hide_mode_async(proxy, hide_mode,
+			__wifi_set_ssid_visibility_cb, (gpointer)tethering);
 
 	DBG("-\n");
 	return TETHERING_ERROR_NONE;
@@ -1666,7 +1707,7 @@ API int tethering_wifi_get_ssid_visibility(tethering_h tethering, bool *visible)
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
 	_retvm_if(visible == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-			"parameter(enabled) is NULL\n");
+			"parameter(visible) is NULL\n");
 	DBG("+\n");
 
 	__tethering_h *th = (__tethering_h *)tethering;
@@ -1709,24 +1750,17 @@ API int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphr
 {
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
-	_retvm_if(tethering_is_enabled(tethering, TETHERING_TYPE_WIFI) == true,
-			TETHERING_ERROR_INVALID_OPERATION,
-			"Wi-Fi tethering is enabled\n");
 	_retvm_if(passphrase == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(passphrase) is NULL\n");
 	DBG("+\n");
 
 	__tethering_h *th = (__tethering_h *)tethering;
 	DBusGProxy *proxy = th->client_bus_proxy;
-	GError *error = NULL;
 
-	com_samsung_mobileap_set_wifi_tethering_passphrase(proxy,
-			passphrase, strlen(passphrase), &error);
-	if (error != NULL) {
-		ERR("dbus fail : %s\n", error->message);
-		g_error_free(error);
-		return TETHERING_ERROR_OPERATION_FAILED;
-	}
+
+	com_samsung_mobileap_set_wifi_tethering_passphrase_async(proxy,
+			passphrase, strlen(passphrase),
+			__wifi_set_passphrase_cb, (gpointer)tethering);
 
 	DBG("-\n");
 	return TETHERING_ERROR_NONE;

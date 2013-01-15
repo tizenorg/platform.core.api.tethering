@@ -1,9 +1,9 @@
 Name:       capi-network-tethering
 Summary:    Tethering Framework
-Version:    0.0.9
+Version:    0.0.10
 Release:    1
 Group:      TO_BE/FILLED_IN
-License:    TO_BE/FILLED_IN
+License:    Apache License Version 2.0
 Source0:    %{name}-%{version}.tar.gz
 Requires(post):   /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
@@ -53,6 +53,9 @@ rm -rf %{buildroot}
 %{_libdir}/*.so
 
 %changelog
+* Tue Jan 15 2013 Seungyoun Ju <sy39.ju@samsung.com> 0.0.10-1
+- Wi-Fi tethering state is not checked when its settings are modified
+
 * Fri Nov 02 2012 Seungyoun Ju <sy39.ju@samsung.com> 0.0.9-1
 - Manifest file is added for SMACK
 

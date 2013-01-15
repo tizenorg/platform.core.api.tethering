@@ -84,23 +84,8 @@ extern "C" {
 */
 
 /**
-* WiFi tethering configuration
-*/
-#define TETHERING_WIFI_CHANNEL		7	/**< Channel number */
-#define TETHERING_WIFI_BSSID_LEN	6	/**< BSSID Length */
-#define TETHERING_WIFI_PASSPHRASE_MIN_LEN	8	/**< Minimum length of wifi key */
-#define TETHERING_WIFI_PASSPHRASE_MAX_LEN	63	/**< Maximum length of wifi key */
-
-/**
 * Common configuration
 */
-#define TETHERING_MAX_WIFI_STA		8
-#define TETHERING_MAX_BT_STA		7
-#define TETHERING_MAX_USB_STA		1
-#define TETHERING_MAX_CONNECTED_STA	16	/**< Maximum connected station. 8(Wi-Fi) + 7(BT) + 1(USB) */
-
-#define TETHERING_NAME_UNKNOWN		"UNKNOWN"
-
 #define TETHERING_TYPE_MAX		4	/**< All, USB, Wi-Fi, BT */
 #define TETHERING_STR_INFO_LEN		20	/**< length of the ip or mac address */
 #define TETHERING_STR_HOSTNAME_LEN	32	/**< length of the hostname */
@@ -192,6 +177,7 @@ typedef enum {
 #define SIGNAL_NAME_DHCP_STATUS		"dhcp_status"
 
 #define SIGNAL_MSG_NOT_AVAIL_INTERFACE	"Interface is not available"
+#define SIGNAL_MSG_TIMEOUT		"There is no connection for a while"
 
 /* Network Interface */
 #define TETHERING_SUBNET_MASK		"255.255.255.0"
