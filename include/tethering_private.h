@@ -175,9 +175,14 @@ typedef enum {
 #define SIGNAL_NAME_LOW_BATTERY_MODE	"low_batt_mode"
 #define SIGNAL_NAME_FLIGHT_MODE		"flight_mode"
 #define SIGNAL_NAME_DHCP_STATUS		"dhcp_status"
+#define SIGNAL_NAME_SECURITY_TYPE_CHANGED	"security_type_changed"
+#define SIGNAL_NAME_SSID_VISIBILITY_CHANGED	"ssid_visibility_changed"
+#define SIGNAL_NAME_PASSPHRASE_CHANGED		"passphrase_changed"
 
 #define SIGNAL_MSG_NOT_AVAIL_INTERFACE	"Interface is not available"
 #define SIGNAL_MSG_TIMEOUT		"There is no connection for a while"
+#define SIGNAL_MSG_SSID_VISIBLE		"ssid_visible"
+#define SIGNAL_MSG_SSID_HIDE		"ssid_hide"
 
 /* Network Interface */
 #define TETHERING_SUBNET_MASK		"255.255.255.0"
@@ -218,6 +223,12 @@ typedef struct {
 	void *changed_user_data[TETHERING_TYPE_MAX];
 	tethering_data_usage_cb data_usage_cb;
 	void *data_usage_user_data;
+	tethering_wifi_security_type_changed_cb security_type_changed_cb;
+	void *security_type_user_data;
+	tethering_wifi_ssid_visibility_changed_cb ssid_visibility_changed_cb;
+	void *ssid_visibility_user_data;
+	tethering_wifi_passphrase_changed_cb passphrase_changed_cb;
+	void *passphrase_user_data;
 } __tethering_h;
 
 typedef struct {

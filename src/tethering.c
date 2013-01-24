@@ -40,6 +40,9 @@ static void __handle_net_closed(DBusGProxy *proxy, const char *value_name, gpoin
 static void __handle_no_data_timeout(DBusGProxy *proxy, const char *value_name, gpointer user_data);
 static void __handle_low_battery_mode(DBusGProxy *proxy, const char *value_name, gpointer user_data);
 static void __handle_flight_mode(DBusGProxy *proxy, const char *value_name, gpointer user_data);
+static void __handle_security_type_changed(DBusGProxy *proxy, const char *value_name, gpointer user_data);
+static void __handle_ssid_visibility_changed(DBusGProxy *proxy, const char *value_name, gpointer user_data);
+static void __handle_passphrase_changed(DBusGProxy *proxy, const char *value_name, gpointer user_data);
 
 static __tethering_sig_t sigs[] = {
 	{SIGNAL_NAME_NET_CLOSED, __handle_net_closed},
@@ -52,6 +55,9 @@ static __tethering_sig_t sigs[] = {
 	{SIGNAL_NAME_NO_DATA_TIMEOUT, __handle_no_data_timeout},
 	{SIGNAL_NAME_LOW_BATTERY_MODE, __handle_low_battery_mode},
 	{SIGNAL_NAME_FLIGHT_MODE, __handle_flight_mode},
+	{SIGNAL_NAME_SECURITY_TYPE_CHANGED, __handle_security_type_changed},
+	{SIGNAL_NAME_SSID_VISIBILITY_CHANGED, __handle_ssid_visibility_changed},
+	{SIGNAL_NAME_PASSPHRASE_CHANGED, __handle_passphrase_changed},
 	{"", NULL}};
 
 static bool __any_tethering_is_enabled(tethering_h tethering)
@@ -401,6 +407,81 @@ static void __handle_flight_mode(DBusGProxy *proxy, const char *value_name, gpoi
 	}
 }
 
+static void __handle_security_type_changed(DBusGProxy *proxy, const char *value_name, gpointer user_data)
+{
+	DBG("+\n");
+
+	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)user_data;
+	tethering_wifi_security_type_changed_cb scb = NULL;
+	void *data = NULL;
+	tethering_wifi_security_type_e security_type;
+
+	scb = th->security_type_changed_cb;
+	if (scb == NULL)
+		return;
+
+	data = th->security_type_user_data;
+	if (g_strcmp0(value_name, TETHERING_WIFI_SECURITY_TYPE_OPEN_STR) == 0)
+		security_type = TETHERING_WIFI_SECURITY_TYPE_NONE;
+	else if (g_strcmp0(value_name, TETHERING_WIFI_SECURITY_TYPE_WPA2_PSK_STR) == 0)
+		security_type = TETHERING_WIFI_SECURITY_TYPE_WPA2_PSK;
+	else {
+		ERR("Unknown security type : %s\n", value_name);
+		return;
+	}
+
+	scb(security_type, data);
+
+	return;
+}
+
+static void __handle_ssid_visibility_changed(DBusGProxy *proxy, const char *value_name, gpointer user_data)
+{
+	DBG("+\n");
+
+	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)user_data;
+	tethering_wifi_ssid_visibility_changed_cb scb = NULL;
+	void *data = NULL;
+	bool visible = false;
+
+	scb = th->ssid_visibility_changed_cb;
+	if (scb == NULL)
+		return;
+
+	data = th->ssid_visibility_user_data;
+	if (g_strcmp0(value_name, SIGNAL_MSG_SSID_VISIBLE) == 0)
+		visible = true;
+
+	scb(visible, data);
+
+	return;
+}
+
+static void __handle_passphrase_changed(DBusGProxy *proxy, const char *value_name, gpointer user_data)
+{
+	DBG("+\n");
+
+	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)user_data;
+	tethering_wifi_passphrase_changed_cb pcb = NULL;
+	void *data = NULL;
+
+	pcb = th->passphrase_changed_cb;
+	if (pcb == NULL)
+		return;
+
+	data = th->passphrase_user_data;
+
+	pcb(data);
+
+	return;
+}
+
 static void __cfm_cb(DBusGProxy *remoteobj, guint event, guint info,
 		GError *g_error, gpointer user_data)
 {
@@ -676,10 +757,18 @@ static void __wifi_set_security_type_cb(DBusGProxy *remoteobj,
 {
 	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
 
+	tethering_h tethering = (tethering_h)user_data;
+	__tethering_h *th = (__tethering_h *)tethering;
+	DBusGProxy *proxy = th->client_bus_proxy;
+
 	if (error) {
 		ERR("DBus fail [%s]\n", error->message);
 		g_error_free(error);
 	}
+
+	dbus_g_proxy_connect_signal(proxy, SIGNAL_NAME_SECURITY_TYPE_CHANGED,
+			G_CALLBACK(__handle_security_type_changed),
+			(gpointer)tethering, NULL);
 
 	return;
 }
@@ -689,10 +778,18 @@ static void __wifi_set_ssid_visibility_cb(DBusGProxy *remoteobj,
 {
 	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
 
+	tethering_h tethering = (tethering_h)user_data;
+	__tethering_h *th = (__tethering_h *)tethering;
+	DBusGProxy *proxy = th->client_bus_proxy;
+
 	if (error) {
 		ERR("DBus fail [%s]\n", error->message);
 		g_error_free(error);
 	}
+
+	dbus_g_proxy_connect_signal(proxy, SIGNAL_NAME_SSID_VISIBILITY_CHANGED,
+			G_CALLBACK(__handle_ssid_visibility_changed),
+			(gpointer)tethering, NULL);
 
 	return;
 }
@@ -702,10 +799,18 @@ static void __wifi_set_passphrase_cb(DBusGProxy *remoteobj,
 {
 	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
 
+	tethering_h tethering = (tethering_h)user_data;
+	__tethering_h *th = (__tethering_h *)tethering;
+	DBusGProxy *proxy = th->client_bus_proxy;
+
 	if (error) {
 		ERR("DBus fail [%s]\n", error->message);
 		g_error_free(error);
 	}
+
+	dbus_g_proxy_connect_signal(proxy, SIGNAL_NAME_PASSPHRASE_CHANGED,
+			G_CALLBACK(__handle_passphrase_changed),
+			(gpointer)tethering, NULL);
 
 	return;
 }
@@ -1519,6 +1624,140 @@ API int tethering_unset_connection_state_changed_cb(tethering_h tethering, tethe
 }
 
 /**
+ * @brief Registers the callback function called when the security type of Wi-Fi tethering is changed.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  callback  The callback function to invoke
+ * @param[in]  user_data  The user data to be passed to the callback function
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_wifi_unset_security_type_changed_cb()
+ */
+API int tethering_wifi_set_security_type_changed_cb(tethering_h tethering, tethering_wifi_security_type_changed_cb callback, void *user_data)
+{
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(callback == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(callback) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	th->security_type_changed_cb = callback;
+	th->security_type_user_data = user_data;
+
+	return TETHERING_ERROR_NONE;
+
+}
+
+/**
+ * @brief Unregisters the callback function called when the security type of Wi-Fi tethering is changed.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  type  The type of tethering
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_wifi_set_security_type_changed_cb()
+ */
+API int tethering_wifi_unset_security_type_changed_cb(tethering_h tethering)
+{
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	th->security_type_changed_cb = NULL;
+	th->security_type_user_data = NULL;
+
+	return TETHERING_ERROR_NONE;
+}
+
+/**
+ * @brief Registers the callback function called when the visibility of SSID is changed.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  callback  The callback function to invoke
+ * @param[in]  user_data  The user data to be passed to the callback function
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_wifi_unset_ssid_visibility_changed_cb_cb()
+ */
+API int tethering_wifi_set_ssid_visibility_changed_cb(tethering_h tethering, tethering_wifi_ssid_visibility_changed_cb callback, void *user_data)
+{
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(callback == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(callback) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	th->ssid_visibility_changed_cb = callback;
+	th->ssid_visibility_user_data = user_data;
+
+	return TETHERING_ERROR_NONE;
+}
+
+/**
+ * @brief Unregisters the callback function called when the visibility of SSID is changed.
+ * @param[in]  tethering  The handle of tethering
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_wifi_set_ssid_visibility_changed_cb()
+ */
+API int tethering_wifi_unset_ssid_visibility_changed_cb(tethering_h tethering)
+{
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	th->ssid_visibility_changed_cb = NULL;
+	th->ssid_visibility_user_data = NULL;
+
+	return TETHERING_ERROR_NONE;
+}
+
+/**
+ * @brief Registers the callback function called when the passphrase of Wi-Fi tethering is changed.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  callback  The callback function to invoke
+ * @param[in]  user_data  The user data to be passed to the callback function
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_wifi_unset_passphrase_changed_cb()
+ */
+API int tethering_wifi_set_passphrase_changed_cb(tethering_h tethering, tethering_wifi_passphrase_changed_cb callback, void *user_data)
+{
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(callback == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(callback) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	th->passphrase_changed_cb = callback;
+	th->passphrase_user_data = user_data;
+
+	return TETHERING_ERROR_NONE;
+}
+
+/**
+ * @brief Unregisters the callback function called when the passphrase of Wi-Fi tethering is changed.
+ * @param[in]  tethering  The handle of tethering
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_wifi_set_passphrase_changed_cb()
+ */
+API int tethering_wifi_unset_passphrase_changed_cb(tethering_h tethering)
+{
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	th->passphrase_changed_cb = NULL;
+	th->passphrase_user_data = NULL;
+
+	return TETHERING_ERROR_NONE;
+}
+
+/**
  * @brief Sets the security type of Wi-Fi tethering.
  * @remarks You must set this value when Wi-Fi tethering is disabled.
  * @param[in]  tethering  The handle of tethering
@@ -1550,6 +1789,10 @@ API int tethering_wifi_set_security_type(tethering_h tethering, tethering_wifi_s
 		ERR("Unsupported type\n");
 		return TETHERING_ERROR_INVALID_PARAMETER;
 	}
+
+	dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_SECURITY_TYPE_CHANGED,
+			G_CALLBACK(__handle_security_type_changed),
+			(gpointer)tethering);
 
 	com_samsung_mobileap_set_wifi_tethering_security_type_async(proxy, type_str,
 			__wifi_set_security_type_cb, (gpointer)tethering);
@@ -1684,6 +1927,10 @@ int tethering_wifi_set_ssid_visibility(tethering_h tethering, bool visible)
 	else
 		hide_mode = VCONFKEY_MOBILE_AP_HIDE_ON;
 
+	dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_SSID_VISIBILITY_CHANGED,
+			G_CALLBACK(__handle_ssid_visibility_changed),
+			(gpointer)tethering);
+
 	com_samsung_mobileap_set_wifi_tethering_hide_mode_async(proxy, hide_mode,
 			__wifi_set_ssid_visibility_cb, (gpointer)tethering);
 
@@ -1757,6 +2004,9 @@ API int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphr
 	__tethering_h *th = (__tethering_h *)tethering;
 	DBusGProxy *proxy = th->client_bus_proxy;
 
+	dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_PASSPHRASE_CHANGED,
+			G_CALLBACK(__handle_passphrase_changed),
+			(gpointer)tethering);
 
 	com_samsung_mobileap_set_wifi_tethering_passphrase_async(proxy,
 			passphrase, strlen(passphrase),

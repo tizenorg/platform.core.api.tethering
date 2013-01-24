@@ -36,6 +36,9 @@ typedef struct {
 	tethering_enabled_cb enabled_cb;
 	tethering_disabled_cb disabled_cb;
 	tethering_connection_state_changed_cb changed_cb;
+	tethering_wifi_security_type_changed_cb security_type_changed_cb;
+	tethering_wifi_ssid_visibility_changed_cb ssid_visibility_changed_cb;
+	tethering_wifi_passphrase_changed_cb passphrase_changed_cb;
 } __tethering_cbs;
 
 static GMainLoop *mainloop = NULL;
@@ -178,6 +181,24 @@ static void __register_cbs(tethering_h th, __tethering_cbs *cbs, void *user_data
 		g_print("tethering_set_connection_state_changed_cb is failed\n");
 	}
 
+	ret = tethering_wifi_set_security_type_changed_cb(th,
+			cbs->security_type_changed_cb, user_data);
+	if (__is_err(ret) == true) {
+		g_print("tethering_wifi_set_security_type_changed_cb is failed\n");
+	}
+
+	ret = tethering_wifi_set_ssid_visibility_changed_cb(th,
+			cbs->ssid_visibility_changed_cb, user_data);
+	if (__is_err(ret) == true) {
+		g_print("tethering_wifi_set_ssid_visibility_changed_cb is failed\n");
+	}
+
+	ret = tethering_wifi_set_passphrase_changed_cb(th,
+			cbs->passphrase_changed_cb, user_data);
+	if (__is_err(ret) == true) {
+		g_print("tethering_wifi_set_passphrase_changed_cb is failed\n");
+	}
+
 	return;
 }
 
@@ -198,6 +219,21 @@ static void __deregister_cbs(tethering_h th)
 	ret = tethering_unset_connection_state_changed_cb(th, TETHERING_TYPE_ALL);
 	if (__is_err(ret) == true) {
 		g_print("tethering_unset_connection_state_changed_cb is failed\n");
+	}
+
+	ret = tethering_wifi_unset_security_type_changed_cb(th);
+	if (__is_err(ret) == true) {
+		g_print("tethering_wifi_unset_security_type_changed_cb is failed\n");
+	}
+
+	ret = tethering_wifi_unset_ssid_visibility_changed_cb(th);
+	if (__is_err(ret) == true) {
+		g_print("tethering_wifi_unset_ssid_visibility_changed_cb is failed\n");
+	}
+
+	ret = tethering_wifi_unset_passphrase_changed_cb(th);
+	if (__is_err(ret) == true) {
+		g_print("tethering_wifi_unset_passphrase_changed_cb is failed\n");
 	}
 
 	return;
@@ -354,6 +390,27 @@ static bool __clients_foreach_cb(tethering_client_h client, void *data)
 
 	/* Continue iteration */
 	return true;
+}
+
+static void __security_type_changed_cb(tethering_wifi_security_type_e changed_type, void *user_data)
+{
+	g_print("Wi-Fi Tethering Security type is changed to [%s]\n",
+			changed_type == TETHERING_WIFI_SECURITY_TYPE_NONE ?
+			"open" : "wpa2-psk");
+	return;
+}
+
+static void __ssid_visibility_changed_cb(bool changed_visible, void *user_data)
+{
+	g_print("SSID visibility for Wi-Fi tethering changed to [%s]\n",
+			changed_visible ? "visible" : "invisible");
+	return;
+}
+
+static void __passphrase_changed_cb(void *user_data)
+{
+	g_print("Wi-Fi Tethering passphrase is changed\n");
+	return;
 }
 /* End of tethering callbacks */
 
@@ -609,7 +666,10 @@ int main(int argc, char *argv[])
 	tethering_h th = NULL;
 	GIOChannel *stdin_channel = NULL;
 	tethering_error_e ret = TETHERING_ERROR_NONE;
-	__tethering_cbs cbs = {__enabled_cb, __disabled_cb, __connection_state_changed_cb};
+	__tethering_cbs cbs = {
+		__enabled_cb, __disabled_cb,
+		__connection_state_changed_cb, __security_type_changed_cb,
+		__ssid_visibility_changed_cb, __passphrase_changed_cb};
 
 	g_type_init();
 

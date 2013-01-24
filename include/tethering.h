@@ -181,6 +181,32 @@ typedef bool(*tethering_connected_client_cb)(tethering_client_h client, void *us
 typedef void (*tethering_data_usage_cb)(tethering_error_e result, unsigned long long received_data, unsigned long long sent_data, void *user_data);
 
 /**
+ * @brief  Called when the security type of Wi-Fi tethering is changed
+ * @param[in]  changed_type  The changed security type of Wi-Fi tethering
+ * @param[in]  user_data  The user data passed from the register function
+ * @see	tethering_wifi_set_security_type_changed_cb()
+ * @see	tethering_wifi_unset_security_type_changed_cb()
+ */
+typedef void (*tethering_wifi_security_type_changed_cb)(tethering_wifi_security_type_e changed_type, void *user_data);
+
+/**
+ * @brief  Called when the visibility of SSID is changed
+ * @param[in]  changed_visible  The changed visibility of SSID
+ * @param[in]  user_data  The user data passed from the register function
+ * @see	tethering_wifi_set_ssid_visibility_changed_cb()
+ * @see	tethering_wifi_unset_ssid_visibility_changed_cb()
+ */
+typedef void (*tethering_wifi_ssid_visibility_changed_cb)(bool changed_visible, void *user_data);
+
+/**
+ * @brief  Called when the passphrase of Wi-Fi tethering is changed
+ * @param[in]  user_data  The user data passed from the register function
+ * @see	tethering_wifi_set_passphrase_changed_cb()
+ * @see	tethering_wifi_unset_passphrase_changed_cb()
+ */
+typedef void (*tethering_wifi_passphrase_changed_cb)(void *user_data);
+
+/**
  * @brief  Creates the handle of tethering.
  * @remarks  The @a tethering must be released tethering_destroy() by you.
  * @param[out]  tethering  A handle of a new mobile ap handle on success
@@ -425,6 +451,67 @@ int tethering_set_connection_state_changed_cb(tethering_h tethering, tethering_t
  * @see  tethering_set_connection_state_changed_cb()
  */
 int tethering_unset_connection_state_changed_cb(tethering_h tethering, tethering_type_e type);
+
+/**
+ * @brief Registers the callback function called when the security type of Wi-Fi tethering is changed.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  callback  The callback function to invoke
+ * @param[in]  user_data  The user data to be passed to the callback function
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_wifi_unset_security_type_changed_cb()
+ */
+int tethering_wifi_set_security_type_changed_cb(tethering_h tethering, tethering_wifi_security_type_changed_cb callback, void *user_data);
+
+/**
+ * @brief Unregisters the callback function called when the security type of Wi-Fi tethering is changed.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  type  The type of tethering
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_wifi_set_security_type_changed_cb()
+ */
+int tethering_wifi_unset_security_type_changed_cb(tethering_h tethering);
+
+/**
+ * @brief Registers the callback function called when the visibility of SSID is changed.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  callback  The callback function to invoke
+ * @param[in]  user_data  The user data to be passed to the callback function
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_wifi_unset_ssid_visibility_changed_cb_cb()
+ */
+int tethering_wifi_set_ssid_visibility_changed_cb(tethering_h tethering, tethering_wifi_ssid_visibility_changed_cb callback, void *user_data);
+
+/**
+ * @brief Unregisters the callback function called when the visibility of SSID is changed.
+ * @param[in]  tethering  The handle of tethering
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_wifi_set_ssid_visibility_changed_cb()
+ */
+int tethering_wifi_unset_ssid_visibility_changed_cb(tethering_h tethering);
+
+/**
+ * @brief Registers the callback function called when the passphrase of Wi-Fi tethering is changed.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  callback  The callback function to invoke
+ * @param[in]  user_data  The user data to be passed to the callback function
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_wifi_unset_passphrase_changed_cb()
+ */
+int tethering_wifi_set_passphrase_changed_cb(tethering_h tethering, tethering_wifi_passphrase_changed_cb callback, void *user_data);
+
+/**
+ * @brief Unregisters the callback function called when the passphrase of Wi-Fi tethering is changed.
+ * @param[in]  tethering  The handle of tethering
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_wifi_set_passphrase_changed_cb()
+ */
+int tethering_wifi_unset_passphrase_changed_cb(tethering_h tethering);
 
 /**
  * @}
