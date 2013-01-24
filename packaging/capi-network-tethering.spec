@@ -1,6 +1,6 @@
 Name:       capi-network-tethering
 Summary:    Tethering Framework
-Version:    0.0.10
+Version:    0.0.11
 Release:    1
 Group:      TO_BE/FILLED_IN
 License:    Apache License Version 2.0
@@ -53,6 +53,10 @@ rm -rf %{buildroot}
 %{_libdir}/*.so
 
 %changelog
+* Thu Jan 24 2013 Seungyoun Ju <sy39.ju@samsung.com> 0.0.11-1
+- Indications for Wi-Fi tethering setting change are added
+- Dbus service / interface / object names are changed
+
 * Tue Jan 15 2013 Seungyoun Ju <sy39.ju@samsung.com> 0.0.10-1
 - Wi-Fi tethering state is not checked when its settings are modified
 
