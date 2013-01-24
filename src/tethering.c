@@ -884,7 +884,7 @@ API int tethering_destroy(tethering_h tethering)
 	DBG("Tethering Handle : 0x%X\n", th);
 	__disconnect_signals(tethering);
 
-	com_samsung_mobileap_deinit_async(th->client_bus_proxy, __deinit_cb,
+	org_tizen_tethering_deinit_async(th->client_bus_proxy, __deinit_cb,
 			(gpointer)tethering);
 
 	g_object_unref(th->client_bus_proxy);
@@ -921,7 +921,7 @@ int tethering_enable(tethering_h tethering, tethering_type_e type)
 		dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_USB_TETHER_ON,
 				G_CALLBACK(__handle_usb_tether_on),
 				(gpointer)tethering);
-		com_samsung_mobileap_enable_usb_tethering_async(proxy,
+		org_tizen_tethering_enable_usb_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering);
 		break;
 
@@ -929,7 +929,7 @@ int tethering_enable(tethering_h tethering, tethering_type_e type)
 		dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_WIFI_TETHER_ON,
 				G_CALLBACK(__handle_wifi_tether_on),
 				(gpointer)tethering);
-		com_samsung_mobileap_enable_wifi_tethering_async(proxy, "", "", false,
+		org_tizen_tethering_enable_wifi_tethering_async(proxy, "", "", false,
 				__cfm_cb, (gpointer)tethering);
 		break;
 
@@ -937,7 +937,7 @@ int tethering_enable(tethering_h tethering, tethering_type_e type)
 		dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_BT_TETHER_ON,
 				G_CALLBACK(__handle_bt_tether_on),
 				(gpointer)tethering);
-		com_samsung_mobileap_enable_bt_tethering_async(proxy,
+		org_tizen_tethering_enable_bt_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering);
 
 		break;
@@ -947,21 +947,21 @@ int tethering_enable(tethering_h tethering, tethering_type_e type)
 		dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_USB_TETHER_ON,
 				G_CALLBACK(__handle_usb_tether_on),
 				(gpointer)tethering);
-		com_samsung_mobileap_enable_usb_tethering_async(proxy,
+		org_tizen_tethering_enable_usb_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering);
 
 		/* TETHERING_TYPE_WIFI */
 		dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_WIFI_TETHER_ON,
 				G_CALLBACK(__handle_wifi_tether_on),
 				(gpointer)tethering);
-		com_samsung_mobileap_enable_wifi_tethering_async(proxy, "", "", false,
+		org_tizen_tethering_enable_wifi_tethering_async(proxy, "", "", false,
 				__cfm_cb, (gpointer)tethering);
 
 		/* TETHERING_TYPE_BT */
 		dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_BT_TETHER_ON,
 				G_CALLBACK(__handle_bt_tether_on),
 				(gpointer)tethering);
-		com_samsung_mobileap_enable_bt_tethering_async(proxy,
+		org_tizen_tethering_enable_bt_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering);
 		break;
 
@@ -997,7 +997,7 @@ API int tethering_disable(tethering_h tethering, tethering_type_e type)
 		dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_USB_TETHER_OFF,
 				G_CALLBACK(__handle_usb_tether_off),
 				(gpointer)tethering);
-		com_samsung_mobileap_disable_usb_tethering_async(proxy,
+		org_tizen_tethering_disable_usb_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering);
 		break;
 
@@ -1005,14 +1005,14 @@ API int tethering_disable(tethering_h tethering, tethering_type_e type)
 		dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_WIFI_TETHER_OFF,
 				G_CALLBACK(__handle_wifi_tether_off),
 				(gpointer)tethering);
-		com_samsung_mobileap_disable_wifi_tethering_async(proxy,
+		org_tizen_tethering_disable_wifi_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering);
 		break;
 	case TETHERING_TYPE_BT:
 		dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_BT_TETHER_OFF,
 				G_CALLBACK(__handle_bt_tether_off),
 				(gpointer)tethering);
-		com_samsung_mobileap_disable_bt_tethering_async(proxy,
+		org_tizen_tethering_disable_bt_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering);
 		break;
 
@@ -1020,19 +1020,19 @@ API int tethering_disable(tethering_h tethering, tethering_type_e type)
 		dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_USB_TETHER_OFF,
 				G_CALLBACK(__handle_usb_tether_off),
 				(gpointer)tethering);
-		com_samsung_mobileap_disable_usb_tethering_async(proxy,
+		org_tizen_tethering_disable_usb_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering);
 
 		dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_WIFI_TETHER_OFF,
 				G_CALLBACK(__handle_wifi_tether_off),
 				(gpointer)tethering);
-		com_samsung_mobileap_disable_wifi_tethering_async(proxy,
+		org_tizen_tethering_disable_wifi_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering);
 
 		dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_BT_TETHER_OFF,
 				G_CALLBACK(__handle_bt_tether_off),
 				(gpointer)tethering);
-		com_samsung_mobileap_disable_bt_tethering_async(proxy,
+		org_tizen_tethering_disable_bt_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering);
 		break;
 
@@ -1333,7 +1333,7 @@ API int tethering_get_data_usage(tethering_h tethering, tethering_data_usage_cb 
 	th->data_usage_cb = callback;
 	th->data_usage_user_data = user_data;
 
-	com_samsung_mobileap_get_data_packet_usage_async(proxy,
+	org_tizen_tethering_get_data_packet_usage_async(proxy,
 			__get_data_usage_cb, (gpointer)th);
 
 	return TETHERING_ERROR_NONE;
@@ -1377,7 +1377,7 @@ API int tethering_foreach_connected_clients(tethering_h tethering, tethering_typ
 	gchar *mac = NULL;
 	gchar *hostname = NULL;
 
-	com_samsung_mobileap_get_station_info(th->client_bus_proxy, &event,
+	org_tizen_tethering_get_station_info(th->client_bus_proxy, &event,
 			&array, &error);
 	if (error != NULL) {
 		ERR("DBus fail : %s\n", error->message);
@@ -1794,7 +1794,7 @@ API int tethering_wifi_set_security_type(tethering_h tethering, tethering_wifi_s
 			G_CALLBACK(__handle_security_type_changed),
 			(gpointer)tethering);
 
-	com_samsung_mobileap_set_wifi_tethering_security_type_async(proxy, type_str,
+	org_tizen_tethering_set_wifi_tethering_security_type_async(proxy, type_str,
 			__wifi_set_security_type_cb, (gpointer)tethering);
 
 	DBG("-\n");
@@ -1824,7 +1824,7 @@ API int tethering_wifi_get_security_type(tethering_h tethering, tethering_wifi_s
 	GError *error = NULL;
 	char *type_str = NULL;
 
-	com_samsung_mobileap_get_wifi_tethering_security_type(proxy, &type_str, &error);
+	org_tizen_tethering_get_wifi_tethering_security_type(proxy, &type_str, &error);
 	if (error != NULL) {
 		ERR("DBus fail : %s\n", error->message);
 		g_error_free(error);
@@ -1875,7 +1875,7 @@ API int tethering_wifi_get_ssid(tethering_h tethering, char **ssid)
 	GError *error = NULL;
 	char *ssid_buf = NULL;
 
-	com_samsung_mobileap_get_wifi_tethering_ssid(proxy, &ssid_buf, &error);
+	org_tizen_tethering_get_wifi_tethering_ssid(proxy, &ssid_buf, &error);
 	if (error != NULL) {
 		ERR("dbus fail : %s\n", error->message);
 		g_error_free(error);
@@ -1931,7 +1931,7 @@ int tethering_wifi_set_ssid_visibility(tethering_h tethering, bool visible)
 			G_CALLBACK(__handle_ssid_visibility_changed),
 			(gpointer)tethering);
 
-	com_samsung_mobileap_set_wifi_tethering_hide_mode_async(proxy, hide_mode,
+	org_tizen_tethering_set_wifi_tethering_hide_mode_async(proxy, hide_mode,
 			__wifi_set_ssid_visibility_cb, (gpointer)tethering);
 
 	DBG("-\n");
@@ -1962,7 +1962,7 @@ API int tethering_wifi_get_ssid_visibility(tethering_h tethering, bool *visible)
 	GError *error = NULL;
 	int hide_mode = 0;
 
-	com_samsung_mobileap_get_wifi_tethering_hide_mode(proxy, &hide_mode, &error);
+	org_tizen_tethering_get_wifi_tethering_hide_mode(proxy, &hide_mode, &error);
 	if (error != NULL) {
 		ERR("dbus fail : %s\n", error->message);
 		g_error_free(error);
@@ -2008,7 +2008,7 @@ API int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphr
 			G_CALLBACK(__handle_passphrase_changed),
 			(gpointer)tethering);
 
-	com_samsung_mobileap_set_wifi_tethering_passphrase_async(proxy,
+	org_tizen_tethering_set_wifi_tethering_passphrase_async(proxy,
 			passphrase, strlen(passphrase),
 			__wifi_set_passphrase_cb, (gpointer)tethering);
 
@@ -2042,7 +2042,7 @@ API int tethering_wifi_get_passphrase(tethering_h tethering, char **passphrase)
 	char *passphrase_buf = NULL;
 	unsigned int len = 0;
 
-	com_samsung_mobileap_get_wifi_tethering_passphrase(proxy,
+	org_tizen_tethering_get_wifi_tethering_passphrase(proxy,
 			&passphrase_buf, &len, &error);
 	if (error != NULL) {
 		ERR("dbus fail : %s\n", error->message);

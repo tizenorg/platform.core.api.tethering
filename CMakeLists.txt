@@ -34,7 +34,7 @@ EXEC_PROGRAM("${MARSHALTOOL}" ARGS "--prefix=marshal ${INC_DIR}/marshal.list --h
 EXEC_PROGRAM("${MARSHALTOOL}" ARGS "--prefix=marshal ${INC_DIR}/marshal.list --body > src/marshal.c")
 
 FIND_PROGRAM(DBUS_BINDING_TOOL NAMES dbus-binding-tool)
-EXEC_PROGRAM("${DBUS_BINDING_TOOL}" ARGS "--prefix=mobileap ${INC_DIR}/tethering.xml --mode=glib-client --output=${INC_DIR}/tethering-client-stub.h")
+EXEC_PROGRAM("${DBUS_BINDING_TOOL}" ARGS "--prefix=tethering ${INC_DIR}/tethering.xml --mode=glib-client --output=${INC_DIR}/tethering-client-stub.h")
 
 aux_source_directory(src SOURCES)
 ADD_LIBRARY(${fw_name} SHARED ${SOURCES})

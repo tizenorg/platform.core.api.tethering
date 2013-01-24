@@ -156,9 +156,9 @@ typedef enum {
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
 			G_TYPE_STRING, G_TYPE_INVALID))
 
-#define TETHERING_SERVICE_OBJECT_PATH	"/MobileAP"
-#define TETHERING_SERVICE_NAME		"com.samsung.mobileap"
-#define TETHERING_SERVICE_INTERFACE	"com.samsung.mobileap"
+#define TETHERING_SERVICE_OBJECT_PATH	"/Tethering"
+#define TETHERING_SERVICE_NAME		"org.tizen.tethering"
+#define TETHERING_SERVICE_INTERFACE	"org.tizen.tethering"
 
 #define TETHERING_SIGNAL_NAME_LEN	64
 
