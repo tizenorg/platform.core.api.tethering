@@ -371,7 +371,7 @@ int tethering_get_subnet_mask(tethering_h tethering, tethering_type_e type, teth
 int tethering_get_data_usage(tethering_h tethering, tethering_data_usage_cb callback, void *user_data);
 
 /**
- * @brief Gets the client which is connected by USB tethering.
+ * @brief Gets the clients which are connected.
  * @param[in]  tethering  The handle of tethering
  * @param[in]  type  The type of tethering
  * @param[in]  callback  The callback function to invoke
@@ -525,16 +525,13 @@ int tethering_wifi_unset_passphrase_changed_cb(tethering_h tethering);
 
 /**
  * @brief Sets the security type of Wi-Fi tethering.
- * @remarks You must set this value when Wi-Fi tethering is disabled.
+ * @remarks This change is applied next time Wi-Fi tethering is enabled
  * @param[in]  tethering  The handle of tethering
  * @param[in]  type  The security type
  * @return 0 on success, otherwise negative error value.
  * @retval  #TETHERING_ERROR_NONE  Successful
  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
  * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
- * @retval  #TETHERING_ERROR_INVALID_OPERATION  Invalid operation
- * @pre  Wi-Fi tethering must be disabled.
- * @see  tethering_is_enabled()
  * @see  tethering_wifi_get_security_type()
  */
 int tethering_wifi_set_security_type(tethering_h tethering, tethering_wifi_security_type_e type);
@@ -567,16 +564,13 @@ int tethering_wifi_get_ssid(tethering_h tethering, char **ssid);
 /**
  * @brief Sets the visibility of SSID(service set identifier).
  * @details If you set the visibility invisible, then the SSID of this device is hidden. So, Wi-Fi scan can't find your device.
- * @remarks You must set this value when Wi-Fi tethering is disabled.
+ * @remarks This change is applied next time Wi-Fi tethering is enabled
  * @param[in]  tethering  The handle of tethering
  * @param[in]  visible  The visibility of SSID: (@c true = visible, @c false = invisible)
  * @return 0 on success, otherwise negative error value.
  * @retval  #TETHERING_ERROR_NONE  Successful
  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
  * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
- * @retval  #TETHERING_ERROR_INVALID_OPERATION  Invalid operation
- * @pre  Wi-Fi tethering must be disabled.
- * @see  tethering_is_enabled()
  * @see  tethering_wifi_get_ssid_visibility()
  */
 int tethering_wifi_set_ssid_visibility(tethering_h tethering, bool visible);
@@ -596,16 +590,13 @@ int tethering_wifi_get_ssid_visibility(tethering_h tethering, bool *visible);
 
 /**
  * @brief Sets the passphrase.
- * @remarks You must set this value when Wi-Fi tethering is disabled.
+ * @remarks This change is applied next time Wi-Fi tethering is enabled
  * @param[in]  tethering  The handle of tethering
  * @param[in]  passphrase  The passphrase
  * @return 0 on success, otherwise negative error value.
  * @retval  #TETHERING_ERROR_NONE  Successful
  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
  * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
- * @retval  #TETHERING_ERROR_INVALID_OPERATION  Invalid operation
- * @pre  Wi-Fi tethering must be disabled.
- * @see  tethering_is_enabled()
  * @see  tethering_wifi_get_passphrase()
  */
 int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphrase);
