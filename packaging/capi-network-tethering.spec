@@ -3,7 +3,7 @@ Summary:    Tethering Framework
 Version:    0.0.11
 Release:    1
 Group:      TO_BE/FILLED_IN
-License:    Apache License Version 2.0
+License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
 Requires(post):   /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
@@ -29,12 +29,10 @@ Development package for Tethering framework library
 %setup -q
 
 %build
-cmake . -DCMAKE_INSTALL_PREFIX=/usr
-
+%cmake .
 make %{?jobs:-j%jobs}
 
 %install
-rm -rf %{buildroot}
 %make_install
 
 %post -p /sbin/ldconfig

@@ -838,7 +838,9 @@ API int tethering_create(tethering_h *tethering)
 			"malloc is failed\n");
 	memset(th, 0x00, sizeof(__tethering_h));
 
+#if !GLIB_CHECK_VERSION(2,35,0)
 	g_type_init();
+#endif
 	th->client_bus = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
 	if (error) {
 		ERR("Couldn't connect to the System bus[%s]", error->message);

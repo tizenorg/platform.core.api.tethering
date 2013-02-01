@@ -671,7 +671,9 @@ int main(int argc, char *argv[])
 		__connection_state_changed_cb, __security_type_changed_cb,
 		__ssid_visibility_changed_cb, __passphrase_changed_cb};
 
+#if !GLIB_CHECK_VERSION(2,35,0)
 	g_type_init();
+#endif
 
 	/* Create tethering handle */
 	ret = tethering_create(&th);

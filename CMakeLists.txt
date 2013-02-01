@@ -27,7 +27,7 @@ ENDIF("${ARCH}" STREQUAL "arm")
 ADD_DEFINITIONS("-DPREFIX=\"${CMAKE_INSTALL_PREFIX}\"")
 ADD_DEFINITIONS("-DTIZEN_DEBUG")
 
-SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--as-needed -Wl,--rpath=/usr/lib")
+SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--as-needed -Wl,--rpath=%{_libdir}")
 
 FIND_PROGRAM(MARSHALTOOL NAMES glib-genmarshal)
 EXEC_PROGRAM("${MARSHALTOOL}" ARGS "--prefix=marshal ${INC_DIR}/marshal.list --header > ${INC_DIR}/marshal.h")
@@ -43,7 +43,7 @@ TARGET_LINK_LIBRARIES(${fw_name} ${${fw_name}_LDFLAGS})
 
 SET_TARGET_PROPERTIES(${fw_name} PROPERTIES SOVERSION 0.1.0)
 
-INSTALL(TARGETS ${fw_name} DESTINATION lib)
+INSTALL(TARGETS ${fw_name} DESTINATION ${LIB_INSTALL_DIR})
 INSTALL(
         DIRECTORY ${INC_DIR}/ DESTINATION include/network
         FILES_MATCHING
@@ -63,7 +63,7 @@ CONFIGURE_FILE(
     ${CMAKE_CURRENT_SOURCE_DIR}/${fw_name}.pc
     @ONLY
 )
-INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${fw_name}.pc DESTINATION lib/pkgconfig)
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${fw_name}.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
 
 ADD_SUBDIRECTORY(test)
 
