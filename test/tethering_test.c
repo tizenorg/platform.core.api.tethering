@@ -560,11 +560,16 @@ gboolean input(GIOChannel *channel, GIOCondition condition, gpointer data)
 	}
 #else
 	GError *err = NULL;
+	GIOStatus ios;
 
-	g_io_channel_read_chars(channel, buf, INPUT_BUF_LEN, &read, &err);
+	ios = g_io_channel_read_chars(channel, buf, INPUT_BUF_LEN, &read, &err);
 	if (err != NULL) {
-		g_print("g_io_channel_read is failed : %s\n", err->message);
+		g_print("g_io_channel_read_chars is failed : %s\n",
+				err->message);
 		g_error_free(err);
+		return FALSE;
+	} else if (ios != G_IO_STATUS_NORMAL) {
+		g_print("g_io_channel_read_chars is failed : %d\n", ios);
 		return FALSE;
 	}
 #endif

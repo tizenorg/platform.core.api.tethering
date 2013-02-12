@@ -27,7 +27,7 @@ ENDIF("${ARCH}" STREQUAL "arm")
 ADD_DEFINITIONS("-DPREFIX=\"${CMAKE_INSTALL_PREFIX}\"")
 ADD_DEFINITIONS("-DTIZEN_DEBUG")
 
-SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--as-needed -Wl,--rpath=%{_libdir}")
+SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--as-needed -Wl,--rpath=%{_libdir} -fvisibility=hidden")
 
 FIND_PROGRAM(MARSHALTOOL NAMES glib-genmarshal)
 EXEC_PROGRAM("${MARSHALTOOL}" ARGS "--prefix=marshal ${INC_DIR}/marshal.list --header > ${INC_DIR}/marshal.h")
