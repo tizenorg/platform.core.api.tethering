@@ -17,7 +17,7 @@
 #ifndef __TETHERING_PRIVATE_H__
 #define __TETHERING_PRIVATE_H__
 
-#define LOG_TAG	"tethering"
+#define LOG_TAG	"CAPI_NETWORK_TETHERING"
 
 #include <glib.h>
 #include <dbus/dbus-glib.h>
@@ -37,9 +37,9 @@ extern "C" {
 #  define DEPRECATED_API __attribute__ ((deprecated))
 #endif
 
-#define DBG(fmt, args...) LOGD("[%s()][Ln:%d] "fmt, __func__, __LINE__, ##args)
-#define WARN(fmt, args...) LOGW("[%s()][Ln:%d] "fmt, __func__, __LINE__, ##args)
-#define ERR(fmt, args...) LOGE("[%s()][Ln:%d] "fmt, __func__, __LINE__, ##args)
+#define DBG(fmt, args...) LOGD(fmt, ##args)
+#define WARN(fmt, args...) LOGW(fmt, ##args)
+#define ERR(fmt, args...) LOGE(fmt, ##args)
 
 #define _warn_if(expr, fmt, arg...) do { \
 		if (expr) { \
