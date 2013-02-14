@@ -1,6 +1,6 @@
 Name:       capi-network-tethering
 Summary:    Tethering Framework
-Version:    0.0.11
+Version:    0.0.12
 Release:    1
 Group:      TO_BE/FILLED_IN
 License:    Apache-2.0
@@ -51,6 +51,11 @@ make %{?jobs:-j%jobs}
 %{_libdir}/*.so
 
 %changelog
+* Thu Feb 14 2013 Seungyoun Ju <sy39.ju@samsung.com> 0.0.12-1
+- APIs are exported
+- LOG Format is changed
+- fvisibility=hidden is applied and API's return value is checked
+
 * Thu Jan 24 2013 Seungyoun Ju <sy39.ju@samsung.com> 0.0.11-1
 - Indications for Wi-Fi tethering setting change are added
 - Dbus service / interface / object names are changed
