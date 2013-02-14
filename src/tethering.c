@@ -908,7 +908,7 @@ API int tethering_destroy(tethering_h tethering)
  * @see  tethering_is_enabled()
  * @see  tethering_disable()
  */
-int tethering_enable(tethering_h tethering, tethering_type_e type)
+API int tethering_enable(tethering_h tethering, tethering_type_e type)
 {
 	DBG("+\n");
 
@@ -1099,7 +1099,7 @@ API bool tethering_is_enabled(tethering_h tethering, tethering_type_e type)
  * @see  tethering_is_enabled()
  * @see  tethering_enable()
  */
-int tethering_get_mac_address(tethering_h tethering, tethering_type_e type, char **mac_address)
+API int tethering_get_mac_address(tethering_h tethering, tethering_type_e type, char **mac_address)
 {
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
@@ -1289,7 +1289,7 @@ API int tethering_get_gateway_address(tethering_h tethering, tethering_type_e ty
  * @see  tethering_is_enabled()
  * @see  tethering_enable()
  */
-int tethering_get_subnet_mask(tethering_h tethering, tethering_type_e type, tethering_address_family_e address_family, char **subnet_mask)
+API int tethering_get_subnet_mask(tethering_h tethering, tethering_type_e type, tethering_address_family_e address_family, char **subnet_mask)
 {
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
@@ -1908,7 +1908,7 @@ API int tethering_wifi_get_ssid(tethering_h tethering, char **ssid)
  * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
  * @see  tethering_wifi_get_ssid_visibility()
  */
-int tethering_wifi_set_ssid_visibility(tethering_h tethering, bool visible)
+API int tethering_wifi_set_ssid_visibility(tethering_h tethering, bool visible)
 {
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
