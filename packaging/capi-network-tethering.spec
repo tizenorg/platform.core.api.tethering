@@ -1,6 +1,6 @@
 Name:       capi-network-tethering
 Summary:    Tethering Framework
-Version:    0.0.12
+Version:    0.0.13
 Release:    1
 Group:      TO_BE/FILLED_IN
 License:    Apache-2.0
@@ -51,6 +51,10 @@ make %{?jobs:-j%jobs}
 %{_libdir}/*.so
 
 %changelog
+* Sat Feb 16 2013 Seungyoun Ju <sy39.ju@samsung.com> 0.0.13-1
+- Wrong linker flags are fixed
+- Add API : tethering_wifi_set_ssid()
+
 * Thu Feb 14 2013 Seungyoun Ju <sy39.ju@samsung.com> 0.0.12-1
 - APIs are exported
 - LOG Format is changed
