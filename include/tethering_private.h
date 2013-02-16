@@ -195,6 +195,10 @@ typedef enum {
 
 #define TETHERING_BT_IF			"bnep0"
 #define TETHERING_BT_GATEWAY		"192.168.130.1"
+
+#define TETHERING_WIFI_SSID_MAX_LEN	31	/**< Maximum length of ssid */
+#define TETHERING_WIFI_KEY_MIN_LEN	8	/**< Minimum length of wifi key */
+#define TETHERING_WIFI_KEY_MAX_LEN	63	/**< Maximum length of wifi key */
 /**
 * End of mobileap-agent common values
 */
@@ -229,6 +233,8 @@ typedef struct {
 	void *ssid_visibility_user_data;
 	tethering_wifi_passphrase_changed_cb passphrase_changed_cb;
 	void *passphrase_user_data;
+
+	char *ssid;
 } __tethering_h;
 
 typedef struct {

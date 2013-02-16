@@ -28,7 +28,7 @@
 
 #include "tethering.h"
 
-#define INPUT_BUF_LEN		32
+#define INPUT_BUF_LEN		128
 #define DISABLE_REASON_TEXT_LEN	64
 #define COMMON_STR_BUF_LEN	32
 
@@ -538,6 +538,7 @@ void print_menu(void)
 	g_print("\nTo get Wi-Fi tethering setting, enter 'get wifi_setting'");
 	g_print("\nTo set Wi-Fi tethering setting, enter '[set_security_type | set_visibility] [0 | 1]'");
 	g_print("\nTo set Wi-Fi tethering passphrase, enter 'set_passphrase [passphrase]'");
+	g_print("\nTo set Wi-Fi tethering SSID, enter 'set_ssid [SSID]'");
 	g_print("\nTo quit, enter 'quit'\n> ");
 
 	return;
@@ -628,6 +629,14 @@ gboolean input(GIOChannel *channel, GIOCondition condition, gpointer data)
 		error = tethering_wifi_set_passphrase(th, param);
 		if (error != TETHERING_ERROR_NONE)
 			g_print("tethering_wifi_set_passphrase is failed [0x%X]\n",
+					error);
+		goto DONE;
+	}
+
+	if (!strcmp(cmd, "set_ssid")) {
+		error = tethering_wifi_set_ssid(th, param);
+		if (error != TETHERING_ERROR_NONE)
+			g_print("tethering_wifi_set_ssid is failed [0x%X]\n",
 					error);
 		goto DONE;
 	}

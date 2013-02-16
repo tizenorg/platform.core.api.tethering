@@ -549,6 +549,19 @@ int tethering_wifi_set_security_type(tethering_h tethering, tethering_wifi_secur
 int tethering_wifi_get_security_type(tethering_h tethering, tethering_wifi_security_type_e *type);
 
 /**
+ * @brief Sets the SSID (service set identifier).
+ * @details If SSID is not set, Device name is used as SSID
+ * @remarks This change is applied next time Wi-Fi tethering is enabled with same @a tethering handle
+ * @param[in]  tethering  The handle of tethering
+ * @param[out]  ssid  The SSID
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_OUT_OF_MEMORY  Out of memory
+ */
+int tethering_wifi_set_ssid(tethering_h tethering, const char *ssid);
+
+/**
  * @brief Gets the SSID (service set identifier).
  * @remarks @a ssid must be released with free() by you.
  * @param[in]  tethering  The handle of tethering
