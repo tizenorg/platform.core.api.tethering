@@ -1865,7 +1865,7 @@ API int tethering_wifi_get_security_type(tethering_h tethering, tethering_wifi_s
  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
  * @retval  #TETHERING_ERROR_OUT_OF_MEMORY  Out of memory
  */
-int tethering_wifi_set_ssid(tethering_h tethering, const char *ssid)
+API int tethering_wifi_set_ssid(tethering_h tethering, const char *ssid)
 {
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");

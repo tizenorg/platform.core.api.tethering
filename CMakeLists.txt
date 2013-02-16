@@ -11,13 +11,17 @@ INCLUDE_DIRECTORIES(${INC_DIR})
 
 SET(dependents "dlog glib-2.0 capi-base-common dbus-glib-1 vconf")
 
+IF("${CMAKE_BUILD_TYPE}" STREQUAL "")
+	SET(CMAKE_BUILD_TYPE "Release")
+ENDIF("${CMAKE_BUILD_TYPE}" STREQUAL "")
+
 INCLUDE(FindPkgConfig)
 pkg_check_modules(${fw_name} REQUIRED ${dependents})
 FOREACH(flag ${${fw_name}_CFLAGS})
     SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
 ENDFOREACH(flag)
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} -fPIC -Wall -Werror")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} -fPIC -Wall -Werror -fvisibility=hidden")
 SET(CMAKE_C_FLAGS_DEBUG "-O0 -g")
 
 IF("${ARCH}" STREQUAL "arm")
@@ -27,7 +31,7 @@ ENDIF("${ARCH}" STREQUAL "arm")
 ADD_DEFINITIONS("-DPREFIX=\"${CMAKE_INSTALL_PREFIX}\"")
 ADD_DEFINITIONS("-DTIZEN_DEBUG")
 
-SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--as-needed -Wl,--rpath=%{_libdir} -fvisibility=hidden")
+SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed -Wl,--rpath=%{_libdir}")
 
 FIND_PROGRAM(MARSHALTOOL NAMES glib-genmarshal)
 EXEC_PROGRAM("${MARSHALTOOL}" ARGS "--prefix=marshal ${INC_DIR}/marshal.list --header > ${INC_DIR}/marshal.h")
