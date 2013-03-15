@@ -1,9 +1,9 @@
 Name:       capi-network-tethering
 Summary:    Tethering Framework
-Version:    0.0.11
+Version:    0.0.13
 Release:    1
 Group:      TO_BE/FILLED_IN
-License:    Apache License Version 2.0
+License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
 Requires(post):   /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
@@ -29,12 +29,10 @@ Development package for Tethering framework library
 %setup -q
 
 %build
-cmake . -DCMAKE_INSTALL_PREFIX=/usr
-
+%cmake .
 make %{?jobs:-j%jobs}
 
 %install
-rm -rf %{buildroot}
 %make_install
 
 %post -p /sbin/ldconfig
@@ -53,6 +51,15 @@ rm -rf %{buildroot}
 %{_libdir}/*.so
 
 %changelog
+* Sat Feb 16 2013 Seungyoun Ju <sy39.ju@samsung.com> 0.0.13-1
+- Wrong linker flags are fixed
+- Add API : tethering_wifi_set_ssid()
+
+* Thu Feb 14 2013 Seungyoun Ju <sy39.ju@samsung.com> 0.0.12-1
+- APIs are exported
+- LOG Format is changed
+- fvisibility=hidden is applied and API's return value is checked
+
 * Thu Jan 24 2013 Seungyoun Ju <sy39.ju@samsung.com> 0.0.11-1
 - Indications for Wi-Fi tethering setting change are added
 - Dbus service / interface / object names are changed

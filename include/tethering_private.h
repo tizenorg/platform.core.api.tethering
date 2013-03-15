@@ -17,7 +17,7 @@
 #ifndef __TETHERING_PRIVATE_H__
 #define __TETHERING_PRIVATE_H__
 
-#define LOG_TAG	"tethering"
+#define LOG_TAG	"CAPI_NETWORK_TETHERING"
 
 #include <glib.h>
 #include <dbus/dbus-glib.h>
@@ -37,9 +37,9 @@ extern "C" {
 #  define DEPRECATED_API __attribute__ ((deprecated))
 #endif
 
-#define DBG(fmt, args...) LOGD("[%s()][Ln:%d] "fmt, __func__, __LINE__, ##args)
-#define WARN(fmt, args...) LOGW("[%s()][Ln:%d] "fmt, __func__, __LINE__, ##args)
-#define ERR(fmt, args...) LOGE("[%s()][Ln:%d] "fmt, __func__, __LINE__, ##args)
+#define DBG(fmt, args...) LOGD(fmt, ##args)
+#define WARN(fmt, args...) LOGW(fmt, ##args)
+#define ERR(fmt, args...) LOGE(fmt, ##args)
 
 #define _warn_if(expr, fmt, arg...) do { \
 		if (expr) { \
@@ -195,6 +195,10 @@ typedef enum {
 
 #define TETHERING_BT_IF			"bnep0"
 #define TETHERING_BT_GATEWAY		"192.168.130.1"
+
+#define TETHERING_WIFI_SSID_MAX_LEN	31	/**< Maximum length of ssid */
+#define TETHERING_WIFI_KEY_MIN_LEN	8	/**< Minimum length of wifi key */
+#define TETHERING_WIFI_KEY_MAX_LEN	63	/**< Maximum length of wifi key */
 /**
 * End of mobileap-agent common values
 */
@@ -229,6 +233,8 @@ typedef struct {
 	void *ssid_visibility_user_data;
 	tethering_wifi_passphrase_changed_cb passphrase_changed_cb;
 	void *passphrase_user_data;
+
+	char *ssid;
 } __tethering_h;
 
 typedef struct {

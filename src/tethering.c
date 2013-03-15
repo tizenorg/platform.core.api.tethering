@@ -838,7 +838,9 @@ API int tethering_create(tethering_h *tethering)
 			"malloc is failed\n");
 	memset(th, 0x00, sizeof(__tethering_h));
 
+#if !GLIB_CHECK_VERSION(2,35,0)
 	g_type_init();
+#endif
 	th->client_bus = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
 	if (error) {
 		ERR("Couldn't connect to the System bus[%s]", error->message);
@@ -887,6 +889,8 @@ API int tethering_destroy(tethering_h tethering)
 	org_tizen_tethering_deinit_async(th->client_bus_proxy, __deinit_cb,
 			(gpointer)tethering);
 
+	if (th->ssid)
+		free(th->ssid);
 	g_object_unref(th->client_bus_proxy);
 	dbus_g_connection_unref(th->client_bus);
 	memset(th, 0x00, sizeof(__tethering_h));
@@ -906,7 +910,7 @@ API int tethering_destroy(tethering_h tethering)
  * @see  tethering_is_enabled()
  * @see  tethering_disable()
  */
-int tethering_enable(tethering_h tethering, tethering_type_e type)
+API int tethering_enable(tethering_h tethering, tethering_type_e type)
 {
 	DBG("+\n");
 
@@ -929,7 +933,8 @@ int tethering_enable(tethering_h tethering, tethering_type_e type)
 		dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_WIFI_TETHER_ON,
 				G_CALLBACK(__handle_wifi_tether_on),
 				(gpointer)tethering);
-		org_tizen_tethering_enable_wifi_tethering_async(proxy, "", "", false,
+		org_tizen_tethering_enable_wifi_tethering_async(proxy,
+				th->ssid ? th->ssid : "", "", false,
 				__cfm_cb, (gpointer)tethering);
 		break;
 
@@ -954,7 +959,8 @@ int tethering_enable(tethering_h tethering, tethering_type_e type)
 		dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_WIFI_TETHER_ON,
 				G_CALLBACK(__handle_wifi_tether_on),
 				(gpointer)tethering);
-		org_tizen_tethering_enable_wifi_tethering_async(proxy, "", "", false,
+		org_tizen_tethering_enable_wifi_tethering_async(proxy,
+				th->ssid ? th->ssid : "", "", false,
 				__cfm_cb, (gpointer)tethering);
 
 		/* TETHERING_TYPE_BT */
@@ -1097,7 +1103,7 @@ API bool tethering_is_enabled(tethering_h tethering, tethering_type_e type)
  * @see  tethering_is_enabled()
  * @see  tethering_enable()
  */
-int tethering_get_mac_address(tethering_h tethering, tethering_type_e type, char **mac_address)
+API int tethering_get_mac_address(tethering_h tethering, tethering_type_e type, char **mac_address)
 {
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
@@ -1287,7 +1293,7 @@ API int tethering_get_gateway_address(tethering_h tethering, tethering_type_e ty
  * @see  tethering_is_enabled()
  * @see  tethering_enable()
  */
-int tethering_get_subnet_mask(tethering_h tethering, tethering_type_e type, tethering_address_family_e address_family, char **subnet_mask)
+API int tethering_get_subnet_mask(tethering_h tethering, tethering_type_e type, tethering_address_family_e address_family, char **subnet_mask)
 {
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
@@ -1759,16 +1765,13 @@ API int tethering_wifi_unset_passphrase_changed_cb(tethering_h tethering)
 
 /**
  * @brief Sets the security type of Wi-Fi tethering.
- * @remarks You must set this value when Wi-Fi tethering is disabled.
+ * @remarks This change is applied next time Wi-Fi tethering is enabled
  * @param[in]  tethering  The handle of tethering
  * @param[in]  type  The security type
  * @return 0 on success, otherwise negative error value.
  * @retval  #TETHERING_ERROR_NONE  Successful
  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
  * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
- * @retval  #TETHERING_ERROR_INVALID_OPERATION  Invalid operation
- * @pre  Wi-Fi tethering must be disabled.
- * @see  tethering_is_enabled()
  * @see  tethering_wifi_get_security_type()
  */
 API int tethering_wifi_set_security_type(tethering_h tethering, tethering_wifi_security_type_e type)
@@ -1852,6 +1855,45 @@ API int tethering_wifi_get_security_type(tethering_h tethering, tethering_wifi_s
 }
 
 /**
+ * @brief Sets the SSID (service set identifier).
+ * @details If SSID is not set, Device name is used as SSID
+ * @remarks This change is applied next time Wi-Fi tethering is enabled with same @a tethering handle
+ * @param[in]  tethering  The handle of tethering
+ * @param[out]  ssid  The SSID
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_OUT_OF_MEMORY  Out of memory
+ */
+API int tethering_wifi_set_ssid(tethering_h tethering, const char *ssid)
+{
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(ssid == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(ssid) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+	char *p_ssid;
+	int ssid_len;
+
+	ssid_len = strlen(ssid);
+	if (ssid_len > TETHERING_WIFI_SSID_MAX_LEN) {
+		ERR("parameter(ssid) is too long");
+		return TETHERING_ERROR_INVALID_PARAMETER;
+	}
+
+	p_ssid = strdup(ssid);
+	_retvm_if(p_ssid == NULL, TETHERING_ERROR_OUT_OF_MEMORY,
+			"strdup is failed\n");
+
+	if (th->ssid)
+		free(th->ssid);
+	th->ssid = p_ssid;
+
+	return TETHERING_ERROR_NONE;
+}
+
+/**
  * @brief Gets the SSID (service set identifier).
  * @remarks @a ssid must be released with free() by you.
  * @param[in]  tethering  The handle of tethering
@@ -1874,6 +1916,18 @@ API int tethering_wifi_get_ssid(tethering_h tethering, char **ssid)
 	DBusGProxy *proxy = th->client_bus_proxy;
 	GError *error = NULL;
 	char *ssid_buf = NULL;
+
+	if (tethering_is_enabled(NULL, TETHERING_TYPE_WIFI) == false &&
+			th->ssid != NULL) {
+		DBG("Private SSID is set : %s\n", th->ssid);
+		*ssid = strdup(th->ssid);
+		if (*ssid == NULL) {
+			ERR("Memory allocation failed\n");
+			return TETHERING_ERROR_OUT_OF_MEMORY;
+		}
+		DBG("-\n");
+		return TETHERING_ERROR_NONE;
+	}
 
 	org_tizen_tethering_get_wifi_tethering_ssid(proxy, &ssid_buf, &error);
 	if (error != NULL) {
@@ -1900,19 +1954,16 @@ API int tethering_wifi_get_ssid(tethering_h tethering, char **ssid)
 /**
  * @brief Sets the visibility of SSID(service set identifier).
  * @details If you set the visibility invisible, then the SSID of this device is hidden. So, Wi-Fi scan can't find your device.
- * @remarks You must set this value when Wi-Fi tethering is disabled.
+ * @remarks This change is applied next time Wi-Fi tethering is enabled
  * @param[in]  tethering  The handle of tethering
  * @param[in]  visible  The visibility of SSID: (@c true = visible, @c false = invisible)
  * @return 0 on success, otherwise negative error value.
  * @retval  #TETHERING_ERROR_NONE  Successful
  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
  * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
- * @retval  #TETHERING_ERROR_INVALID_OPERATION  Invalid operation
- * @pre  Wi-Fi tethering must be disabled.
- * @see  tethering_is_enabled()
  * @see  tethering_wifi_get_ssid_visibility()
  */
-int tethering_wifi_set_ssid_visibility(tethering_h tethering, bool visible)
+API int tethering_wifi_set_ssid_visibility(tethering_h tethering, bool visible)
 {
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
@@ -1981,16 +2032,13 @@ API int tethering_wifi_get_ssid_visibility(tethering_h tethering, bool *visible)
 
 /**
  * @brief Sets the passphrase.
- * @remarks You must set this value when Wi-Fi tethering is disabled.
+ * @remarks This change is applied next time Wi-Fi tethering is enabled
  * @param[in]  tethering  The handle of tethering
  * @param[in]  passphrase  The passphrase
  * @return 0 on success, otherwise negative error value.
  * @retval  #TETHERING_ERROR_NONE  Successful
  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
  * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
- * @retval  #TETHERING_ERROR_INVALID_OPERATION  Invalid operation
- * @pre  Wi-Fi tethering must be disabled.
- * @see  tethering_is_enabled()
  * @see  tethering_wifi_get_passphrase()
  */
 API int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphrase)
@@ -2003,13 +2051,21 @@ API int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphr
 
 	__tethering_h *th = (__tethering_h *)tethering;
 	DBusGProxy *proxy = th->client_bus_proxy;
+	int passphrase_len;
+
+	passphrase_len = strlen(passphrase);
+	if (passphrase_len < TETHERING_WIFI_KEY_MIN_LEN ||
+			passphrase_len > TETHERING_WIFI_KEY_MAX_LEN) {
+		ERR("parameter(passphrase) is too short or long\n");
+		return TETHERING_ERROR_INVALID_PARAMETER;
+	}
 
 	dbus_g_proxy_disconnect_signal(proxy, SIGNAL_NAME_PASSPHRASE_CHANGED,
 			G_CALLBACK(__handle_passphrase_changed),
 			(gpointer)tethering);
 
 	org_tizen_tethering_set_wifi_tethering_passphrase_async(proxy,
-			passphrase, strlen(passphrase),
+			passphrase, passphrase_len,
 			__wifi_set_passphrase_cb, (gpointer)tethering);
 
 	DBG("-\n");
