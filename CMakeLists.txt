@@ -68,6 +68,10 @@ CONFIGURE_FILE(
     @ONLY
 )
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${fw_name}.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
+MESSAGE("Arch ${ARCH}")
+IF(NOT "${ARCH}" STREQUAL "emul")
+	INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/sysinfo-tethering.xml" DESTINATION "/etc/config/connectivity")
+ENDIF(NOT "${ARCH}" STREQUAL "emul")
 
 ADD_SUBDIRECTORY(test)
 

@@ -202,6 +202,7 @@ typedef enum {
 /**
 * End of mobileap-agent common values
 */
+#define TETHERING_DBUS_MAX_RETRY_COUNT			3
 
 #define TETHERING_DEFAULT_SSID				"Redwood"
 #define TETHERING_DEFAULT_PASSPHRASE			"eoiugkl!"
@@ -242,6 +243,7 @@ typedef struct {
 	char ip[TETHERING_STR_INFO_LEN];		/**< assigned IP address */
 	char mac[TETHERING_STR_INFO_LEN];		/**< MAC Address */
 	char hostname[TETHERING_STR_HOSTNAME_LEN];	/**< alphanumeric name */
+	time_t tm;	/**< connection time */
 } __tethering_client_h;
 
 typedef struct {

@@ -117,3 +117,16 @@ API int tethering_client_get_mac_address(tethering_client_h client, char **mac_a
 	return TETHERING_ERROR_NONE;
 }
 
+API int tethering_client_get_time(tethering_client_h client, time_t *timestamp)
+{
+	_retvm_if(client == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"Parameter(client) is NULL\n");
+
+
+	__tethering_client_h *si = (__tethering_client_h *)client;
+
+	*timestamp = si->tm;
+
+	return TETHERING_ERROR_NONE;
+}
+

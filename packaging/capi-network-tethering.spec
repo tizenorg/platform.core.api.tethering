@@ -1,6 +1,6 @@
 Name:       capi-network-tethering
 Summary:    Tethering Framework
-Version:    0.0.13
+Version:    0.0.14
 Release:    1
 Group:      TO_BE/FILLED_IN
 License:    Apache-2.0
@@ -29,7 +29,15 @@ Development package for Tethering framework library
 %setup -q
 
 %build
-%cmake .
+%ifarch %{arm}
+%cmake . -DARCH=arm
+%else
+%if 0%{?simulator}
+%cmake . -DARCH=emul
+%else
+%cmake . -DARCH=i586
+%endif
+%endif
 make %{?jobs:-j%jobs}
 
 %install
@@ -43,6 +51,15 @@ make %{?jobs:-j%jobs}
 %manifest capi-network-tethering.manifest
 %defattr(-,root,root,-)
 %{_libdir}/*.so.*
+%ifarch %{arm}
+/etc/config/connectivity/sysinfo-tethering.xml
+%else
+%if 0%{?simulator}
+# Noop
+%else
+/etc/config/connectivity/sysinfo-tethering.xml
+%endif
+%endif
 
 %files devel
 %defattr(-,root,root,-)
@@ -51,6 +68,15 @@ make %{?jobs:-j%jobs}
 %{_libdir}/*.so
 
 %changelog
+* Tue Apr 09 2013 Seungyoun Ju <sy39.ju@samsung.com> 0.0.14-1
+- TETHERING_ERROR_NOT_PERMITTED is added
+- Implement connection timer
+- Reference count is used
+- Add API : tethering_xxx_ip_forward_status()
+- TETHERING_ERROR_NOT_SUPPORT_API is added for tethering_create()
+- TETHERING_ERROR_NOT_SUPPORT_API is returned when API is not supported
+- sysinfo-tethering.xml is installed depending on build machine
+
 * Sat Feb 16 2013 Seungyoun Ju <sy39.ju@samsung.com> 0.0.13-1
 - Wrong linker flags are fixed
 - Add API : tethering_wifi_set_ssid()

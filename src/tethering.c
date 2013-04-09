@@ -116,7 +116,7 @@ static tethering_error_e __get_error(int agent_error)
 		break;
 
 	case MOBILE_AP_ERROR_NOT_PERMITTED:
-		err = TETHERING_ERROR_OPERATION_FAILED;
+		err = TETHERING_ERROR_NOT_PERMITTED;
 		break;
 
 	default:
@@ -130,7 +130,7 @@ static tethering_error_e __get_error(int agent_error)
 
 static void __handle_dhcp(DBusGProxy *proxy, const char *member,
 		guint interface, const char *ip, const char *mac,
-		const char *name, gpointer user_data)
+		const char *name, guint timestamp, gpointer user_data)
 {
 	DBG("+\n");
 
@@ -172,6 +172,7 @@ static void __handle_dhcp(DBusGProxy *proxy, const char *member,
 	g_strlcpy(client.ip, ip, sizeof(client.ip));
 	g_strlcpy(client.mac, mac, sizeof(client.mac));
 	g_strlcpy(client.hostname, name, sizeof(client.hostname));
+	client.tm = (time_t)timestamp;
 
 	ccb((tethering_client_h)&client, opened, data);
 
@@ -642,6 +643,19 @@ static void __get_data_usage_cb(DBusGProxy *remoteobj, guint event,
 	return;
 }
 
+static void __ip_forward_cb(DBusGProxy *remoteobj, gint result,
+		GError *error, gpointer user_data)
+{
+	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
+
+	if (error) {
+		ERR("DBus fail [%s]\n", error->message);
+		g_error_free(error);
+	}
+
+	return;
+}
+
 static void __connect_signals(tethering_h tethering)
 {
 	_retm_if(tethering == NULL, "parameter(tethering) is NULL\n");
@@ -657,12 +671,12 @@ static void __connect_signals(tethering_h tethering)
 				G_CALLBACK(sigs[i].cb), (gpointer)tethering, NULL);
 	}
 
-	dbus_g_object_register_marshaller(marshal_VOID__STRING_UINT_STRING_STRING_STRING,
+	dbus_g_object_register_marshaller(marshal_VOID__STRING_UINT_STRING_STRING_STRING_UINT,
 			G_TYPE_NONE, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal(proxy, SIGNAL_NAME_DHCP_STATUS,
 			G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal(proxy, SIGNAL_NAME_DHCP_STATUS,
 			G_CALLBACK(__handle_dhcp), (gpointer)tethering, NULL);
 
@@ -823,6 +837,7 @@ static void __wifi_set_passphrase_cb(DBusGProxy *remoteobj,
  * @retval  #TETHERING_ERROR_NONE  Successful
  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
  * @retval  #TETHERING_ERROR_OUT_OF_MEMORY  Out of memory
+ * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API is not supported
  * @see  tethering_destroy()
  */
 API int tethering_create(tethering_h *tethering)
@@ -832,6 +847,7 @@ API int tethering_create(tethering_h *tethering)
 
 	__tethering_h *th = NULL;
 	GError *error = NULL;
+	int retry = TETHERING_DBUS_MAX_RETRY_COUNT;
 
 	th = (__tethering_h *)malloc(sizeof(__tethering_h));
 	_retvm_if(th == NULL, TETHERING_ERROR_OUT_OF_MEMORY,
@@ -858,6 +874,33 @@ API int tethering_create(tethering_h *tethering)
 		dbus_g_connection_unref(th->client_bus);
 		free(th);
 		return TETHERING_ERROR_OPERATION_FAILED;
+	}
+
+	while (retry--) {
+		org_tizen_tethering_init(th->client_bus_proxy, &error);
+		if (error != NULL) {
+			ERR("Couldn't connect to the System bus[%s]",
+					error->message);
+
+			if (error->code == DBUS_GERROR_SERVICE_UNKNOWN) {
+				DBG("Tethering is not supported\n");
+				g_error_free(error);
+				error = NULL;
+				dbus_g_connection_unref(th->client_bus);
+				free(th);
+				return TETHERING_ERROR_NOT_SUPPORT_API;
+			}
+
+			g_error_free(error);
+			error = NULL;
+			if (retry == 0) {
+				dbus_g_connection_unref(th->client_bus);
+				free(th);
+				return TETHERING_ERROR_OPERATION_FAILED;
+			}
+		} else {
+			break;
+		}
 	}
 
 	__connect_signals((tethering_h)th);
@@ -1382,6 +1425,7 @@ API int tethering_foreach_connected_clients(tethering_h tethering, tethering_typ
 	gchar *ip = NULL;
 	gchar *mac = NULL;
 	gchar *hostname = NULL;
+	guint timestamp = 0;
 
 	org_tizen_tethering_get_station_info(th->client_bus_proxy, &event,
 			&array, &error);
@@ -1397,7 +1441,7 @@ API int tethering_foreach_connected_clients(tethering_h tethering, tethering_typ
 		g_value_set_boxed(&value, g_ptr_array_index(array, i));
 
 		dbus_g_type_struct_get(&value, 0, &interface, 1, &ip,
-				2, &mac, 3, &hostname, G_MAXUINT);
+				2, &mac, 3, &hostname, 4, &timestamp, G_MAXUINT);
 
 		if (interface == MOBILE_AP_TYPE_USB)
 			client.interface = TETHERING_TYPE_USB;
@@ -1412,6 +1456,7 @@ API int tethering_foreach_connected_clients(tethering_h tethering, tethering_typ
 		g_strlcpy(client.ip, ip, sizeof(client.ip));
 		g_strlcpy(client.mac, mac, sizeof(client.mac));
 		g_strlcpy(client.hostname, hostname, sizeof(client.hostname));
+		client.tm = (time_t)timestamp;
 
 		if (callback((tethering_client_h)&client, user_data) == false) {
 			DBG("iteration is stopped\n");
@@ -1424,6 +1469,65 @@ API int tethering_foreach_connected_clients(tethering_h tethering, tethering_typ
 
 	return TETHERING_ERROR_NONE;
 }
+
+/**
+ * @brief Set the ip forward status
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  status  The ip forward status: (@c true = enable, @c false = disable)
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_get_ip_forward_status()
+ */
+API int tethering_set_ip_forward_status(tethering_h tethering, bool status)
+{
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+	DBusGProxy *proxy = th->client_bus_proxy;
+
+	org_tizen_tethering_set_ip_forward_status_async(proxy, status,
+			__ip_forward_cb, (gpointer)tethering);
+
+	return TETHERING_ERROR_NONE;
+}
+
+/**
+ * @brief Get the ip forward status
+ * @param[in]  tethering  The handle of tethering
+ * @param[out]  status  The ip forward status: (@c true = enable, @c false = disable)
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
+ * @see  tethering_set_ip_forward_status()
+ */
+API int tethering_get_ip_forward_status(tethering_h tethering, bool *status)
+{
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(status == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(status) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+	DBusGProxy *proxy = th->client_bus_proxy;
+	GError *error = NULL;
+	int forward_mode = 0;
+
+	org_tizen_tethering_get_ip_forward_status(proxy, &forward_mode, &error);
+	if (error != NULL) {
+		ERR("DBus fail : %s\n", error->message);
+		g_error_free(error);
+		return TETHERING_ERROR_OPERATION_FAILED;
+	}
+
+	if (forward_mode == 1)
+		*status = true;
+	else
+		*status = false;
+
+	return TETHERING_ERROR_NONE;
+}
+
 
 /**
  * @brief Registers the callback function called when tethering is enabled.
