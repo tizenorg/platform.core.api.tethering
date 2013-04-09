@@ -18,6 +18,7 @@
 #define __TIZEN_NETWORK_TETHERING_H__
 
 #include <tizen.h>
+#include <time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,12 +39,14 @@ typedef void * tethering_h;
  */
 typedef enum {
     TETHERING_ERROR_NONE = TIZEN_ERROR_NONE,  /**< Successful */
+    TETHERING_ERROR_NOT_PERMITTED = TIZEN_ERROR_NOT_PERMITTED,  /**< Operation not permitted */
     TETHERING_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER,  /**< Invalid parameter */
     TETHERING_ERROR_OUT_OF_MEMORY = TIZEN_ERROR_OUT_OF_MEMORY,  /**< Out of memory */
     TETHERING_ERROR_RESOURCE_BUSY = TIZEN_ERROR_RESOURCE_BUSY,  /**< Resource busy */
     TETHERING_ERROR_NOT_ENABLED = TIZEN_ERROR_NETWORK_CLASS | 0x0501,  /**< Not enabled */
     TETHERING_ERROR_OPERATION_FAILED = TIZEN_ERROR_NETWORK_CLASS | 0x0502,  /**< Operation failed */
     TETHERING_ERROR_INVALID_OPERATION = TIZEN_ERROR_INVALID_OPERATION, /**< Invalid operation */
+    TETHERING_ERROR_NOT_SUPPORT_API = TIZEN_ERROR_NOT_SUPPORT_API, /**< API is not supported */
 } tethering_error_e;
 
 /**
@@ -214,6 +217,7 @@ typedef void (*tethering_wifi_passphrase_changed_cb)(void *user_data);
  * @retval  #TETHERING_ERROR_NONE  Successful
  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
  * @retval  #TETHERING_ERROR_OUT_OF_MEMORY  Out of memory
+ * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API is not supported
  * @see  tethering_destroy()
  */
 int tethering_create(tethering_h *tethering);
@@ -385,6 +389,27 @@ int tethering_get_data_usage(tethering_h tethering, tethering_data_usage_cb call
  * @see  tethering_enable()
  */
 int tethering_foreach_connected_clients(tethering_h tethering, tethering_type_e type, tethering_connected_client_cb callback, void *user_data);
+
+/**
+ * @brief Set the ip forward status
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  status  The ip forward status: (@c true = enable, @c false = disable)
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_get_ip_forward_status()
+ */
+int tethering_set_ip_forward_status(tethering_h tethering, bool status);
+
+/**
+ * @brief Get the ip forward status
+ * @param[in]  tethering  The handle of tethering
+ * @param[out]  status  The ip forward status: (@c true = enable, @c false = disable)
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
+ * @see  tethering_set_ip_forward_status()
+ */
+int tethering_get_ip_forward_status(tethering_h tethering, bool *status);
 
 /**
  * @brief Registers the callback function called when tethering is enabled.
@@ -715,6 +740,18 @@ int tethering_client_get_ip_address(tethering_client_h client, tethering_address
  * @see  tethering_connection_state_changed_cb()
  */
 int tethering_client_get_mac_address(tethering_client_h client, char **mac_address);
+
+/**
+ * @brief  Gets the connection time of client.
+ * @param[in]  client  The handle of client
+ * @param[out]  time  The connected time of client
+ * @return  0 on success, otherwise a negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_usb_get_connected_client()
+ * @see  tethering_connection_state_changed_cb()
+ */
+int tethering_client_get_time(tethering_client_h client, time_t *timestamp);
 
 /**
  * @}

@@ -29,7 +29,15 @@ Development package for Tethering framework library
 %setup -q
 
 %build
-%cmake .
+%ifarch %{arm}
+%cmake . -DARCH=arm
+%else
+%if 0%{?simulator}
+%cmake . -DARCH=emul
+%else
+%cmake . -DARCH=i586
+%endif
+%endif
 make %{?jobs:-j%jobs}
 
 %install
@@ -43,6 +51,15 @@ make %{?jobs:-j%jobs}
 %manifest capi-network-tethering.manifest
 %defattr(-,root,root,-)
 %{_libdir}/*.so.*
+%ifarch %{arm}
+/etc/config/connectivity/sysinfo-tethering.xml
+%else
+%if 0%{?simulator}
+# Noop
+%else
+/etc/config/connectivity/sysinfo-tethering.xml
+%endif
+%endif
 
 %files devel
 %defattr(-,root,root,-)
