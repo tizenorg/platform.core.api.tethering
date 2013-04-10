@@ -1,6 +1,6 @@
 Name:       capi-network-tethering
 Summary:    Tethering Framework
-Version:    0.0.14
+Version:    0.0.15
 Release:    1
 Group:      TO_BE/FILLED_IN
 License:    Apache-2.0
@@ -68,6 +68,9 @@ make %{?jobs:-j%jobs}
 %{_libdir}/*.so
 
 %changelog
+* Wed Apr 10 2013 Seungyoun Ju <sy39.ju@samsung.com> 0.0.15-1
+- Fix : Stations data structure for dbus
+
 * Tue Apr 09 2013 Seungyoun Ju <sy39.ju@samsung.com> 0.0.14-1
 - TETHERING_ERROR_NOT_PERMITTED is added
 - Implement connection timer

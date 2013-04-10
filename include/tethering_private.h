@@ -146,7 +146,7 @@ typedef enum {
 
 #define DBUS_STRUCT_STATIONS (dbus_g_type_get_struct ("GValueArray", \
 			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, \
-			G_TYPE_STRING, G_TYPE_INVALID))
+			G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID))
 
 #define DBUS_STRUCT_STATION (dbus_g_type_get_struct ("GValueArray", \
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
