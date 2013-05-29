@@ -1,0 +1,2 @@
+* Wed May 29 2013 Baptiste DURAND <baptiste.durand@eurogiciel.fr> accepted/tizen/20130520.100833@2391ebf
+- Fix PC file : remove hardcoded lib path
