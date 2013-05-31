@@ -1,0 +1,8 @@
+Change-Id: I326c598dfc67ff3afbdee993047358778c55a873
+Code-Review+2: Anas Nashif
+Verified+1: Baptiste DURAND <baptiste.durand@eurogiciel.fr>
+Submitted-by: Anas Nashif
+Submitted-at: Fri, 31 May 2013 06:56:28 -0700
+Reviewed-on: https://review.tizen.org/gerrit/3778
+Project: platform/core/api/tethering
+Branch: refs/heads/tizen
