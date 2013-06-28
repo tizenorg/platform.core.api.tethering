@@ -5,6 +5,7 @@ Release:    1
 Group:      Connectivity/API
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
+Source1001: 	capi-network-tethering.manifest
 
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(dbus-glib-1)
@@ -25,6 +26,7 @@ Development package for Tethering framework library
 
 %prep
 %setup -q
+cp %{SOURCE1001} .
 
 %build
 %ifarch %{arm}
@@ -46,7 +48,7 @@ make %{?jobs:-j%jobs}
 %postun -p /sbin/ldconfig
 
 %files
-%manifest capi-network-tethering.manifest
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_libdir}/*.so.*
 %ifarch %{arm}
@@ -60,6 +62,7 @@ make %{?jobs:-j%jobs}
 %endif
 
 %files devel
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_includedir}/network/*.h
 %{_libdir}/pkgconfig/*.pc
