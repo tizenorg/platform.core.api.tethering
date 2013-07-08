@@ -1,0 +1,8 @@
+Change-Id: Id9c4a9752d0c8be29faa847511f5aac088e13dc3
+Code-Review+2: Ryan Ware <ware@linux.intel.com>
+Verified+1: Ryan Ware <ware@linux.intel.com>
+Submitted-by: Ryan Ware <ware@linux.intel.com>
+Submitted-at: Mon, 08 Jul 2013 10:08:21 -0700
+Reviewed-on: https://review.tizen.org/gerrit/4408
+Project: platform/core/api/tethering
+Branch: refs/heads/tizen
