@@ -9,7 +9,7 @@ SET(PREFIX ${CMAKE_INSTALL_PREFIX})
 SET(INC_DIR include)
 INCLUDE_DIRECTORIES(${INC_DIR})
 
-SET(dependents "dlog glib-2.0 capi-base-common dbus-glib-1 vconf")
+SET(dependents "dlog glib-2.0 capi-base-common vconf connman-lib")
 
 IF("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	SET(CMAKE_BUILD_TYPE "Release")
@@ -33,13 +33,6 @@ ADD_DEFINITIONS("-DTIZEN_DEBUG")
 
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed -Wl,--rpath=%{_libdir}")
 
-FIND_PROGRAM(MARSHALTOOL NAMES glib-genmarshal)
-EXEC_PROGRAM("${MARSHALTOOL}" ARGS "--prefix=marshal ${INC_DIR}/marshal.list --header > ${INC_DIR}/marshal.h")
-EXEC_PROGRAM("${MARSHALTOOL}" ARGS "--prefix=marshal ${INC_DIR}/marshal.list --body > src/marshal.c")
-
-FIND_PROGRAM(DBUS_BINDING_TOOL NAMES dbus-binding-tool)
-EXEC_PROGRAM("${DBUS_BINDING_TOOL}" ARGS "--prefix=tethering ${INC_DIR}/tethering.xml --mode=glib-client --output=${INC_DIR}/tethering-client-stub.h")
-
 aux_source_directory(src SOURCES)
 ADD_LIBRARY(${fw_name} SHARED ${SOURCES})
 
@@ -52,8 +45,6 @@ INSTALL(
         DIRECTORY ${INC_DIR}/ DESTINATION include/network
         FILES_MATCHING
         PATTERN "*_private.h" EXCLUDE
-        PATTERN "marshal.h" EXCLUDE
-        PATTERN "tethering-client-stub.h" EXCLUDE
         PATTERN "${INC_DIR}/*.h"
         )
 

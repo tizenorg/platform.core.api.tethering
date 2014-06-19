@@ -8,8 +8,8 @@ Source0:    %{name}-%{version}.tar.gz
 Source1001: 	capi-network-tethering.manifest
 
 BuildRequires: pkgconfig(dlog)
-BuildRequires: pkgconfig(dbus-glib-1)
 BuildRequires: pkgconfig(capi-base-common)
+BuildRequires: pkgconfig(connman-lib)
 BuildRequires: pkgconfig(glib-2.0)
 BuildRequires: pkgconfig(vconf)
 BuildRequires: cmake

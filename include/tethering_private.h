@@ -20,7 +20,7 @@
 #define LOG_TAG	"CAPI_NETWORK_TETHERING"
 
 #include <glib.h>
-#include <dbus/dbus-glib.h>
+//#include <dbus/dbus-glib.h>
 #include <dlog.h>
 
 #include "tethering.h"
@@ -141,7 +141,7 @@ typedef enum {
 /*
 * from mobileap_internal.h
 */
-#define DBUS_STRUCT_UINT_STRING (dbus_g_type_get_struct ("GValueArray", \
+/*#define DBUS_STRUCT_UINT_STRING (dbus_g_type_get_struct ("GValueArray", \
 			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID))
 
 #define DBUS_STRUCT_STATIONS (dbus_g_type_get_struct ("GValueArray", \
@@ -183,7 +183,7 @@ typedef enum {
 #define SIGNAL_MSG_TIMEOUT		"There is no connection for a while"
 #define SIGNAL_MSG_SSID_VISIBLE		"ssid_visible"
 #define SIGNAL_MSG_SSID_HIDE		"ssid_hide"
-
+*/
 /* Network Interface */
 #define TETHERING_SUBNET_MASK		"255.255.255.0"
 
@@ -202,7 +202,7 @@ typedef enum {
 /**
 * End of mobileap-agent common values
 */
-#define TETHERING_DBUS_MAX_RETRY_COUNT			3
+//#define TETHERING_DBUS_MAX_RETRY_COUNT			3
 
 #define TETHERING_DEFAULT_SSID				"Redwood"
 #define TETHERING_DEFAULT_PASSPHRASE			"eoiugkl!"
@@ -210,16 +210,16 @@ typedef enum {
 #define TETHERING_WIFI_SECURITY_TYPE_WPA2_PSK_STR	"wpa2-psk"
 
 
-typedef void (*__handle_cb_t)(DBusGProxy *proxy, const char *name, gpointer data);
+/*typedef void (*__handle_cb_t)(DBusGProxy *proxy, const char *name, gpointer data);
 typedef struct {
 	char name[TETHERING_SIGNAL_NAME_LEN];
 	__handle_cb_t cb;
 } __tethering_sig_t;
-
+*/
 typedef struct {
-        DBusGConnection *client_bus;
+/*        DBusGConnection *client_bus;
         DBusGProxy *client_bus_proxy;
-
+*/
 	tethering_enabled_cb enabled_cb[TETHERING_TYPE_MAX];
 	void *enabled_user_data[TETHERING_TYPE_MAX];
 	tethering_disabled_cb disabled_cb[TETHERING_TYPE_MAX];
