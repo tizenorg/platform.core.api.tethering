@@ -2,7 +2,7 @@ Name:       capi-network-tethering
 Summary:    Tethering Framework
 Version:    0.0.15
 Release:    1
-Group:      Connectivity/API
+Group:      Network & Connectivity/API
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
 Source1001: 	capi-network-tethering.manifest
@@ -22,14 +22,14 @@ Summary:    Test case for tethering CAPI
 Requires:   %{name} = %{version}
 
 %description test
-Test case for tethering CAPI.
+Test case for WiNet tethering CAPI.
 
 %package devel
-Summary:	Development package for Tethering framework library
-Group:		Connectivity/Development
+Summary:	Development package for Tethering library
+Group:		Network & Connectivity/Development
 Requires:	%{name} = %{version}-%{release}
 %description devel
-Development package for Tethering framework library
+Development package for WiNet Tethering library.
 
 %prep
 %setup -q
@@ -62,12 +62,12 @@ cp LICENSE.APLv2.0 %{buildroot}/usr/share/license/%{name}
 %{_libdir}/*.so.*
 /usr/share/license/%{name}
 %ifarch %{arm}
-/etc/config/connectivity/sysinfo-tethering.xml
+%config /etc/config/connectivity/sysinfo-tethering.xml
 %else
 %if 0%{?simulator}
 # Noop
 %else
-/etc/config/connectivity/sysinfo-tethering.xml
+%config /etc/config/connectivity/sysinfo-tethering.xml
 %endif
 %endif
 
