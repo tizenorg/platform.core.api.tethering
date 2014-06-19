@@ -17,6 +17,13 @@ BuildRequires: cmake
 %description
 Tethering framework library for CAPI
 
+%package test
+Summary:    Test case for tethering CAPI
+Requires:   %{name} = %{version}
+
+%description test
+Test case for tethering CAPI.
+
 %package devel
 Summary:	Development package for Tethering framework library
 Group:		Connectivity/Development
@@ -63,6 +70,10 @@ cp LICENSE.APLv2.0 %{buildroot}/usr/share/license/%{name}
 /etc/config/connectivity/sysinfo-tethering.xml
 %endif
 %endif
+
+%files test
+%manifest %{name}.manifest
+%{_libdir}/winet-capi-test/capi-tethering-test
 
 %files devel
 %manifest %{name}.manifest

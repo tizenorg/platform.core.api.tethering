@@ -594,6 +594,7 @@ gboolean input(GIOChannel *channel, GIOCondition condition, gpointer data)
 	*param = '\0';
 	param++;
 
+	g_print("=====cmd: %s, parameter: %s=====\n", cmd, param);
 	/* One parameter except type */
 	if (!strcmp(cmd, "get") && !strcmp(param, "data_usage")) {
 		error = tethering_get_data_usage(th, __data_usage_cb, NULL);
@@ -705,7 +706,7 @@ int main(int argc, char *argv[])
 	g_io_channel_set_flags(stdin_channel,
 			G_IO_FLAG_APPEND | G_IO_FLAG_NONBLOCK, NULL);
 
-	g_io_add_watch(stdin_channel, G_IO_IN, input, (gpointer)th);
+	g_io_add_watch(stdin_channel, G_IO_IN, input, (gpointer)(&th));
 
 	print_menu();
 
