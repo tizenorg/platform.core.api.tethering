@@ -27,6 +27,7 @@
 #include <vconf.h>
 
 #include "connman-lib.h"
+#include "connman-manager.h"
 #include "connman-technology.h"
 /*#include "tethering-client-stub.h"
 #include "marshal.h"*/
@@ -141,7 +142,60 @@ static tethering_error_e __get_error(int agent_error)
 
 	return err;
 }
+*/
+static void set_connman_tethering_powered_changed_cb(tethering_type_e type, void *user_data)
+{
+	struct connman_technology *technology;
 
+	if (type == TETHERING_TYPE_ALL) {
+		/* TETHERING_TYPE_ALL */
+		technology = connman_get_technology(TECH_TYPE_GADGET);
+		if (technology != NULL)
+			connman_technology_set_property_changed_cb(technology,
+							TECH_PROP_TETHERING,
+							__handle_usb_tether_changed,
+							user_data);
+		technology = connman_get_technology(TECH_TYPE_WIFI);
+		if (technology != NULL)
+			connman_technology_set_property_changed_cb(technology,
+							TECH_PROP_TETHERING,
+							__handle_wifi_tether_changed,
+							user_data);
+		technology = connman_get_technology(TECH_TYPE_BLUETOOTH);
+		if (technology != NULL)
+			connman_technology_set_property_changed_cb(technology,
+							TECH_PROP_TETHERING,
+							__handle_bt_tether_changed,
+							user_data);
+		return;
+	}
+
+	if (type == TETHERING_TYPE_USB) {
+		technology = connman_get_technology(TECH_TYPE_GADGET);
+		if (technology != NULL)
+			connman_technology_set_property_changed_cb(technology,
+							TECH_PROP_TETHERING,
+							__handle_usb_tether_changed,
+							user_data);
+	}
+	else if (type == TETHERING_TYPE_WIFI) {
+		technology = connman_get_technology(TECH_TYPE_WIFI);
+		if (technology != NULL)
+			connman_technology_set_property_changed_cb(technology,
+							TECH_PROP_TETHERING,
+							__handle_wifi_tether_changed,
+							user_data);
+	}
+	else if (type == TETHERING_TYPE_BT) {
+		technology = connman_get_technology(TECH_TYPE_BLUETOOTH);
+		if (technology != NULL)
+			connman_technology_set_property_changed_cb(technology,
+							TECH_PROP_TETHERING,
+							__handle_bt_tether_changed,
+							user_data);
+	}
+}
+/*
 static void __handle_dhcp(DBusGProxy *proxy, const char *member,
 		guint interface, const char *ip, const char *mac,
 		const char *name, guint timestamp, gpointer user_data)
@@ -217,6 +271,37 @@ static void __handle_net_closed(DBusGProxy *proxy, const char *value_name, gpoin
 	return;
 }
 */
+static void __handle_technology_added(struct connman_technology* technology, void* user_data)
+{
+	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)user_data;
+
+	tethering_type_e tethering_type = TETHERING_TYPE_ALL;
+
+	enum connman_technology_type type = connman_get_technology_type(technology);
+	if (type == TECH_TYPE_GADGET)
+		tethering_type = TETHERING_TYPE_USB;
+	else if (type == TECH_TYPE_WIFI)
+		tethering_type = TETHERING_TYPE_WIFI;
+	else if (type == TECH_TYPE_BLUETOOTH)
+		tethering_type = TETHERING_TYPE_BT;
+
+	if (th->enabled_cb[tethering_type] || th->disabled_cb[tethering_type])
+	{
+		g_print("=====set tethering powered changed callback=====\n");
+		set_connman_tethering_powered_changed_cb(tethering_type, user_data);
+	}
+	if (th->passphrase_changed_cb)
+	{
+		g_print("=====set tethering passphrase changed callback=====\n");
+		connman_technology_set_property_changed_cb(technology,
+							TECH_PROP_TETHERING_PASSPHRASE,
+							__handle_passphrase_changed,
+							user_data);
+	}
+}
+
 static void __handle_wifi_tether_changed(struct connman_technology *technology, void* user_data)
 {
 	bool tether = connman_get_technology_tethering(technology);
@@ -530,59 +615,6 @@ static void __handle_ssid_visibility_changed(DBusGProxy *proxy, const char *valu
 	return;
 }
 */
-static void set_connman_tethering_changed_cb(tethering_type_e type, void *user_data)
-{
-	struct connman_technology *technology;
-
-	if (type == TETHERING_TYPE_ALL) {
-		/* TETHERING_TYPE_ALL */
-		technology = connman_get_technology(TECH_TYPE_GADGET);
-		if (technology != NULL)
-			connman_technology_set_property_changed_cb(technology,
-							TECH_PROP_TETHERING,
-							__handle_usb_tether_changed,
-							user_data);
-		technology = connman_get_technology(TECH_TYPE_WIFI);
-		if (technology != NULL)
-			connman_technology_set_property_changed_cb(technology,
-							TECH_PROP_TETHERING,
-							__handle_wifi_tether_changed,
-							user_data);
-		technology = connman_get_technology(TECH_TYPE_BLUETOOTH);
-		if (technology != NULL)
-			connman_technology_set_property_changed_cb(technology,
-							TECH_PROP_TETHERING,
-							__handle_bt_tether_changed,
-							user_data);
-		return;
-	}
-
-	if (type == TETHERING_TYPE_USB) {
-		technology = connman_get_technology(TECH_TYPE_GADGET);
-		if (technology != NULL)
-			connman_technology_set_property_changed_cb(technology,
-							TECH_PROP_TETHERING,
-							__handle_usb_tether_changed,
-							user_data);
-	}
-	else if (type == TETHERING_TYPE_WIFI) {
-		technology = connman_get_technology(TECH_TYPE_WIFI);
-		if (technology != NULL)
-			connman_technology_set_property_changed_cb(technology,
-							TECH_PROP_TETHERING,
-							__handle_wifi_tether_changed,
-							user_data);
-	}
-	else if (type == TETHERING_TYPE_BT) {
-		technology = connman_get_technology(TECH_TYPE_BLUETOOTH);
-		if (technology != NULL)
-			connman_technology_set_property_changed_cb(technology,
-							TECH_PROP_TETHERING,
-							__handle_bt_tether_changed,
-							user_data);
-	}
-}
-
 static void __handle_passphrase_changed(struct connman_technology* technology, void *user_data)
 {
 	DBG("+\n");
@@ -1033,6 +1065,8 @@ API int tethering_create(tethering_h *tethering)
 
 	connman_lib_init();
 
+	connman_set_technology_added_cb(__handle_technology_added, th);
+
 	return TETHERING_ERROR_NONE;
 }
 
@@ -1064,6 +1098,8 @@ API int tethering_destroy(tethering_h tethering)
 */
 	memset(th, 0x00, sizeof(__tethering_h));
 	free(th);
+
+	connman_unset_technology_added_cb();
 
 	return TETHERING_ERROR_NONE;
 }
@@ -1714,7 +1750,7 @@ API int tethering_set_enabled_cb(tethering_h tethering, tethering_type_e type, t
 		}
 	}
 
-	set_connman_tethering_changed_cb(type, tethering);
+	set_connman_tethering_powered_changed_cb(type, tethering);
 
 	return TETHERING_ERROR_NONE;
 }
@@ -1783,7 +1819,7 @@ API int tethering_set_disabled_cb(tethering_h tethering, tethering_type_e type, 
 		}
 	}
 
-	set_connman_tethering_changed_cb(type, tethering);
+	set_connman_tethering_powered_changed_cb(type, tethering);
 
 	return TETHERING_ERROR_NONE;
 }
