@@ -51,6 +51,7 @@ static void __handle_wifi_tether_changed(struct connman_technology *technology, 
 static void __handle_usb_tether_changed(struct connman_technology *technology, void *user_data);
 static void __handle_bt_tether_changed(struct connman_technology *technology, void *user_data);
 static void __handle_passphrase_changed(struct connman_technology *technology, void *user_data);
+static void __handle_ssid_visibility_changed(struct connman_technology *technology, void *user_data);
 
 static void __handle_wifi_tether_on(void* user_data);
 static void __handle_wifi_tether_off(void* user_data);
@@ -298,6 +299,14 @@ static void __handle_technology_added(struct connman_technology* technology, voi
 		connman_technology_set_property_changed_cb(technology,
 							TECH_PROP_TETHERING_PASSPHRASE,
 							__handle_passphrase_changed,
+							user_data);
+	}
+	if (th->ssid_visibility_changed_cb)
+	{
+		g_print("=====set tethering ssid visibility changed callback=====\n");
+		connman_technology_set_property_changed_cb(technology,
+							TECH_PROP_TETHERING_HIDDEN,
+							__handle_ssid_visibility_changed,
 							user_data);
 	}
 }
@@ -590,8 +599,8 @@ static void __handle_security_type_changed(DBusGProxy *proxy, const char *value_
 
 	return;
 }
-
-static void __handle_ssid_visibility_changed(DBusGProxy *proxy, const char *value_name, gpointer user_data)
+*/
+static void __handle_ssid_visibility_changed(struct connman_technology* technology, void* user_data)
 {
 	DBG("+\n");
 
@@ -607,14 +616,15 @@ static void __handle_ssid_visibility_changed(DBusGProxy *proxy, const char *valu
 		return;
 
 	data = th->ssid_visibility_user_data;
-	if (g_strcmp0(value_name, SIGNAL_MSG_SSID_VISIBLE) == 0)
-		visible = true;
+	visible = !connman_get_wifi_tethering_hidden(technology);
 
+	g_print("=====wifi_ssid_visibility_changed callback is called=====\n");
+	
 	scb(visible, data);
 
 	return;
 }
-*/
+
 static void __handle_passphrase_changed(struct connman_technology* technology, void *user_data)
 {
 	DBG("+\n");
@@ -1946,7 +1956,6 @@ API int tethering_wifi_set_security_type_changed_cb(tethering_h tethering, tethe
 	th->security_type_user_data = user_data;
 
 	return TETHERING_ERROR_NONE;
-
 }
 
 /**
@@ -1991,6 +2000,13 @@ API int tethering_wifi_set_ssid_visibility_changed_cb(tethering_h tethering, tet
 	th->ssid_visibility_changed_cb = callback;
 	th->ssid_visibility_user_data = user_data;
 
+	struct connman_technology *technology = connman_get_technology(
+							TECH_TYPE_WIFI);
+	connman_technology_set_property_changed_cb(technology,
+						TECH_PROP_TETHERING_HIDDEN,
+						__handle_ssid_visibility_changed,
+						tethering);
+
 	return TETHERING_ERROR_NONE;
 }
 
@@ -2010,6 +2026,12 @@ API int tethering_wifi_unset_ssid_visibility_changed_cb(tethering_h tethering)
 
 	th->ssid_visibility_changed_cb = NULL;
 	th->ssid_visibility_user_data = NULL;
+	
+	struct connman_technology *technology = connman_get_technology(
+							TECH_TYPE_WIFI);
+	connman_technology_unset_property_changed_cb(
+					technology,
+					TECH_PROP_TETHERING_HIDDEN);
 
 	return TETHERING_ERROR_NONE;
 }
@@ -2297,6 +2319,10 @@ API int tethering_wifi_set_ssid_visibility(tethering_h tethering, bool visible)
 	org_tizen_tethering_set_wifi_tethering_hide_mode_async(proxy, hide_mode,
 			__wifi_set_ssid_visibility_cb, (gpointer)tethering);
 */
+	struct connman_technology *technology = connman_get_technology(
+							TECH_TYPE_WIFI);
+	connman_set_wifi_tethering_hidden(technology, !visible);
+
 	DBG("-\n");
 	return TETHERING_ERROR_NONE;
 }
@@ -2338,6 +2364,10 @@ API int tethering_wifi_get_ssid_visibility(tethering_h tethering, bool *visible)
 	else
 		*visible = false;
 */
+	struct connman_technology *technology = connman_get_technology(
+							TECH_TYPE_WIFI);
+	*visible = !connman_get_wifi_tethering_hidden(technology);	
+
 	DBG("-\n");
 	return TETHERING_ERROR_NONE;
 }
