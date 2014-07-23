@@ -361,7 +361,6 @@ static void __handle_bt_tether_changed(struct connman_technology *technology, vo
 
 static void __handle_wifi_tether_on(void* user_data)
 {
-	DBG("+\n");
 	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
 
 	__tethering_h *th = (__tethering_h *)user_data;
@@ -376,13 +375,12 @@ static void __handle_wifi_tether_on(void* user_data)
 	data = th->enabled_user_data[type];
 
 	g_print("=====wifi_tether_on callback is called=====\n");
+
 	ecb(TETHERING_ERROR_NONE, type, is_requested, data);
 }
 
 static void __handle_wifi_tether_off(void* user_data)
 {
-	DBG("+\n");
-
 	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
 
 	__tethering_h *th = (__tethering_h *)user_data;
@@ -403,6 +401,7 @@ static void __handle_wifi_tether_off(void* user_data)
 		code = TETHERING_DISABLED_BY_TIMEOUT;
 */
 	g_print("=====wifi_tether_off callback is called=====\n");
+
 	dcb(TETHERING_ERROR_NONE, type, code, data);
 
 	return;
@@ -410,8 +409,6 @@ static void __handle_wifi_tether_off(void* user_data)
 
 static void __handle_usb_tether_on(void* user_data)
 {
-	DBG("+\n");
-
 	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
 
 	__tethering_h *th = (__tethering_h *)user_data;
@@ -426,13 +423,12 @@ static void __handle_usb_tether_on(void* user_data)
 	data = th->enabled_user_data[type];
 
 	g_print("=====usb_tether_on callback is called=====\n");
+
 	ecb(TETHERING_ERROR_NONE, type, is_requested, data);
 }
 
 static void __handle_usb_tether_off(void* user_data)
 {
-	DBG("+\n");
-
 	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
 
 	__tethering_h *th = (__tethering_h *)user_data;
@@ -450,6 +446,7 @@ static void __handle_usb_tether_off(void* user_data)
 		code = TETHERING_DISABLED_BY_USB_DISCONNECTION;
 */
 	g_print("=====usb_tether_off callback is called=====\n");
+
 	dcb(TETHERING_ERROR_NONE, type, code, data);
 
 	return;
@@ -457,8 +454,6 @@ static void __handle_usb_tether_off(void* user_data)
 
 static void __handle_bt_tether_on(void* user_data)
 {
-	DBG("+\n");
-
 	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
 
 	__tethering_h *th = (__tethering_h *)user_data;
@@ -473,13 +468,12 @@ static void __handle_bt_tether_on(void* user_data)
 	data = th->enabled_user_data[type];
 
 	g_print("=====bt_tether_on callback is called=====\n");
+
 	ecb(TETHERING_ERROR_NONE, type, is_requested, data);
 }
 
 static void __handle_bt_tether_off(void* user_data)
 {
-	DBG("+\n");
-
 	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
 
 	__tethering_h *th = (__tethering_h *)user_data;
@@ -499,6 +493,7 @@ static void __handle_bt_tether_off(void* user_data)
 		code = TETHERING_DISABLED_BY_TIMEOUT;
 */
 	g_print("=====bt_tether_off callback is called=====\n");
+
 	dcb(TETHERING_ERROR_NONE, type, code, data);
 
 	return;
@@ -602,8 +597,6 @@ static void __handle_security_type_changed(DBusGProxy *proxy, const char *value_
 */
 static void __handle_ssid_visibility_changed(struct connman_technology* technology, void* user_data)
 {
-	DBG("+\n");
-
 	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
 
 	__tethering_h *th = (__tethering_h *)user_data;
@@ -619,7 +612,7 @@ static void __handle_ssid_visibility_changed(struct connman_technology* technolo
 	visible = !connman_get_wifi_tethering_hidden(technology);
 
 	g_print("=====wifi_ssid_visibility_changed callback is called=====\n");
-	
+
 	scb(visible, data);
 
 	return;
@@ -627,8 +620,6 @@ static void __handle_ssid_visibility_changed(struct connman_technology* technolo
 
 static void __handle_passphrase_changed(struct connman_technology* technology, void *user_data)
 {
-	DBG("+\n");
-
 	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
 
 	__tethering_h *th = (__tethering_h *)user_data;
@@ -1073,7 +1064,8 @@ API int tethering_create(tethering_h *tethering)
 	*tethering = (tethering_h)th;
 	DBG("Tethering Handle : 0x%X\n", th);
 
-	connman_lib_init();
+	if (connman_lib_init() != CONNMAN_LIB_ERR_NONE)
+		return TETHERING_ERROR_OPERATION_FAILED;
 
 	connman_set_technology_added_cb(__handle_technology_added, th);
 
@@ -1127,8 +1119,6 @@ API int tethering_destroy(tethering_h tethering)
  */
 API int tethering_enable(tethering_h tethering, tethering_type_e type)
 {
-	DBG("+\n");
-
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
 
@@ -1144,6 +1134,9 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 		org_tizen_tethering_enable_usb_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering); */
 		technology = connman_get_technology(TECH_TYPE_GADGET);
+		if (technology == NULL)
+			return TETHERING_ERROR_INVALID_OPERATION;
+
 		connman_enable_tethering(technology);
 		break;
 
@@ -1155,6 +1148,9 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 				th->ssid ? th->ssid : "", "", false,
 				__cfm_cb, (gpointer)tethering);*/
 		technology = connman_get_technology(TECH_TYPE_WIFI);
+		if (technology == NULL)
+			return TETHERING_ERROR_INVALID_OPERATION;
+
 		connman_enable_tethering(technology);
 		break;
 
@@ -1166,6 +1162,9 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 				__cfm_cb, (gpointer)tethering);
 	*/
 		technology = connman_get_technology(TECH_TYPE_BLUETOOTH);
+		if (technology == NULL)
+			return TETHERING_ERROR_INVALID_OPERATION;
+
 		connman_enable_tethering(technology);
 		break;
 
@@ -1193,11 +1192,14 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 				__cfm_cb, (gpointer)tethering);*/
 
 		technology = connman_get_technology(TECH_TYPE_GADGET);
-		connman_enable_tethering(technology);
+		if (technology != NULL)
+			connman_enable_tethering(technology);
 		technology = connman_get_technology(TECH_TYPE_WIFI);
-		connman_enable_tethering(technology);
+		if (technology != NULL)
+			connman_enable_tethering(technology);
 		technology = connman_get_technology(TECH_TYPE_BLUETOOTH);
-		connman_enable_tethering(technology);
+		if (technology != NULL)
+			connman_enable_tethering(technology);
 		break;
 
 	default:
@@ -1236,6 +1238,9 @@ API int tethering_disable(tethering_h tethering, tethering_type_e type)
 		org_tizen_tethering_disable_usb_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering);*/
 		technology = connman_get_technology(TECH_TYPE_GADGET);
+		if (technology == NULL)
+			return TETHERING_ERROR_INVALID_OPERATION;
+
 		connman_disable_tethering(technology);
 		break;
 
@@ -1246,6 +1251,9 @@ API int tethering_disable(tethering_h tethering, tethering_type_e type)
 		org_tizen_tethering_disable_wifi_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering);*/
 		technology = connman_get_technology(TECH_TYPE_WIFI);
+		if (technology == NULL)
+			return TETHERING_ERROR_INVALID_OPERATION;
+
 		connman_disable_tethering(technology);
 		break;
 	case TETHERING_TYPE_BT:
@@ -1255,6 +1263,9 @@ API int tethering_disable(tethering_h tethering, tethering_type_e type)
 		org_tizen_tethering_disable_bt_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering);*/
 		technology = connman_get_technology(TECH_TYPE_BLUETOOTH);
+		if (technology == NULL)
+			return TETHERING_ERROR_INVALID_OPERATION;
+
 		connman_disable_tethering(technology);
 		break;
 
@@ -1277,11 +1288,14 @@ API int tethering_disable(tethering_h tethering, tethering_type_e type)
 		org_tizen_tethering_disable_bt_tethering_async(proxy,
 				__cfm_cb, (gpointer)tethering);*/
 		technology = connman_get_technology(TECH_TYPE_GADGET);
-		connman_disable_tethering(technology);
+		if (technology != NULL)
+			connman_disable_tethering(technology);
 		technology = connman_get_technology(TECH_TYPE_WIFI);
-		connman_disable_tethering(technology);
+		if (technology != NULL)
+			connman_disable_tethering(technology);
 		technology = connman_get_technology(TECH_TYPE_BLUETOOTH);
-		connman_disable_tethering(technology);
+		if (technology != NULL)
+			connman_disable_tethering(technology);
 		break;
 
 	default :
@@ -2002,6 +2016,9 @@ API int tethering_wifi_set_ssid_visibility_changed_cb(tethering_h tethering, tet
 
 	struct connman_technology *technology = connman_get_technology(
 							TECH_TYPE_WIFI);
+	if (technology == NULL)
+		return TETHERING_ERROR_INVALID_OPERATION;
+
 	connman_technology_set_property_changed_cb(technology,
 						TECH_PROP_TETHERING_HIDDEN,
 						__handle_ssid_visibility_changed,
@@ -2026,9 +2043,12 @@ API int tethering_wifi_unset_ssid_visibility_changed_cb(tethering_h tethering)
 
 	th->ssid_visibility_changed_cb = NULL;
 	th->ssid_visibility_user_data = NULL;
-	
+
 	struct connman_technology *technology = connman_get_technology(
 							TECH_TYPE_WIFI);
+	if (technology == NULL)
+		return TETHERING_ERROR_INVALID_OPERATION;
+
 	connman_technology_unset_property_changed_cb(
 					technology,
 					TECH_PROP_TETHERING_HIDDEN);
@@ -2059,6 +2079,9 @@ API int tethering_wifi_set_passphrase_changed_cb(tethering_h tethering, tetherin
 
 	struct connman_technology *technology = connman_get_technology(
 							TECH_TYPE_WIFI);
+	if (technology == NULL)
+		return TETHERING_ERROR_INVALID_OPERATION;
+
 	connman_technology_set_property_changed_cb(technology,
 						TECH_PROP_TETHERING_PASSPHRASE,
 						__handle_passphrase_changed,
@@ -2085,6 +2108,9 @@ API int tethering_wifi_unset_passphrase_changed_cb(tethering_h tethering)
 
 	struct connman_technology *technology = connman_get_technology(
 							TECH_TYPE_WIFI);
+	if (technology == NULL)
+		return TETHERING_ERROR_INVALID_OPERATION;
+
 	connman_technology_unset_property_changed_cb(
 					technology,
 					TECH_PROP_TETHERING_PASSPHRASE);
@@ -2106,7 +2132,6 @@ API int tethering_wifi_set_security_type(tethering_h tethering, tethering_wifi_s
 {
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
-	DBG("+\n");
 
 /*	__tethering_h *th = (__tethering_h *)tethering;
 	DBusGProxy *proxy = th->client_bus_proxy;
@@ -2128,7 +2153,6 @@ API int tethering_wifi_set_security_type(tethering_h tethering, tethering_wifi_s
 	org_tizen_tethering_set_wifi_tethering_security_type_async(proxy, type_str,
 			__wifi_set_security_type_cb, (gpointer)tethering);
 */
-	DBG("-\n");
 	return TETHERING_ERROR_NONE;
 }
 
@@ -2148,7 +2172,6 @@ API int tethering_wifi_get_security_type(tethering_h tethering, tethering_wifi_s
 			"parameter(tethering) is NULL\n");
 	_retvm_if(type == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(type) is NULL\n");
-	DBG("+\n");
 
 /*	__tethering_h *th = (__tethering_h *)tethering;
 	DBusGProxy *proxy = th->client_bus_proxy;
@@ -2178,7 +2201,6 @@ API int tethering_wifi_get_security_type(tethering_h tethering, tethering_wifi_s
 
 	g_free(type_str);
 */
-	DBG("-\n");
 	return TETHERING_ERROR_NONE;
 }
 
@@ -2220,7 +2242,11 @@ API int tethering_wifi_set_ssid(tethering_h tethering, const char *ssid)
 */
 	struct connman_technology *technology = connman_get_technology(
 							TECH_TYPE_WIFI);
+	if (technology == NULL)
+		return TETHERING_ERROR_INVALID_OPERATION;
+
 	connman_set_wifi_tethering_identifier(technology, ssid);
+
 	return TETHERING_ERROR_NONE;
 }
 
@@ -2241,7 +2267,6 @@ API int tethering_wifi_get_ssid(tethering_h tethering, char **ssid)
 			"parameter(tethering) is NULL\n");
 	_retvm_if(ssid == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(ssid) is NULL\n");
-	DBG("+\n");
 
 /*	__tethering_h *th = (__tethering_h *)tethering;
 	DBusGProxy *proxy = th->client_bus_proxy;
@@ -2280,8 +2305,15 @@ API int tethering_wifi_get_ssid(tethering_h tethering, char **ssid)
 */
 	struct connman_technology *technology = connman_get_technology(
 							TECH_TYPE_WIFI);
-	*ssid = strdup(connman_get_wifi_tethering_identifier(technology));
-	DBG("-\n");
+	if (technology == NULL)
+		return TETHERING_ERROR_INVALID_OPERATION;
+	
+	const char* identifier = connman_get_wifi_tethering_identifier(technology);
+	if (identifier == NULL)
+		*ssid = NULL;
+	else
+		*ssid = strdup(identifier);
+
 	return TETHERING_ERROR_NONE;
 }
 
@@ -2301,7 +2333,6 @@ API int tethering_wifi_set_ssid_visibility(tethering_h tethering, bool visible)
 {
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
-	DBG("+\n");
 
 /*	__tethering_h *th = (__tethering_h *)tethering;
 	DBusGProxy *proxy = th->client_bus_proxy;
@@ -2321,9 +2352,11 @@ API int tethering_wifi_set_ssid_visibility(tethering_h tethering, bool visible)
 */
 	struct connman_technology *technology = connman_get_technology(
 							TECH_TYPE_WIFI);
+	if (technology == NULL)
+		return TETHERING_ERROR_INVALID_OPERATION;
+
 	connman_set_wifi_tethering_hidden(technology, !visible);
 
-	DBG("-\n");
 	return TETHERING_ERROR_NONE;
 }
 
@@ -2344,7 +2377,6 @@ API int tethering_wifi_get_ssid_visibility(tethering_h tethering, bool *visible)
 			"parameter(tethering) is NULL\n");
 	_retvm_if(visible == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(visible) is NULL\n");
-	DBG("+\n");
 
 /*	__tethering_h *th = (__tethering_h *)tethering;
 	DBusGProxy *proxy = th->client_bus_proxy;
@@ -2366,9 +2398,11 @@ API int tethering_wifi_get_ssid_visibility(tethering_h tethering, bool *visible)
 */
 	struct connman_technology *technology = connman_get_technology(
 							TECH_TYPE_WIFI);
-	*visible = !connman_get_wifi_tethering_hidden(technology);	
+	if (technology == NULL)
+		return TETHERING_ERROR_INVALID_OPERATION;
 
-	DBG("-\n");
+	*visible = !connman_get_wifi_tethering_hidden(technology);
+
 	return TETHERING_ERROR_NONE;
 }
 
@@ -2389,7 +2423,6 @@ API int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphr
 			"parameter(tethering) is NULL\n");
 	_retvm_if(passphrase == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(passphrase) is NULL\n");
-	DBG("+\n");
 
 /*	__tethering_h *th = (__tethering_h *)tethering;
 	DBusGProxy *proxy = th->client_bus_proxy;
@@ -2412,8 +2445,11 @@ API int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphr
 */
 	struct connman_technology *technology = connman_get_technology(
 							TECH_TYPE_WIFI);
+	if (technology == NULL)
+		return TETHERING_ERROR_INVALID_OPERATION;
+
 	connman_set_wifi_tethering_passphrase(technology, passphrase);
-	DBG("-\n");
+
 	return TETHERING_ERROR_NONE;
 }
 
@@ -2435,7 +2471,6 @@ API int tethering_wifi_get_passphrase(tethering_h tethering, char **passphrase)
 			"parameter(tethering) is NULL\n");
 	_retvm_if(passphrase == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(passphrase) is NULL\n");
-	DBG("+\n");
 
 /*	__tethering_h *th = (__tethering_h *)tethering;
 	DBusGProxy *proxy = th->client_bus_proxy;
@@ -2464,7 +2499,14 @@ API int tethering_wifi_get_passphrase(tethering_h tethering, char **passphrase)
 */
 	struct connman_technology *technology = connman_get_technology(
 							TECH_TYPE_WIFI);
-	*passphrase = strdup(connman_get_wifi_tethering_passphrase(technology));
-	DBG("-\n");
+	if (technology == NULL)
+		return TETHERING_ERROR_INVALID_OPERATION;
+
+	const char* password = connman_get_wifi_tethering_passphrase(technology);
+	if (password == NULL)
+		*passphrase = NULL;
+	else
+		*passphrase = strdup(password);
+
 	return TETHERING_ERROR_NONE;
 }
