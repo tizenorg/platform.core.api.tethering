@@ -26,6 +26,7 @@
 
 #include <vconf.h>
 
+#include "winet-tether.h"
 #include "connman-lib.h"
 #include "connman-manager.h"
 #include "connman-technology.h"
@@ -643,6 +644,29 @@ static void __handle_passphrase_changed(struct connman_technology *technology, v
 
 	return;
 }
+
+static void get_winet_tethering_data_usage(tethering_h tethering)
+{
+	unsigned long long rx_bytes, tx_bytes;
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	if (th->data_usage_cb == NULL) {
+		ERR("There is no data_usage_cb\n");
+		return;
+	}
+
+	winet_tether_get_data_usages(&tx_bytes, &rx_bytes);
+
+	th->data_usage_cb(TETHERING_ERROR_NONE,
+			rx_bytes, tx_bytes, th->data_usage_user_data);
+
+	th->data_usage_cb = NULL;
+	th->data_usage_user_data = NULL;
+
+	return;
+}
+
 /*
 static void __cfm_cb(DBusGProxy *remoteobj, guint event, guint info,
 		GError *g_error, gpointer user_data)
@@ -1071,6 +1095,8 @@ API int tethering_create(tethering_h *tethering)
 
 	if (connman_lib_init() != CONNMAN_LIB_ERR_NONE)
 		return TETHERING_ERROR_OPERATION_FAILED;
+
+	winet_tether_init();
 
 	connman_set_technology_added_cb(__handle_technology_added, th);
 
@@ -1603,6 +1629,8 @@ API int tethering_get_data_usage(tethering_h tethering, tethering_data_usage_cb 
 /*	org_tizen_tethering_get_data_packet_usage_async(proxy,
 			__get_data_usage_cb, (gpointer)th);
 */
+	get_winet_tethering_data_usage(tethering);
+
 	return TETHERING_ERROR_NONE;
 }
 
