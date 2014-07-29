@@ -49,7 +49,7 @@ static void __handle_ssid_visibility_changed(DBusGProxy *proxy, const char *valu
 static void __handle_passphrase_changed(DBusGProxy *proxy, const char *value_name, gpointer user_data);*/
 
 static bool wifi_security_type_changed;
-static const char *wifi_security_wpa2_passphrase;
+static char *wifi_security_wpa2_passphrase;
 
 static void __handle_wifi_tether_changed(struct connman_technology *technology, void *user_data);
 static void __handle_usb_tether_changed(struct connman_technology *technology, void *user_data);
@@ -2206,6 +2206,11 @@ API int tethering_wifi_set_security_type(tethering_h tethering, tethering_wifi_s
 		const char *passphrase = connman_get_wifi_tethering_passphrase(technology);
 		if (passphrase == NULL || g_strcmp0(passphrase, "") == 0)
 			return TETHERING_ERROR_INVALID_OPERATION;
+
+		if (wifi_security_wpa2_passphrase != NULL)
+			g_free(wifi_security_wpa2_passphrase);
+		wifi_security_wpa2_passphrase = strdup(passphrase);
+
 		if (connman_set_wifi_tethering_passphrase(technology, "")
 						 != CONNMAN_LIB_ERR_NONE)
 			return TETHERING_ERROR_OPERATION_FAILED;
@@ -2533,9 +2538,6 @@ API int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphr
 	wifi_security_type_changed = false;
 
 	connman_set_wifi_tethering_passphrase(technology, passphrase);
-
-	if (passphrase != NULL && g_strcmp0(passphrase, ""))
-		wifi_security_wpa2_passphrase = strdup(passphrase);
 
 	return TETHERING_ERROR_NONE;
 }
