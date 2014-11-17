@@ -149,57 +149,53 @@ static tethering_error_e __get_error(int agent_error)
 	return err;
 }
 */
+
+static void set_connman_usb_tethering_powered_changed_cb(void *user_data)
+{
+	struct connman_technology *technology = connman_get_technology(TECH_TYPE_GADGET);
+	if (technology != NULL)
+		connman_technology_set_property_changed_cb(technology,
+						TECH_PROP_TETHERING,
+						__handle_usb_tether_changed,
+						user_data);
+}
+
+static void set_connman_wifi_tethering_powered_changed_cb(void *user_data)
+{
+	struct connman_technology *technology = connman_get_technology(TECH_TYPE_WIFI);
+	if (technology != NULL)
+		connman_technology_set_property_changed_cb(technology,
+						TECH_PROP_TETHERING,
+						__handle_wifi_tether_changed,
+						user_data);
+}
+
+static void set_connman_bt_tethering_powered_changed_cb(void *user_data)
+{
+	struct connman_technology *technology = connman_get_technology(TECH_TYPE_BLUETOOTH);
+	if (technology != NULL)
+		connman_technology_set_property_changed_cb(technology,
+						TECH_PROP_TETHERING,
+						__handle_bt_tether_changed,
+						user_data);
+}
+
 static void set_connman_tethering_powered_changed_cb(tethering_type_e type, void *user_data)
 {
-	struct connman_technology *technology;
-
 	if (type == TETHERING_TYPE_ALL) {
 		/* TETHERING_TYPE_ALL */
-		technology = connman_get_technology(TECH_TYPE_GADGET);
-		if (technology != NULL)
-			connman_technology_set_property_changed_cb(technology,
-							TECH_PROP_TETHERING,
-							__handle_usb_tether_changed,
-							user_data);
-		technology = connman_get_technology(TECH_TYPE_WIFI);
-		if (technology != NULL)
-			connman_technology_set_property_changed_cb(technology,
-							TECH_PROP_TETHERING,
-							__handle_wifi_tether_changed,
-							user_data);
-		technology = connman_get_technology(TECH_TYPE_BLUETOOTH);
-		if (technology != NULL)
-			connman_technology_set_property_changed_cb(technology,
-							TECH_PROP_TETHERING,
-							__handle_bt_tether_changed,
-							user_data);
+		set_connman_usb_tethering_powered_changed_cb(user_data);
+		set_connman_wifi_tethering_powered_changed_cb(user_data);
+		set_connman_bt_tethering_powered_changed_cb(user_data);
 		return;
 	}
 
-	if (type == TETHERING_TYPE_USB) {
-		technology = connman_get_technology(TECH_TYPE_GADGET);
-		if (technology != NULL)
-			connman_technology_set_property_changed_cb(technology,
-							TECH_PROP_TETHERING,
-							__handle_usb_tether_changed,
-							user_data);
-	}
-	else if (type == TETHERING_TYPE_WIFI) {
-		technology = connman_get_technology(TECH_TYPE_WIFI);
-		if (technology != NULL)
-			connman_technology_set_property_changed_cb(technology,
-							TECH_PROP_TETHERING,
-							__handle_wifi_tether_changed,
-							user_data);
-	}
-	else if (type == TETHERING_TYPE_BT) {
-		technology = connman_get_technology(TECH_TYPE_BLUETOOTH);
-		if (technology != NULL)
-			connman_technology_set_property_changed_cb(technology,
-							TECH_PROP_TETHERING,
-							__handle_bt_tether_changed,
-							user_data);
-	}
+	if (type == TETHERING_TYPE_USB)
+		set_connman_usb_tethering_powered_changed_cb(user_data);
+	else if (type == TETHERING_TYPE_WIFI)
+		set_connman_wifi_tethering_powered_changed_cb(user_data);
+	else if (type == TETHERING_TYPE_BT)
+		set_connman_bt_tethering_powered_changed_cb(user_data);
 }
 
 static void __handle_tether_connection_changed(struct connman_technology *technology,
