@@ -201,6 +201,226 @@ static void set_connman_tethering_powered_changed_cb(tethering_type_e type, void
 							user_data);
 	}
 }
+
+static void __handle_tether_connection_changed(struct connman_technology *technology,
+					struct technology_tethering_client *cli,
+					tethering_type_e type,
+					bool connected,
+					void *user_data)
+{
+	__tethering_h *th = (__tethering_h *)user_data;
+	tethering_connection_state_changed_cb ccb = NULL;
+	__tethering_client_h client = {0, };
+	void *data = NULL;
+
+	ccb = th->changed_cb[type];
+	if (ccb == NULL)
+		return;
+	data = th->changed_user_data[type];
+
+	client.interface = type;
+	g_strlcpy(client.ip, cli->ipaddr, sizeof(client.ip));
+	g_strlcpy(client.mac, cli->macaddr, sizeof(client.mac));
+	g_strlcpy(client.hostname, cli->hostname, sizeof(client.hostname));
+
+	g_print("=====tether_connection_changed callback is called=====\n");
+	g_print("=====client ip: %s, mac: %s, hostname: %s=====\n", client.ip,
+								client.mac,
+								client.hostname);
+	ccb((tethering_client_h)&client, connected, data);
+}
+
+static void __handle_tether_connection_connected(struct connman_technology *technology,
+						struct technology_tethering_client *cli,
+						tethering_type_e type,
+						void *user_data)
+{
+	__handle_tether_connection_changed(technology, cli, type, true, user_data);
+}
+
+static void __handle_tether_connection_disconnected(struct connman_technology *technology,
+						struct technology_tethering_client *cli,
+						tethering_type_e type,
+						void *user_data)
+{
+	__handle_tether_connection_changed(technology, cli, type, false, user_data);
+}
+
+static void __handle_tether_usb_client_connected(struct connman_technology *technology,
+						struct technology_tethering_client *cli,
+						void *user_data)
+{
+	g_print("=====usb tether client connected callback is called=====\n");
+	__handle_tether_connection_connected(technology, cli, TETHERING_TYPE_USB, user_data);
+}
+
+static void __handle_tether_usb_client_disconnected(struct connman_technology *technology,
+						struct technology_tethering_client *cli,
+						void *user_data)
+{
+	g_print("=====wifi tether client disconnected callback is called=====\n");
+	__handle_tether_connection_disconnected(technology, cli, TETHERING_TYPE_USB, user_data);
+}
+
+static void __handle_tether_wifi_client_connected(struct connman_technology *technology,
+						struct technology_tethering_client *cli,
+						void *user_data)
+{
+	g_print("=====wifi tether client connected callback is called=====\n");
+	__handle_tether_connection_connected(technology, cli, TETHERING_TYPE_WIFI, user_data);
+}
+
+static void __handle_tether_wifi_client_disconnected(struct connman_technology *technology,
+						struct technology_tethering_client *cli,
+						void *user_data)
+{
+	g_print("=====wifi tether client disconnected callback is called=====\n");
+	__handle_tether_connection_disconnected(technology, cli, TETHERING_TYPE_WIFI, user_data);
+}
+
+static void __handle_tether_bt_client_connected(struct connman_technology *technology,
+						struct technology_tethering_client *cli,
+						void *user_data)
+{
+	g_print("=====bt tether client connected callback is called=====\n");
+	__handle_tether_connection_connected(technology, cli, TETHERING_TYPE_BT, user_data);
+}
+
+static void __handle_tether_bt_client_disconnected(struct connman_technology *technology,
+						struct technology_tethering_client *cli,
+						void *user_data)
+{
+	g_print("=====bt tether client disconnected callback is called=====\n");
+	__handle_tether_connection_disconnected(technology, cli, TETHERING_TYPE_BT, user_data);
+}
+
+static void set_usb_tether_connection_changed_cb(void *user_data)
+{
+	struct connman_technology *technology;
+	technology = connman_get_technology(TECH_TYPE_GADGET);
+
+	if (technology != NULL) {
+		g_print("=====set usb tether connection changed callback=====\n");
+		connman_set_tethering_dhcp_connected_cb(technology,
+							__handle_tether_usb_client_connected,
+							user_data);
+
+		connman_set_tethering_dhcplease_deleted_cb(technology,
+							__handle_tether_usb_client_disconnected,
+							user_data);
+	}
+}
+
+static void set_wifi_tether_connection_changed_cb(void *user_data)
+{
+	struct connman_technology *technology;
+	technology = connman_get_technology(TECH_TYPE_WIFI);
+
+	if (technology != NULL) {
+		g_print("=====set wifi tether connection changed callback=====\n");
+		connman_set_tethering_dhcp_connected_cb(technology,
+							__handle_tether_wifi_client_connected,
+							user_data);
+
+		connman_set_tethering_dhcplease_deleted_cb(technology,
+							__handle_tether_wifi_client_disconnected,
+							user_data);
+	}
+}
+
+static void set_bt_tether_connection_changed_cb(void *user_data)
+{
+	struct connman_technology *technology;
+	technology = connman_get_technology(TECH_TYPE_BLUETOOTH);
+
+	if (technology != NULL) {
+		g_print("=====set bt tether connection changed callback=====\n");
+		connman_set_tethering_dhcp_connected_cb(technology,
+							__handle_tether_bt_client_connected,
+							user_data);
+
+		connman_set_tethering_dhcplease_deleted_cb(technology,
+							__handle_tether_bt_client_disconnected,
+							user_data);
+	}
+}
+
+static void unset_usb_tether_connection_changed_cb()
+{
+	struct connman_technology *technology;
+	technology = connman_get_technology(TECH_TYPE_GADGET);
+
+	if (technology != NULL) {
+		g_print("=====unset usb tether connection changed callback=====\n");
+		connman_unset_tethering_dhcp_connected_cb(technology);
+
+		connman_unset_tethering_dhcplease_deleted_cb(technology);
+	}
+}
+
+static void unset_wifi_tether_connection_changed_cb()
+{
+	struct connman_technology *technology;
+	technology = connman_get_technology(TECH_TYPE_WIFI);
+
+	if (technology != NULL) {
+		g_print("=====unset wifi tether connection changed callback=====\n");
+		connman_unset_tethering_dhcp_connected_cb(technology);
+
+		connman_unset_tethering_dhcplease_deleted_cb(technology);
+	}
+}
+
+static void unset_bt_tether_connection_changed_cb()
+{
+	struct connman_technology *technology;
+	technology = connman_get_technology(TECH_TYPE_BLUETOOTH);
+
+	if (technology != NULL) {
+		g_print("=====unset bt tether connection changed callback=====\n");
+		connman_unset_tethering_dhcp_connected_cb(technology);
+
+		connman_unset_tethering_dhcplease_deleted_cb(technology);
+	}
+}
+
+static void set_connman_tethering_connection_changed_cb(tethering_type_e type, void *user_data)
+{
+	if (type == TETHERING_TYPE_ALL) {
+		/* TETHERING_TYPE_ALL */
+		set_usb_tether_connection_changed_cb(user_data);
+		set_wifi_tether_connection_changed_cb(user_data);
+		set_bt_tether_connection_changed_cb(user_data);
+
+		return;
+	}
+
+	if (type == TETHERING_TYPE_USB)
+		set_usb_tether_connection_changed_cb(user_data);
+	else if (type == TETHERING_TYPE_WIFI)
+		set_wifi_tether_connection_changed_cb(user_data);
+	else if (type == TETHERING_TYPE_BT)
+		set_bt_tether_connection_changed_cb(user_data);
+}
+
+static void unset_connman_tethering_connection_changed_cb(tethering_type_e type)
+{
+	if (type == TETHERING_TYPE_ALL) {
+		/* TETHERING_TYPE_ALL */
+		unset_usb_tether_connection_changed_cb();
+		unset_wifi_tether_connection_changed_cb();
+		unset_bt_tether_connection_changed_cb();
+
+		return;
+	}
+
+	if (type == TETHERING_TYPE_USB)
+		unset_usb_tether_connection_changed_cb();
+	else if (type == TETHERING_TYPE_WIFI)
+		unset_wifi_tether_connection_changed_cb();
+	else if (type == TETHERING_TYPE_BT)
+		unset_bt_tether_connection_changed_cb();
+}
 /*
 static void __handle_dhcp(DBusGProxy *proxy, const char *member,
 		guint interface, const char *ip, const char *mac,
@@ -1936,15 +2156,16 @@ API int tethering_set_connection_state_changed_cb(tethering_h tethering, tetheri
 	if (type != TETHERING_TYPE_ALL) {
 		th->changed_cb[type] = callback;
 		th->changed_user_data[type] = user_data;
-
-		return TETHERING_ERROR_NONE;
+	}
+	else {
+		/* TETHERING_TYPE_ALL */
+		for (ti = TETHERING_TYPE_USB; ti <= TETHERING_TYPE_BT; ti++) {
+			th->changed_cb[ti] = callback;
+			th->changed_user_data[ti] = user_data;
+		}
 	}
 
-	/* TETHERING_TYPE_ALL */
-	for (ti = TETHERING_TYPE_USB; ti <= TETHERING_TYPE_BT; ti++) {
-		th->changed_cb[ti] = callback;
-		th->changed_user_data[ti] = user_data;
-	}
+	set_connman_tethering_connection_changed_cb(type, tethering);
 
 	return TETHERING_ERROR_NONE;
 }
@@ -1968,15 +2189,16 @@ API int tethering_unset_connection_state_changed_cb(tethering_h tethering, tethe
 	if (type != TETHERING_TYPE_ALL) {
 		th->changed_cb[type] = NULL;
 		th->changed_user_data[type] = NULL;
-
-		return TETHERING_ERROR_NONE;
+	}
+	else {
+		/* TETHERING_TYPE_ALL */
+		for (ti = TETHERING_TYPE_USB; ti <= TETHERING_TYPE_BT; ti++) {
+			th->changed_cb[ti] = NULL;
+			th->changed_user_data[ti] = NULL;
+		}
 	}
 
-	/* TETHERING_TYPE_ALL */
-	for (ti = TETHERING_TYPE_USB; ti <= TETHERING_TYPE_BT; ti++) {
-		th->changed_cb[ti] = NULL;
-		th->changed_user_data[ti] = NULL;
-	}
+	unset_connman_tethering_connection_changed_cb(type);
 
 	return TETHERING_ERROR_NONE;
 }
