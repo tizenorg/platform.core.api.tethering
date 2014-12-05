@@ -24,7 +24,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#include <vconf.h>
+/*#include <vconf.h>*/
 
 #include "winet-tether.h"
 #include "connman-lib.h"
@@ -1562,24 +1562,36 @@ API int tethering_disable(tethering_h tethering, tethering_type_e type)
  */
 API bool tethering_is_enabled(tethering_h tethering, tethering_type_e type)
 {
-	int is_on = 0;
+/*	int is_on = 0;
 	int vconf_type = VCONFKEY_MOBILE_HOTSPOT_MODE_NONE;
 
 	if (vconf_get_int(VCONFKEY_MOBILE_HOTSPOT_MODE, &is_on) != 0) {
 		return FALSE;
 	}
+*/
+	bool is_on = false;
+	struct connman_technology *technology;
 
 	switch (type) {
 	case TETHERING_TYPE_USB:
-		vconf_type = VCONFKEY_MOBILE_HOTSPOT_MODE_USB;
+		/*vconf_type = VCONFKEY_MOBILE_HOTSPOT_MODE_USB;*/
+		technology = connman_get_technology(TECH_TYPE_GADGET);
+		if (technology != NULL)
+			is_on = connman_get_technology_tethering(technology);
 		break;
 
 	case TETHERING_TYPE_WIFI:
-		vconf_type = VCONFKEY_MOBILE_HOTSPOT_MODE_WIFI;
+		/*vconf_type = VCONFKEY_MOBILE_HOTSPOT_MODE_WIFI;*/
+		technology = connman_get_technology(TECH_TYPE_WIFI);
+		if (technology != NULL)
+			is_on = connman_get_technology_tethering(technology);
 		break;
 
 	case TETHERING_TYPE_BT:
-		vconf_type = VCONFKEY_MOBILE_HOTSPOT_MODE_BT;
+		/*vconf_type = VCONFKEY_MOBILE_HOTSPOT_MODE_BT;*/
+		technology = connman_get_technology(TECH_TYPE_BLUETOOTH);
+		if (technology != NULL)
+			is_on = connman_get_technology_tethering(technology);
 		break;
 
 	default:
@@ -1587,7 +1599,7 @@ API bool tethering_is_enabled(tethering_h tethering, tethering_type_e type)
 		break;
 	}
 
-	return is_on & vconf_type ? true : false;
+	return is_on;
 }
 
 /**

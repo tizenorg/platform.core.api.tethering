@@ -24,8 +24,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include <vconf.h>
-
 #include "tethering.h"
 
 #define INPUT_BUF_LEN		128

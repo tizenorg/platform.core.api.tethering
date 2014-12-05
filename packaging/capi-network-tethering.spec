@@ -12,7 +12,6 @@ BuildRequires: pkgconfig(capi-base-common)
 BuildRequires: pkgconfig(connman-lib)
 BuildRequires: pkgconfig(winet-lib)
 BuildRequires: pkgconfig(glib-2.0)
-BuildRequires: pkgconfig(vconf)
 BuildRequires: cmake
 
 %description

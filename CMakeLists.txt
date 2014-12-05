@@ -9,7 +9,7 @@ SET(PREFIX ${CMAKE_INSTALL_PREFIX})
 SET(INC_DIR include)
 INCLUDE_DIRECTORIES(${INC_DIR})
 
-SET(dependents "dlog glib-2.0 capi-base-common vconf connman-lib winet-lib")
+SET(dependents "dlog glib-2.0 capi-base-common connman-lib winet-lib")
 
 IF("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	SET(CMAKE_BUILD_TYPE "Release")
