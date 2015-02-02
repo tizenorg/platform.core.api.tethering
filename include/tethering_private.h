@@ -105,6 +105,7 @@ typedef enum {
 	MOBILE_AP_ERROR_DHCP,			/**< DHCP error */
 	MOBILE_AP_ERROR_IN_PROGRESS,		/**< Request is in progress */
 	MOBILE_AP_ERROR_NOT_PERMITTED,		/**< Operation is not permitted */
+	MOBILE_AP_ERROR_PERMISSION_DENIED,  /**< Permission Denied */
 
 	MOBILE_AP_ERROR_MAX
 } mobile_ap_error_code_e;
@@ -134,6 +135,7 @@ typedef enum {
 	MOBILE_AP_TYPE_WIFI,
 	MOBILE_AP_TYPE_USB,
 	MOBILE_AP_TYPE_BT,
+	MOBILE_AP_TYPE_WIFI_AP,
 	MOBILE_AP_TYPE_MAX,
 } mobile_ap_type_e;
 

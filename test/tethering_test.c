@@ -131,10 +131,6 @@ static const char *__convert_disabled_code_to_str(const tethering_disabled_cause
 		strncpy(str_buf, "disabled due to timeout", sizeof(str_buf));
 		break;
 
-	case TETHERING_DISABLED_BY_MDM_ON:
-		strncpy(str_buf, "disabled due to mdm on", sizeof(str_buf));
-		break;
-
 	case TETHERING_DISABLED_BY_OTHERS:
 		strncpy(str_buf, "disabled by other apps", sizeof(str_buf));
 		break;
