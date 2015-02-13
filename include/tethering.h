@@ -29,20 +29,17 @@ extern "C" {
  */
 
 /**
- * @internal
  * @addtogroup CAPI_NETWORK_TETHERING_MANAGER_MODULE
  * @{
  */
 
 /**
- * @internal
  * @brief The tethering handle.
  * @since_tizen 2.3
  */
 typedef void * tethering_h;
 
 /**
- * @internal
  * @brief Enumeration for the tethering.
  * @since_tizen 2.3
  */
@@ -60,7 +57,6 @@ typedef enum {
 } tethering_error_e;
 
 /**
- * @internal
  * @brief Enumeration for the type of tethering.
  * @since_tizen 2.3
  */
@@ -73,7 +69,6 @@ typedef enum {
 } tethering_type_e;
 
 /**
- * @internal
  * @brief Enumeration for the cause of disabling the tethering.
  * @since_tizen 2.3
  */
@@ -88,7 +83,6 @@ typedef enum
     TETHERING_DISABLED_BY_REQUEST,  /**< Disabled by your request */
     TETHERING_DISABLED_BY_WIFI_ON,  /**< Disabled due to Wi-Fi on */
     TETHERING_DISABLED_BY_BT_OFF,  /**< Disabled due to Bluetooth off */
-    TETHERING_DISABLED_BY_POWER_SAVE_MODE,	/**< Disabled due to power save mode */
 } tethering_disabled_cause_e;
 
 /**
@@ -97,13 +91,11 @@ typedef enum
 
 
 /**
- * @internal
  * @addtogroup CAPI_NETWORK_TETHERING_WIFI_MODULE
  * @{
  */
 
 /**
- * @internal
  * @brief Enumeration for the Wi-Fi security.
  * @since_tizen 2.3
  */
@@ -118,20 +110,17 @@ typedef enum {
 
 
 /**
- * @internal
  * @addtogroup CAPI_NETWORK_TETHERING_CLIENT_MODULE
  * @{
  */
 
 /**
- * @internal
  * @brief The tethering client handle.
  * @since_tizen 2.3
  */
 typedef void * tethering_client_h;
 
 /**
- * @internal
  * @brief Enumeration for address family.
  * @since_tizen 2.3
  */
@@ -145,13 +134,11 @@ typedef enum {
 
 
 /**
- * @internal
  * @addtogroup CAPI_NETWORK_TETHERING_MANAGER_MODULE
  * @{
  */
 
 /**
- * @internal
  * @brief Called when the tethering is enabled.
  * @since_tizen 2.3
  * @param[in]  result  The result of enabling the tethering
@@ -165,7 +152,6 @@ typedef enum {
 typedef void (*tethering_enabled_cb)(tethering_error_e result, tethering_type_e type, bool is_requested, void *user_data);
 
 /**
- * @internal
  * @brief Called when the tethering is disabled.
  * @since_tizen 2.3
  * @param[in]  result  The result of disabling the tethering
@@ -179,7 +165,6 @@ typedef void (*tethering_enabled_cb)(tethering_error_e result, tethering_type_e 
 typedef void (*tethering_disabled_cb)(tethering_error_e result, tethering_type_e type, tethering_disabled_cause_e cause, void *user_data);
 
 /**
- * @internal
  * @brief Called when the connection state is changed.
  * @since_tizen 2.3
  * @remarks @a client is valid only in this function. In order to use it outside this function, a user must copy the client with tethering_client_clone().
@@ -193,7 +178,6 @@ typedef void (*tethering_disabled_cb)(tethering_error_e result, tethering_type_e
 typedef void (*tethering_connection_state_changed_cb)(tethering_client_h client, bool opened, void *user_data);
 
 /**
- * @internal
  * @brief Called when you get the connected client repeatedly.
  * @since_tizen 2.3
  * @remarks @a client is valid only in this function. In order to use the client outside this function, a user must copy the client with tethering_client_clone().
@@ -206,7 +190,6 @@ typedef void (*tethering_connection_state_changed_cb)(tethering_client_h client,
 typedef bool(*tethering_connected_client_cb)(tethering_client_h client, void *user_data);
 
 /**
- * @internal
  * @brief Called when you get the data usage.
  * @since_tizen 2.3
  * @param[in]  result  The result of getting the data usage
@@ -218,7 +201,6 @@ typedef bool(*tethering_connected_client_cb)(tethering_client_h client, void *us
 typedef void (*tethering_data_usage_cb)(tethering_error_e result, unsigned long long received_data, unsigned long long sent_data, void *user_data);
 
 /**
- * @internal
  * @brief Called when the security type of Wi-Fi tethering is changed.
  * @since_tizen 2.3
  * @param[in]  changed_type  The changed security type of Wi-Fi tethering
@@ -229,7 +211,6 @@ typedef void (*tethering_data_usage_cb)(tethering_error_e result, unsigned long 
 typedef void (*tethering_wifi_security_type_changed_cb)(tethering_wifi_security_type_e changed_type, void *user_data);
 
 /**
- * @internal
  * @brief Called when the visibility of SSID is changed.
  * @since_tizen 2.3
  * @param[in]  changed_visible  The changed visibility of SSID
@@ -240,7 +221,6 @@ typedef void (*tethering_wifi_security_type_changed_cb)(tethering_wifi_security_
 typedef void (*tethering_wifi_ssid_visibility_changed_cb)(bool changed_visible, void *user_data);
 
 /**
- * @internal
  * @brief Called when the passphrase of Wi-Fi tethering is changed.
  * @since_tizen 2.3
  * @param[in]  user_data  The user data passed from the register function
@@ -250,7 +230,6 @@ typedef void (*tethering_wifi_ssid_visibility_changed_cb)(bool changed_visible, 
 typedef void (*tethering_wifi_passphrase_changed_cb)(void *user_data);
 
 /**
- * @internal
  * @brief Called when the settings are reloaded.
  * @since_tizen 2.3
  * @param[in]  result  The result of reloading the settings
@@ -260,7 +239,6 @@ typedef void (*tethering_wifi_passphrase_changed_cb)(void *user_data);
 typedef void (*tethering_wifi_settings_reloaded_cb)(tethering_error_e result, void *user_data);
 
 /**
- * @internal
  * @brief Called when Wi-Fi AP settings are reloaded.
  * @since_tizen 2.3
  * @param[in]  result  The result of reloading the settings
@@ -270,7 +248,6 @@ typedef void (*tethering_wifi_settings_reloaded_cb)(tethering_error_e result, vo
 typedef void (*tethering_wifi_ap_settings_reloaded_cb)(tethering_error_e result, void *user_data);
 
 /**
- * @internal
  * @brief Creates the handle for tethering.
  * @since_tizen 2.3
  * @privlevel platform
@@ -287,7 +264,6 @@ typedef void (*tethering_wifi_ap_settings_reloaded_cb)(tethering_error_e result,
 int tethering_create(tethering_h *tethering);
 
 /**
- * @internal
  * @brief Destroys the handle for tethering.
  * @since_tizen 2.3
  * @privlevel platform
@@ -301,7 +277,6 @@ int tethering_create(tethering_h *tethering);
 int tethering_destroy(tethering_h tethering);
 
 /**
- * @internal
  * @brief Enables the tethering, asynchronously.
  * @since_tizen 2.3
  * @privlevel platform
@@ -318,7 +293,6 @@ int tethering_destroy(tethering_h tethering);
 int tethering_enable(tethering_h tethering, tethering_type_e type);
 
 /**
- * @internal
  * @brief Disables the tethering, asynchronously.
  * @since_tizen 2.3
  * @privlevel platform
@@ -335,7 +309,6 @@ int tethering_enable(tethering_h tethering, tethering_type_e type);
 int tethering_disable(tethering_h tethering, tethering_type_e type);
 
 /**
- * @internal
  * @brief Checks whether the tethering is enabled or not.
  * @since_tizen 2.3
  * @privlevel platform
@@ -347,7 +320,6 @@ int tethering_disable(tethering_h tethering, tethering_type_e type);
 bool tethering_is_enabled(tethering_h tethering, tethering_type_e type);
 
 /**
- * @internal
  * @brief Gets the MAC address of local device as "FC:A1:3E:D6:B1:B1".
  * @since_tizen 2.3
  * @privlevel platform
@@ -369,7 +341,6 @@ bool tethering_is_enabled(tethering_h tethering, tethering_type_e type);
 int tethering_get_mac_address(tethering_h tethering, tethering_type_e type, char **mac_address);
 
 /**
- * @internal
  * @brief Gets the name of network interface (e.g. usb0).
  * @since_tizen 2.3
  * @privlevel platform
@@ -391,7 +362,6 @@ int tethering_get_mac_address(tethering_h tethering, tethering_type_e type, char
 int tethering_get_network_interface_name(tethering_h tethering, tethering_type_e type, char **interface_name);
 
 /**
- * @internal
  * @brief Gets the local IP address.
  * @since_tizen 2.3
  * @privlevel platform
@@ -414,7 +384,6 @@ int tethering_get_network_interface_name(tethering_h tethering, tethering_type_e
 int tethering_get_ip_address(tethering_h tethering, tethering_type_e type, tethering_address_family_e address_family, char **ip_address);
 
 /**
- * @internal
  * @brief Gets the Gateway address.
  * @since_tizen 2.3
  * @privlevel platform
@@ -437,7 +406,6 @@ int tethering_get_ip_address(tethering_h tethering, tethering_type_e type, tethe
 int tethering_get_gateway_address(tethering_h tethering, tethering_type_e type, tethering_address_family_e address_family, char **gateway_address);
 
 /**
- * @internal
  * @brief Gets the Subnet Mask.
  * @since_tizen 2.3
  * @privlevel platform
@@ -460,7 +428,6 @@ int tethering_get_gateway_address(tethering_h tethering, tethering_type_e type, 
 int tethering_get_subnet_mask(tethering_h tethering, tethering_type_e type, tethering_address_family_e address_family, char **subnet_mask);
 
 /**
- * @internal
  * @brief Gets the data usage.
  * @since_tizen 2.3
  * @privlevel platform
@@ -479,7 +446,6 @@ int tethering_get_subnet_mask(tethering_h tethering, tethering_type_e type, teth
 int tethering_get_data_usage(tethering_h tethering, tethering_data_usage_cb callback, void *user_data);
 
 /**
- * @internal
  * @brief Gets the clients which are connected.
  * @since_tizen 2.3
  * @privlevel platform
@@ -520,7 +486,6 @@ int tethering_set_ip_forward_status(tethering_h tethering, bool status);
 int tethering_get_ip_forward_status(tethering_h tethering, bool *status);
 
 /**
- * @internal
  * @brief Registers the callback function, which is called when tethering is enabled.
  * @since_tizen 2.3
  * @privlevel platform
@@ -536,7 +501,6 @@ int tethering_get_ip_forward_status(tethering_h tethering, bool *status);
 int tethering_set_enabled_cb(tethering_h tethering, tethering_type_e type, tethering_enabled_cb callback, void *user_data);
 
 /**
- * @internal
  * @brief Unregisters the callback function, which is called when tethering is enabled.
  * @since_tizen 2.3
  * @privlevel platform
@@ -550,7 +514,6 @@ int tethering_set_enabled_cb(tethering_h tethering, tethering_type_e type, tethe
 int tethering_unset_enabled_cb(tethering_h tethering, tethering_type_e type);
 
 /**
- * @internal
  * @brief Registers the callback function called when tethering is disabled.
  * @since_tizen 2.3
  * @privlevel platform
@@ -566,7 +529,6 @@ int tethering_unset_enabled_cb(tethering_h tethering, tethering_type_e type);
 int tethering_set_disabled_cb(tethering_h tethering, tethering_type_e type, tethering_disabled_cb callback, void *user_data);
 
 /**
- * @internal
  * @brief Unregisters the callback function, which is called when tethering is disabled.
  * @since_tizen 2.3
  * @privlevel platform
@@ -580,7 +542,6 @@ int tethering_set_disabled_cb(tethering_h tethering, tethering_type_e type, teth
 int tethering_unset_disabled_cb(tethering_h tethering, tethering_type_e type);
 
 /**
- * @internal
  * @brief Registers the callback function, which is called when the state of connection is changed.
  * @since_tizen 2.3
  * @privlevel platform
@@ -596,7 +557,6 @@ int tethering_unset_disabled_cb(tethering_h tethering, tethering_type_e type);
 int tethering_set_connection_state_changed_cb(tethering_h tethering, tethering_type_e type, tethering_connection_state_changed_cb callback, void *user_data);
 
 /**
- * @internal
  * @brief Unregisters the callback function, which is called when the state of connection is changed.
  * @since_tizen 2.3
  * @privlevel platform
@@ -610,7 +570,6 @@ int tethering_set_connection_state_changed_cb(tethering_h tethering, tethering_t
 int tethering_unset_connection_state_changed_cb(tethering_h tethering, tethering_type_e type);
 
 /**
- * @internal
  * @brief Registers the callback function, which is called when the security type of Wi-Fi tethering is changed.
  * @since_tizen 2.3
  * @privlevel platform
@@ -625,7 +584,6 @@ int tethering_unset_connection_state_changed_cb(tethering_h tethering, tethering
 int tethering_wifi_set_security_type_changed_cb(tethering_h tethering, tethering_wifi_security_type_changed_cb callback, void *user_data);
 
 /**
- * @internal
  * @brief Unregisters the callback function, which is called when the security type of Wi-Fi tethering is changed.
  * @since_tizen 2.3
  * @privlevel platform
@@ -639,7 +597,6 @@ int tethering_wifi_set_security_type_changed_cb(tethering_h tethering, tethering
 int tethering_wifi_unset_security_type_changed_cb(tethering_h tethering);
 
 /**
- * @internal
  * @brief Registers the callback function , which iscalled when the visibility of SSID is changed.
  * @since_tizen 2.3
  * @privlevel platform
@@ -654,7 +611,6 @@ int tethering_wifi_unset_security_type_changed_cb(tethering_h tethering);
 int tethering_wifi_set_ssid_visibility_changed_cb(tethering_h tethering, tethering_wifi_ssid_visibility_changed_cb callback, void *user_data);
 
 /**
- * @internal
  * @brief Unregisters the callback function, which is called when the visibility of SSID is changed.
  * @since_tizen 2.3
  * @privlevel platform
@@ -667,7 +623,6 @@ int tethering_wifi_set_ssid_visibility_changed_cb(tethering_h tethering, tetheri
 int tethering_wifi_unset_ssid_visibility_changed_cb(tethering_h tethering);
 
 /**
- * @internal
  * @brief Registers the callback function, which is called when the passphrase of Wi-Fi tethering is changed.
  * @since_tizen 2.3
  * @privlevel platform
@@ -682,7 +637,6 @@ int tethering_wifi_unset_ssid_visibility_changed_cb(tethering_h tethering);
 int tethering_wifi_set_passphrase_changed_cb(tethering_h tethering, tethering_wifi_passphrase_changed_cb callback, void *user_data);
 
 /**
- * @internal
  * @brief Unregisters the callback function, which is called when the passphrase of Wi-Fi tethering is changed.
  * @since_tizen 2.3
  * @privlevel platform
@@ -700,13 +654,11 @@ int tethering_wifi_unset_passphrase_changed_cb(tethering_h tethering);
 
 
 /**
- * @internal
  * @addtogroup CAPI_NETWORK_TETHERING_WIFI_MODULE
  * @{
  */
 
 /**
- * @internal
  * @brief Sets the security type of Wi-Fi tethering.
  * @since_tizen 2.3
  * @privlevel platform
@@ -723,7 +675,6 @@ int tethering_wifi_unset_passphrase_changed_cb(tethering_h tethering);
 int tethering_wifi_set_security_type(tethering_h tethering, tethering_wifi_security_type_e type);
 
 /**
- * @internal
  * @brief Gets the security type of Wi-Fi tethering.
  * @since_tizen 2.3
  * @privlevel platform
@@ -739,7 +690,6 @@ int tethering_wifi_set_security_type(tethering_h tethering, tethering_wifi_secur
 int tethering_wifi_get_security_type(tethering_h tethering, tethering_wifi_security_type_e *type);
 
 /**
- * @internal
  * @brief Sets the SSID (service set identifier).
  * @details The SSID cannot exceed 32 bytes. If SSID is not set, device name is used as SSID.
  * @since_tizen 2.3
@@ -756,7 +706,6 @@ int tethering_wifi_get_security_type(tethering_h tethering, tethering_wifi_secur
 int tethering_wifi_set_ssid(tethering_h tethering, const char *ssid);
 
 /**
- * @internal
  * @brief Gets the SSID (service set identifier).
  * @since_tizen 2.3
  * @privlevel platform
@@ -773,7 +722,6 @@ int tethering_wifi_set_ssid(tethering_h tethering, const char *ssid);
 int tethering_wifi_get_ssid(tethering_h tethering, char **ssid);
 
 /**
- * @internal
  * @brief Sets the visibility of SSID (service set identifier).
  * @details If the visibility is set to invisible, then the SSID of this device is hidden and Wi-Fi scan will not find the device.
  * @since_tizen 2.3
@@ -791,7 +739,6 @@ int tethering_wifi_get_ssid(tethering_h tethering, char **ssid);
 int tethering_wifi_set_ssid_visibility(tethering_h tethering, bool visible);
 
 /**
- * @internal
  * @brief Gets the visibility of SSID (service set identifier).
  * @details If the visibility is set to invisible, then the SSID of this device is hidden and Wi-Fi scan will not find the device.
  * @since_tizen 2.3
@@ -808,7 +755,6 @@ int tethering_wifi_set_ssid_visibility(tethering_h tethering, bool visible);
 int tethering_wifi_get_ssid_visibility(tethering_h tethering, bool *visible);
 
 /**
- * @internal
  * @brief Sets the passphrase.
  * @since_tizen 2.3
  * @privlevel platform
@@ -825,7 +771,6 @@ int tethering_wifi_get_ssid_visibility(tethering_h tethering, bool *visible);
 int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphrase);
 
 /**
- * @internal
  * @brief Gets the passphrase.
  * @since_tizen 2.3
  * @privlevel platform
@@ -843,7 +788,6 @@ int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphrase)
 int tethering_wifi_get_passphrase(tethering_h tethering, char **passphrase);
 
 /**
- * @internal
  * @brief Reloads the settings (SSID / Passphrase / Security type / SSID visibility).
  * @since_tizen 2.3
  * @privlevel platform
@@ -860,7 +804,6 @@ int tethering_wifi_get_passphrase(tethering_h tethering, char **passphrase);
 int tethering_wifi_reload_settings(tethering_h tethering, tethering_wifi_settings_reloaded_cb callback, void *user_data);
 
 /**
- * @internal
  * @brief Sets the security type of Wi-Fi AP.
  * @details If security type is not set, WPA2_PSK is used.
  * @since_tizen 2.3
@@ -877,7 +820,6 @@ int tethering_wifi_reload_settings(tethering_h tethering, tethering_wifi_setting
 int tethering_wifi_ap_set_security_type(tethering_h tethering, tethering_wifi_security_type_e type);
 
 /**
- * @internal
  * @brief Gets the security type of Wi-Fi AP.
  * @details If security type is not set, WPA2_PSK is used.
  * @since_tizen 2.3
@@ -893,7 +835,6 @@ int tethering_wifi_ap_set_security_type(tethering_h tethering, tethering_wifi_se
 int tethering_wifi_ap_get_security_type(tethering_h tethering, tethering_wifi_security_type_e *type);
 
 /**
- * @internal
  * @brief Sets the SSID (service set identifier) for Wi-Fi AP.
  * @details The SSID cannot exceed 32 bytes. If SSID is not set, device name is used as SSID.
  * @since_tizen 2.3
@@ -909,7 +850,6 @@ int tethering_wifi_ap_get_security_type(tethering_h tethering, tethering_wifi_se
 int tethering_wifi_ap_set_ssid(tethering_h tethering, const char *ssid);
 
 /**
- * @internal
  * @brief Gets the SSID (service set identifier) for Wi-Fi AP.
  * @details If SSID is not set, Device name is used as SSID.
  * @since_tizen 2.3
@@ -926,7 +866,6 @@ int tethering_wifi_ap_set_ssid(tethering_h tethering, const char *ssid);
 int tethering_wifi_ap_get_ssid(tethering_h tethering, char **ssid);
 
 /**
- * @internal
  * @brief Sets the visibility of SSID (service set identifier) for Wi-Fi AP.
  * @details If you set the visibility to invisible, then the SSID of this device is hidden and Wi-Fi scan won't find your device.
  * @details By default visibility is set to @c true.
@@ -945,7 +884,6 @@ int tethering_wifi_ap_get_ssid(tethering_h tethering, char **ssid);
 int tethering_wifi_ap_set_ssid_visibility(tethering_h tethering, bool visible);
 
 /**
- * @internal
  * @brief Gets the visibility of SSID (service set identifier) for Wi-Fi AP.
  * @details If the visibility is set to invisible, then the SSID of this device is hidden and Wi-Fi scan won't find your device.
  * @details By default visibility is set to @c true.
@@ -962,7 +900,6 @@ int tethering_wifi_ap_set_ssid_visibility(tethering_h tethering, bool visible);
 int tethering_wifi_ap_get_ssid_visibility(tethering_h tethering, bool *visible);
 
 /**
- * @internal
  * @brief Sets the passphrase for Wi-Fi AP.
  * @details If the passphrase is not set, random string of 8 characters will be used.
  * @since_tizen 2.3
@@ -978,7 +915,6 @@ int tethering_wifi_ap_get_ssid_visibility(tethering_h tethering, bool *visible);
 int tethering_wifi_ap_set_passphrase(tethering_h tethering, const char *passphrase);
 
 /**
- * @internal
  * @brief Gets the passphrase for Wi-Fi AP.
  * @details If the passphrase is not set, random string of 8 characters will be used.
  * @since_tizen 2.3
@@ -996,7 +932,6 @@ int tethering_wifi_ap_set_passphrase(tethering_h tethering, const char *passphra
 int tethering_wifi_ap_get_passphrase(tethering_h tethering, char **passphrase);
 
 /**
- * @internal
  * @brief Reloads the settings (SSID / Passphrase / Security type / SSID visibility) for Wi-Fi AP.
  * @since_tizen 2.3
  * @privlevel platform
@@ -1018,13 +953,11 @@ int tethering_wifi_ap_reload_settings(tethering_h tethering, tethering_wifi_ap_s
 
 
 /**
- * @internal
  * @addtogroup CAPI_NETWORK_TETHERING_CLIENT_MODULE
  * @{
  */
 
 /**
- * @internal
  * @brief Clones the handle of a client.
  * @since_tizen 2.3
  * @privlevel platform
@@ -1041,7 +974,6 @@ int tethering_wifi_ap_reload_settings(tethering_h tethering, tethering_wifi_ap_s
 int tethering_client_clone(tethering_client_h *dest, tethering_client_h origin);
 
 /**
- * @internal
  * @brief Destroys the handle of a client.
  * @since_tizen 2.3
  * @privlevel platform
@@ -1055,7 +987,6 @@ int tethering_client_clone(tethering_client_h *dest, tethering_client_h origin);
 int tethering_client_destroy(tethering_client_h client);
 
 /**
- * @internal
  * @brief  Gets the tethering type of client.
  * @since_tizen 2.3
  * @privlevel platform
@@ -1071,7 +1002,6 @@ int tethering_client_destroy(tethering_client_h client);
 int tethering_client_get_tethering_type(tethering_client_h client, tethering_type_e *type);
 
 /**
- * @internal
  * @brief Gets the name of a client.
  * @since_tizen 2.3
  * @privlevel platform
@@ -1089,7 +1019,6 @@ int tethering_client_get_tethering_type(tethering_client_h client, tethering_typ
 int tethering_client_get_name(tethering_client_h client, char **name);
 
 /**
- * @internal
  * @brief Gets the IP address of a client.
  * @since_tizen 2.3
  * @privlevel platform
@@ -1108,7 +1037,6 @@ int tethering_client_get_name(tethering_client_h client, char **name);
 int tethering_client_get_ip_address(tethering_client_h client, tethering_address_family_e address_family, char **ip_address);
 
 /**
- * @internal
  * @brief Gets the MAC address of a client such as "FC:A1:3E:D6:B1:B1".
  * @since_tizen 2.3
  * @privlevel platform
@@ -1126,7 +1054,6 @@ int tethering_client_get_ip_address(tethering_client_h client, tethering_address
 int tethering_client_get_mac_address(tethering_client_h client, char **mac_address);
 
 /**
- * @internal
  * @brief Gets the connection time of a client.
  * @since_tizen 2.3
  * @privlevel platform
