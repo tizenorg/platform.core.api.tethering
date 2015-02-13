@@ -1,18 +1,22 @@
 Name:       capi-network-tethering
 Summary:    Tethering Framework
-Version:    0.0.16
+Version:    0.0.17
 Release:    1
 Group:      Connectivity/API
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
 Source1001: 	capi-network-tethering.manifest
 
-BuildRequires: pkgconfig(dlog)
-BuildRequires: pkgconfig(dbus-glib-1)
-BuildRequires: pkgconfig(capi-base-common)
-BuildRequires: pkgconfig(glib-2.0)
-BuildRequires: pkgconfig(vconf)
-BuildRequires: cmake
+BuildRequires:	pkgconfig(dlog)
+BuildRequires:	pkgconfig(dbus-glib-1)
+BuildRequires:	pkgconfig(capi-base-common)
+BuildRequires:	pkgconfig(glib-2.0)
+BuildRequires:	pkgconfig(vconf)
+BuildRequires:	pkgconfig(secure-storage)
+BuildRequires:	pkgconfig(libssl)
+BuildRequires:	cmake
+Requires(post):		/sbin/ldconfig
+Requires(postun):	/sbin/ldconfig
 
 %description
 Tethering framework library for CAPI

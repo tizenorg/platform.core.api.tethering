@@ -24,6 +24,9 @@ API int tethering_client_clone(tethering_client_h *dest, tethering_client_h orig
 			"Parameter(dest) is NULL\n");
 
 	__tethering_client_h *si = NULL;
+	__tethering_client_h *source = NULL;
+
+	source = (__tethering_client_h *)origin;
 
 	si = malloc(sizeof(__tethering_client_h));
 	if (si == NULL) {
@@ -31,8 +34,13 @@ API int tethering_client_clone(tethering_client_h *dest, tethering_client_h orig
 		return TETHERING_ERROR_OUT_OF_MEMORY;
 	}
 
-	memcpy(si, (__tethering_client_h *)origin,
-			sizeof(__tethering_client_h));
+	memcpy(si, source, sizeof(__tethering_client_h));
+	si->hostname = g_strdup(source->hostname);
+	if (si->hostname == NULL) {
+		ERR("malloc is failed\n");
+		free(si);
+		return TETHERING_ERROR_OUT_OF_MEMORY;
+	}
 
 	*dest = (tethering_client_h)si;
 
@@ -43,6 +51,12 @@ API int tethering_client_destroy(tethering_client_h client)
 {
 	_retvm_if(client == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"Parameter(client) is NULL\n");
+
+	__tethering_client_h *si = NULL;
+
+	si = (__tethering_client_h *)client;
+
+	g_free(si->hostname);
 
 	free(client);
 
