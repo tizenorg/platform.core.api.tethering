@@ -1,0 +1,334 @@
+commit a9d1335d0299427939761f8718adb86e74d4aca7
+Author: taesub.kim <taesub.kim@samsung.com>
+Date:   Mon Jun 1 10:01:16 2015 +0900
+
+    Add doc file
+    
+    Change-Id: I72a9784508b8467540e7c274275ed87109d5e2bd
+    Signed-off-by: Taesub Kim <taesub.kim@samsung.com>
+
+commit 64e19e65e8ea1085b281af93aa25e40aba9145df
+Author: Seonah Moon <seonah1.moon@samsung.com>
+Date:   Mon Feb 2 11:51:55 2015 +0900
+
+    Merge the header file from tizen 2.3 to tizen 3.0
+    
+    Change-Id: I80ddf00094d36e6f38fd9c402dd8080c9c834cd8
+    Signed-off-by: Seonah Moon <seonah1.moon@samsung.com>
+
+commit b7c1cd0c0d9feeee6d579c53ce3b29247bedd9d8
+Author: Jaehyun Kim <jeik01.kim@samsung.com>
+Date:   Mon Mar 17 09:35:11 2014 +0900
+
+    Update Packaging Spec file
+    
+    Add LICENSE in Packaging Spec file
+    
+    Change-Id: I16e562a979c5075395586bb038fe536b230fac58
+
+commit d9c4a9752d0c8be29faa847511f5aac088e13dc3
+Author: Alexandru Cornea <alexandru.cornea@intel.com>
+Date:   Fri Jun 28 11:12:41 2013 +0300
+
+    resetting manifest requested domain to floor
+
+commit ee3dc7a8c02ecec87ba66cf7cc693e1e288f6f66
+Author: Anas Nashif <anas.nashif@intel.com>
+Date:   Fri May 31 02:42:51 2013 -0400
+
+    Remove placeholders and cleanup spec
+
+commit 326c598dfc67ff3afbdee993047358778c55a873
+Author: Baptiste DURAND <baptiste.durand@eurogiciel.fr>
+Date:   Wed May 29 17:46:52 2013 +0200
+
+    Add Changelog
+
+commit 2391ebfebb3714db377e4ac8a0c9257525267a0a
+Author: Baptiste DURAND <baptiste.durand@eurogiciel.fr>
+Date:   Wed May 29 17:45:44 2013 +0200
+
+    Fix PC file : remove hardcoded lib path
+
+commit f5b55371df6a57eb5010950e2818c60a0abfb239
+Merge: 8ccefde c89a249
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Wed Apr 10 20:43:12 2013 +0900
+
+    Merge branch 'master' into tizen_2.1
+    
+    Change-Id: Ie05ae4432acdb310e7183ba2b4d24a16f08ea5e2
+
+commit c89a2499855b1505f61936aec67afa9373779075
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Wed Apr 10 20:33:11 2013 +0900
+
+    Fix : Stations data structure for dbus
+    
+    Change-Id: If3af3b5309e74279a8cc608f40ca0a45efb56b0d
+
+commit 8ccefde913f9d2f4f96c2f09c599d994cf8847b4
+Merge: c087a58 62567b9
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Tue Apr 9 19:48:09 2013 +0900
+
+    Merge branch 'master' into tizen_2.1
+    
+    Conflicts:
+    	CMakeLists.txt
+    	include/marshal.list
+    	include/tethering.h
+    	include/tethering.xml
+    	include/tethering_private.h
+    	packaging/capi-network-tethering.spec
+    	src/tethering.c
+    	src/tethering_client.c
+    
+    Change-Id: If2ba3a5650b604fc9f676dffc9d0961917fcaf36
+
+commit 62567b9c6ea00bd41773e134ab7d444a94104b36
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Tue Apr 9 18:57:25 2013 +0900
+
+    Update version
+    
+    Change-Id: I6c8c84cbec3c1e335cd93023084e0dc5b1c1f0b5
+
+commit 544a90a32631f9c7d9ecc03b7c3f374b0802a5df
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Tue Apr 9 18:48:27 2013 +0900
+
+    Below changes are applied
+    
+    - TETHERING_ERROR_NOT_PERMITTED is added
+    - Implement connection timer
+    - Reference count is used
+    - Add API : tethering_xxx_ip_forward_status()
+    - TETHERING_ERROR_NOT_SUPPORT_API is added for tethering_create()
+    - TETHERING_ERROR_NOT_SUPPORT_API is returned when API is not supported
+    - sysinfo-tethering.xml is installed depending on build machine
+    
+    Change-Id: I4b1096dd3ee727b324136c2be9b0f50463d61b6a
+
+commit c087a5814a6519b56fdac0d4c678ff620b63cfd8
+Author: Jinkun Jang <jinkun.jang@samsung.com>
+Date:   Sat Mar 16 01:12:14 2013 +0900
+
+    merge with master
+
+commit 044c9e8c188d69e6ad585a11d8753cdfdb1bfe47
+Author: Jinkun Jang <jinkun.jang@samsung.com>
+Date:   Wed Mar 13 01:46:16 2013 +0900
+
+    Tizen 2.1 base
+
+commit 558b59b07af4fab87858efcdf5ccffebe05eb38e
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Sat Feb 16 14:33:20 2013 +0900
+
+    Upload package
+    
+    Change-Id: Ia46a8ececa7062e81ead931d1f51a8a0ecab8ae8
+
+commit 7634241bf13cc258c4aa90808d18e395e9bc6500
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Sat Feb 16 13:53:17 2013 +0900
+
+    Wrong linker flags are used
+    
+    - Issues
+      EXE Linker flags are defined and symbol visibility option is set wrongly
+    
+    - Fix description
+      Shared library linker flags are defined properly.
+      Symbol visibility option is moved to cflags.
+    
+    Change-Id: Id0636819b7eee80b01172069b185d1f6046d7554
+
+commit 4d7f1432fd8ccd6cc845175f46f452d130c8600a
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Sat Feb 16 13:52:23 2013 +0900
+
+    Add API : tethering_wifi_set_ssid()
+    
+    - Issues
+      There is no way to set SSID.
+    
+    - Fix description
+      SSID is saved in Tethering handle and when Wi-Fi tethering is enabled, the saved SSID is used.
+      Because basic concept of SSID is the use of system's device name (e.g. Redwood),
+      so per-handle SSID implementation is required. If application sets SSID and enables tethering,
+      given SSID is used. Otherwise, system's device name is used as SSID.
+    
+    Change-Id: I751cc59b7eba8219b86a2e7cf1ebf11e282ad7fc
+
+commit 368e40aaa50c7bbb8b953bb57e8c580261476370
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Thu Feb 14 18:51:35 2013 +0900
+
+    Upload package
+    
+    Change-Id: Ifb88363aded81f9377d6a061aac23396e80c7560
+
+commit f399d400060075de45424f9aa0200f5fe34452f3
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Thu Feb 14 18:48:45 2013 +0900
+
+    APIs are exported
+    
+    - Issues
+      There are some APIs which are not exported
+    
+    - Fix description
+      APIs are exported
+    
+    Change-Id: I05cd4bd15bbb50e7c3b01a6ea64e13a9c0164352
+
+commit 298aa32f784824d9b8455e2010ca7c615a5817a9
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Tue Feb 12 12:11:30 2013 +0900
+
+    LOG Format is changed
+    
+    - Issues
+      LOG Format is changed
+    
+    - Fix description
+      Line number and Function name are already displayed by provided macro.
+      So it is not required to print those in each module.
+    
+      And log tag is changed as per guide.
+      (tethering => CAPI_NETWORK_TETHERING)
+    
+    Change-Id: I1769d83ebc8368ea1949285b611c746a383943a4
+
+commit 6952b95cefe39de054283638e4874cb4a3c9c0fb
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Tue Feb 12 12:11:01 2013 +0900
+
+    fvisibility=hidden is applied and API's return value is checked
+    
+    - Issues
+      Unnecessary symbols should be hided.
+      There is the API's return value which is not checked.
+    
+    - Fix description
+      Build option is changed.
+      API's return value is checked.
+    
+    Change-Id: I01be7c806ca7d7b4e161c3daad0790729a26b5b7
+
+commit 0a05df75a304f6f039b8d707d8392742688509ed
+Author: Junfeng Dong <junfeng.dong@intel.com>
+Date:   Fri Feb 1 21:28:06 2013 +0800
+
+    g_type_init has been deprecated from glib since version 2.35.
+    Fix build on x86_64
+    
+    Change-Id: I5a89451f1bef86e4e7159d2970d4714d4e270c91
+
+commit d0e85f879b8da1b12fddd604bbd42d28da7cf466
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Wed Jan 30 22:28:38 2013 +0900
+
+    Fix API's description
+    
+    Change-Id: I68118fbb01a10cd43f6013f5146759e8414a2557
+
+commit d6288059c15eb92498cace40c9d9e0b40fcf7bef
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Thu Jan 24 20:27:34 2013 +0900
+
+    Update package version
+    
+    Change-Id: I357e8d61453cf223c18f0291e83a9c54dd1c94cf
+
+commit 7ade61829cbad70466bfafe1f374700aafb48b4c
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Thu Jan 24 16:33:38 2013 +0900
+
+    Dbus service / interface / object names are changed
+    
+    - Issues
+      There is violation of RSA naming convention.
+    
+    - Fix description
+      com.samsung.mobileap is changed to org.tizen.tethering.
+      /MobileAP is changed to /Tethering.
+    
+    Change-Id: Iab8fb175884340b3c1b4386cb7bb73e7bcec6ed8
+
+commit af82a35a60559f6c7ecf3d80bd13d963f729e0d7
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Thu Jan 24 12:19:47 2013 +0900
+
+    Indications for Wi-Fi tethering setting change are added
+    
+    - Issues
+      There is no way to know Wi-Fi tethering setting change by other applications.
+    
+    - Fix description
+      Added APIs are implemented
+    
+    Change-Id: I479fb997f079e7d54da78d27957289dcde5a6de7
+
+commit 9614750718c24f0ade89f6b80016e1818bc5fa6a
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Tue Jan 15 16:22:07 2013 +0900
+
+    Wi-Fi tethering settings are set asynchronously
+    
+    - Issues
+      Wi-Fi tethering setting APIs are failed
+      while Wi-Fi tethering is being enabled.
+    
+    - Fix description
+      Wi-Fi tethering settings can be modified after Wi-Fi tethering is
+      disabled automatically. It makes Wi-Fi tethering settings to be modified
+      while Wi-Fi tethering is being disabled.
+    
+      But because Wi-Fi tethering state is checked when setting APIs are called,
+      setting APIs are failed.
+    
+      It is better not to check Wi-Fi tethering state and to provide the way to
+      re-load configuration.
+    
+      This change only includes "Wi-Fi tethering state is not checked when settings
+      are modified".
+      Reload configuration change should be provided later.
+    
+    Change-Id: Iae0514af227fd707773653bde4400cac030b3763
+
+commit 84d21e8d7336d2a1264b265829f03d352fe05884
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Tue Jan 15 16:21:27 2013 +0900
+
+    AUTHORS, LICENSE, NOTICE are added
+    
+    Change-Id: Icbc42a26822d367a849f6e3d47a0a13fc0c91677
+
+commit d15d77ebb6bd7ed9f1cb9a8d79dde88ed7e2121e
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Fri Nov 2 17:47:10 2012 +0900
+
+    SMACK manifest file is added
+    
+    - Issues
+      There is no manifest file for SMACK
+    
+    - Fix description
+      Default manifest file is added
+    
+    Change-Id: I22398ddca7c3717cd435fe1d2940764fd57f3b9b
+
+commit 076bad614ace90921ac301ad58eb8424db082232
+Author: Seungyoun Ju <sy39.ju@samsung.com>
+Date:   Tue Aug 21 18:21:17 2012 +0900
+
+    Source code upload
+
+commit f2b5bbda7102b6c868cfb114933e50563c2fb604
+Author: Jung Minsun <ms612.jung@samsung.com>
+Date:   Tue Aug 21 11:17:52 2012 +0900
+
+    Initial empty repository
