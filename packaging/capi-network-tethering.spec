@@ -1,59 +1,80 @@
-Name:       capi-network-tethering
-Summary:    Tethering Framework
-Version:    0.0.16
-Release:    1
-Group:      Connectivity/API
-License:    Apache-2.0
-Source0:    %{name}-%{version}.tar.gz
-Source1001: 	capi-network-tethering.manifest
-
-BuildRequires: pkgconfig(dlog)
-BuildRequires: pkgconfig(dbus-glib-1)
-BuildRequires: pkgconfig(capi-base-common)
-BuildRequires: pkgconfig(glib-2.0)
-BuildRequires: pkgconfig(vconf)
-BuildRequires: cmake
+Name:		capi-network-tethering
+Summary:	Tethering Framework
+Version:	1.0.19
+Release:	1
+Group:		System/Network
+License:	Apache-2.0
+Source0:	%{name}-%{version}.tar.gz
+BuildRequires:	pkgconfig(dlog)
+BuildRequires:	pkgconfig(dbus-1)
+BuildRequires:	pkgconfig(capi-base-common)
+BuildRequires:	pkgconfig(glib-2.0)
+BuildRequires:	pkgconfig(gio-2.0)
+BuildRequires:	pkgconfig(vconf)
+BuildRequires:	pkgconfig(key-manager)
+BuildRequires:	pkgconfig(libssl)
+BuildRequires:	pkgconfig(capi-system-info)
+BuildRequires:	cmake
+Requires(post):		/sbin/ldconfig
+Requires(postun):	/sbin/ldconfig
 
 %description
 Tethering framework library for CAPI
 
 %package devel
 Summary:	Development package for Tethering framework library
-Group:		Connectivity/Development
+Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 %description devel
 Development package for Tethering framework library
 
 %prep
 %setup -q
-cp %{SOURCE1001} .
+
 
 %build
+export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
+export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
+export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
+
+%cmake -DCMAKE_BUILD_TYPE="Private" \
+%if "%{?tizen_profile_name}" == "wearable"
+	-DTIZEN_WEARABLE=1 \
+%else
+%if "%{?tizen_profile_name}" == "mobile"
+	-DTIZEN_MOBILE=1 \
+%endif
+%endif
 %ifarch %{arm}
-%cmake . -DARCH=arm
+	-DCMAKE_BUILD_TYPE="Private" -DARCH=arm \
 %else
 %if 0%{?simulator}
-%cmake . -DARCH=emul
+	-DCMAKE_BUILD_TYPE="Private" -DARCH=emul \
 %else
-%cmake . -DARCH=i586
+	-DCMAKE_BUILD_TYPE="Private" -DARCH=i586 \
 %endif
 %endif
-make %{?jobs:-j%jobs}
+	.
+
+make %{?_smp_mflags}
+
 
 %install
 %make_install
+
 mkdir -p %{buildroot}/usr/share/license
-cp LICENSE.APLv2.0 %{buildroot}/usr/share/license/%{name}
+cp LICENSE.APLv2.0 %{buildroot}/usr/share/license/capi-network-tethering
+cp LICENSE.APLv2.0 %{buildroot}/usr/share/license/capi-network-tethering-devel
 
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
 %files
-%manifest %{name}.manifest
+%manifest capi-network-tethering.manifest
 %defattr(-,root,root,-)
 %{_libdir}/*.so.*
-/usr/share/license/%{name}
+/usr/share/license/capi-network-tethering
 %ifarch %{arm}
 /etc/config/connectivity/sysinfo-tethering.xml
 %else
@@ -65,9 +86,8 @@ cp LICENSE.APLv2.0 %{buildroot}/usr/share/license/%{name}
 %endif
 
 %files devel
-%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_includedir}/network/*.h
 %{_libdir}/pkgconfig/*.pc
 %{_libdir}/*.so
-
+/usr/share/license/capi-network-tethering-devel
