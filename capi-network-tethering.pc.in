@@ -2,7 +2,7 @@
 
 prefix=@PREFIX@
 exec_prefix=/usr
-libdir=@LIB_INSTALL_DIR@
+libdir=/usr/lib
 includedir=/usr/include/network
 
 Name: @PC_NAME@
