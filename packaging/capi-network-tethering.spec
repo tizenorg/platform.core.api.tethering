@@ -1,6 +1,6 @@
 Name:		capi-network-tethering
 Summary:	Tethering Framework
-Version:	1.0.19
+Version:	1.0.20
 Release:	1
 Group:		System/Network
 License:	Apache-2.0
@@ -75,6 +75,7 @@ cp LICENSE.APLv2.0 %{buildroot}/usr/share/license/capi-network-tethering-devel
 %defattr(-,root,root,-)
 %{_libdir}/*.so.*
 /usr/share/license/capi-network-tethering
+%{_bindir}/tethering_test
 %ifarch %{arm}
 /etc/config/connectivity/sysinfo-tethering.xml
 %else
