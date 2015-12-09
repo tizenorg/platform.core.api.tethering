@@ -1,6 +1,6 @@
 Name:		capi-network-tethering
 Summary:	Tethering Framework
-Version:	1.0.20
+Version:	1.0.21
 Release:	1
 Group:		System/Network
 License:	Apache-2.0
@@ -38,10 +38,10 @@ export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
 export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 
 %cmake -DCMAKE_BUILD_TYPE="Private" \
-%if "%{?tizen_profile_name}" == "wearable"
+%if "%{?profile}" == "wearable"
 	-DTIZEN_WEARABLE=1 \
 %else
-%if "%{?tizen_profile_name}" == "mobile"
+%if "%{?profile}" == "mobile"
 	-DTIZEN_MOBILE=1 \
 %endif
 %endif
