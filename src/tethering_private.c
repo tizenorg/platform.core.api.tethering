@@ -28,7 +28,7 @@ int tethering_check_feature_supported(const char* feature, ...)
 
 	va_start(list, feature);
 	key = feature;
-	while(1) {
+	while (1) {
 		ret = system_info_get_platform_bool(key, &value);
 		if (ret < 0) {
 			ERR("Get feature is failed\n");

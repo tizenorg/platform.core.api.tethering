@@ -114,7 +114,7 @@ static __tethering_sig_t sigs[] = {
 	{0, SIGNAL_NAME_SSID_VISIBILITY_CHANGED, __handle_ssid_visibility_changed},
 	{0, SIGNAL_NAME_PASSPHRASE_CHANGED, __handle_passphrase_changed},
 	{0, SIGNAL_NAME_DHCP_STATUS, __handle_dhcp},
-	{0, "", NULL}};
+	{0, "", NULL} };
 
 static int retry = 0;
 
@@ -126,9 +126,8 @@ static void __send_dbus_signal(GDBusConnection *conn, const char *signal_name, c
 	GVariant *message = NULL;
 	GError *error = NULL;
 
-	if (arg) {
+	if (arg)
 		message = g_variant_new("(s)", arg);
-	}
 
 	g_dbus_connection_emit_signal(conn, NULL, TETHERING_SERVICE_OBJECT_PATH,
 					TETHERING_SERVICE_INTERFACE, signal_name, message, &error);
@@ -309,10 +308,10 @@ static tethering_error_e __get_passphrase(char *passphrase,
 			return TETHERING_ERROR_OPERATION_FAILED;
 		} else {
 			*passphrase_len = ret;
-			g_strlcpy(passphrase,tmp,(*passphrase_len)+1);
+			g_strlcpy(passphrase, tmp, (*passphrase_len)+1);
 
 			if (__set_passphrase(passphrase, *passphrase_len) != TETHERING_ERROR_NONE) {
-				DBG("set_passphrase is failed : %s, %d",passphrase, *passphrase_len);
+				DBG("set_passphrase is failed : %s, %d", passphrase, *passphrase_len);
 				return TETHERING_ERROR_OPERATION_FAILED;
 			}
 		}
@@ -405,8 +404,8 @@ static void __handle_dhcp(GDBusConnection *connection, const gchar *sender_name,
 	void *data = NULL;
 	char *buf = NULL;
 	char *name = NULL;
-	char *mac= NULL;
-	char *ip= NULL;
+	char *mac = NULL;
+	char *ip = NULL;
 	guint timestamp;
 
 	memset(&client, 0, sizeof(__tethering_client_h));
@@ -448,7 +447,7 @@ static void __handle_dhcp(GDBusConnection *connection, const gchar *sender_name,
 
 	ccb((tethering_client_h)&client, opened, data);
 	g_free(client.hostname);
-DONE :
+DONE:
 	g_free(buf);
 	g_free(ip);
 	g_free(mac);
@@ -678,7 +677,7 @@ static void __handle_wifi_ap_off(GDBusConnection *connection, const gchar *sende
 	tethering_disabled_cause_e code = TETHERING_DISABLED_BY_OTHERS;
 	tethering_disabled_cb dcb = NULL;
 	void *data = NULL;
-	char *buf= NULL;
+	char *buf = NULL;
 
 	dcb = th->disabled_cb[type];
 	if (dcb == NULL)
@@ -905,7 +904,7 @@ static void __wifi_enabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 	DBG("-\n");
 }
 
-static void __bt_enabled_cfm_cb (GObject *source_object, GAsyncResult *res,
+static void __bt_enabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 		gpointer user_data)
 {
 	DBG("+\n");
@@ -955,7 +954,7 @@ static void __bt_enabled_cfm_cb (GObject *source_object, GAsyncResult *res,
 	DBG("-\n");
 }
 
-static void __usb_enabled_cfm_cb (GObject *source_object, GAsyncResult *res,
+static void __usb_enabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 					gpointer user_data)
 {
 	DBG("+\n");
@@ -1005,7 +1004,7 @@ static void __usb_enabled_cfm_cb (GObject *source_object, GAsyncResult *res,
 	DBG("-\n");
 }
 
-static void __wifi_ap_enabled_cfm_cb (GObject *source_object, GAsyncResult *res,
+static void __wifi_ap_enabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 		gpointer user_data)
 {
 	DBG("+\n");
@@ -1314,9 +1313,8 @@ static void __disconnect_signals(tethering_h tethering)
 
 	int i = 0;
 
-	for (i = E_SIGNAL_NET_CLOSED; i < E_SIGNAL_MAX; i++) {
+	for (i = E_SIGNAL_NET_CLOSED; i < E_SIGNAL_MAX; i++)
 		g_dbus_connection_signal_unsubscribe(connection, sigs[i].sig_id);
-	}
 	DBG("-\n");
 }
 
@@ -1416,21 +1414,18 @@ static int __prepare_wifi_settings(tethering_h tethering, _softap_settings_t *se
 		return TETHERING_ERROR_INVALID_PARAMETER;
 	}
 
-	if (th->ssid == NULL) {
+	if (th->ssid == NULL)
 		__get_common_ssid(set->ssid, sizeof(set->ssid));
-	} else {
+	else
 		g_strlcpy(set->ssid, th->ssid, sizeof(set->ssid));
-	}
 
 	ret = __get_security_type(&set->sec_type);
-	if (ret != TETHERING_ERROR_NONE) {
+	if (ret != TETHERING_ERROR_NONE)
 		set->sec_type = th->sec_type;
-	}
 
 	ret = __get_visible(&set->visibility);
-	if (ret != TETHERING_ERROR_NONE) {
+	if (ret != TETHERING_ERROR_NONE)
 		set->visibility = th->visibility;
-	}
 
 	if (set->sec_type == TETHERING_WIFI_SECURITY_TYPE_NONE) {
 		g_strlcpy(set->key, "", sizeof(set->key));
@@ -1464,11 +1459,11 @@ static int __prepare_wifi_ap_settings(tethering_h tethering, _softap_settings_t 
 	set->sec_type = th->sec_type;
 	set->visibility = th->visibility;
 
-	if (set->sec_type == TETHERING_WIFI_SECURITY_TYPE_NONE) {
+	if (set->sec_type == TETHERING_WIFI_SECURITY_TYPE_NONE)
 		g_strlcpy(set->key, "", sizeof(set->key));
-	} else {
+	else
 		g_strlcpy(set->key, th->passphrase, sizeof(set->key));
-	}
+
 	DBG("-\n");
 	return TETHERING_ERROR_NONE;
 }
@@ -1479,23 +1474,23 @@ static bool __check_precondition(tethering_type_e type)
 	int cellular_state = 0;
 	int wifi_state = 0;
 
-	// data network through cellular
+	/* data network through cellular */
 	vconf_get_int(VCONFKEY_NETWORK_CELLULAR_STATE, &cellular_state);
-	if(cellular_state == VCONFKEY_NETWORK_CELLULAR_ON) {
+	if (cellular_state == VCONFKEY_NETWORK_CELLULAR_ON) {
 		ERR("Data Network can be connected later");
 		return TRUE;
 	}
 
 	vconf_get_int(VCONFKEY_DNET_STATE, &dnet_state);
-	if(dnet_state > VCONFKEY_DNET_OFF) {
+	if (dnet_state > VCONFKEY_DNET_OFF) {
 		ERR("Data Network is connected");
 		return TRUE;
 	}
 
-	// data network through wifi
-	if(type != TETHERING_TYPE_WIFI) {
+	/* data network through wifi */
+	if (type != TETHERING_TYPE_WIFI) {
 		vconf_get_int(VCONFKEY_WIFI_STATE, &wifi_state);
-		if(wifi_state > VCONFKEY_WIFI_UNCONNECTED) {
+		if (wifi_state > VCONFKEY_WIFI_UNCONNECTED) {
 			ERR("Wi-Fi is connected!");
 			return TRUE;
 		}
@@ -1559,7 +1554,7 @@ API int tethering_create(tethering_h *tethering)
 		return TETHERING_ERROR_OPERATION_FAILED;
 	}
 
-#if !GLIB_CHECK_VERSION(2,36,0)
+#if !GLIB_CHECK_VERSION(2, 36, 0)
 	g_type_init();
 #endif
 	GCancellable *cancellable = g_cancellable_new();
@@ -1668,7 +1663,7 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 
 	g_dbus_proxy_set_default_timeout(proxy, DBUS_TIMEOUT_INFINITE);
 
-	if(type != TETHERING_TYPE_RESERVED
+	if (type != TETHERING_TYPE_RESERVED
 		&& __check_precondition(type) == FALSE) {
 		DBG("-\n");
 		return TETHERING_ERROR_OPERATION_FAILED;
@@ -1871,7 +1866,7 @@ API int tethering_disable(tethering_h tethering, tethering_type_e type)
 				(GAsyncReadyCallback) __disabled_cfm_cb, (gpointer)tethering);
 		break;
 
-	default :
+	default:
 		ERR("Not supported tethering type [%d]\n", type);
 		DBG("-\n");
 		return TETHERING_ERROR_INVALID_PARAMETER;
@@ -1897,9 +1892,8 @@ API bool tethering_is_enabled(tethering_h tethering, tethering_type_e type)
 
 	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE);
 
-	if (vconf_get_int(VCONFKEY_MOBILE_HOTSPOT_MODE, &is_on) != 0) {
+	if (vconf_get_int(VCONFKEY_MOBILE_HOTSPOT_MODE, &is_on) != 0)
 		return FALSE;
-	}
 
 	switch (type) {
 	case TETHERING_TYPE_USB:
@@ -2283,9 +2277,8 @@ API int tethering_foreach_connected_clients(tethering_h tethering, tethering_typ
 	result = g_dbus_proxy_call_sync(th->client_bus_proxy, "get_station_info",
 			NULL, G_DBUS_CALL_FLAGS_NONE,
 			-1, th->cancellable, &error);
-	if (error) {
+	if (error)
 		ERR("g_dbus_proxy_call_sync is failed and error is %s\n", error->message);
-	}
 	g_variant_get(result, "(a(a{sv}))", &outer_iter);
 	while (g_variant_iter_loop(outer_iter, "(@a{sv})", &station)) {
 		g_variant_get(station, "a{sv}", &inner_iter);
@@ -2324,9 +2317,8 @@ API int tethering_foreach_connected_clients(tethering_h tethering, tethering_typ
 			} else if (g_strcmp0(key, "Name") == 0) {
 				g_variant_get(value, "s", &hostname);
 				SDBG("hsotname is %s\n", hostname);
-				if (hostname) {
+				if (hostname)
 					client.hostname = g_strdup(hostname);
-				}
 			} else if (g_strcmp0(key, "Time") == 0) {
 				timestamp = g_variant_get_int32(value);
 				DBG("timestamp is %d\n", timestamp);
