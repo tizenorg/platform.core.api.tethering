@@ -83,17 +83,24 @@ extern "C" {
 #define TETHERING_USB_FEATURE		"http://tizen.org/feature/network.tethering.usb"
 #define TETHERING_WIFI_FEATURE		"http://tizen.org/feature/network.tethering.wifi"
 
+typedef enum
+{
+	TETHERING_SUPPORTED_FEATURE,
+	TETHERING_SUPPORTED_FEATURE_WIFI,
+	TETHERING_SUPPORTED_FEATURE_BT,
+	TETHERING_SUPPORTED_FEATURE_USB,
+	TETHERING_SUPPORTED_FEATURE_MAX,
+} tethering_supported_feature_e;
+
 #define CHECK_FEATURE_SUPPORTED(...) \
 	do { \
-		int rv = tethering_check_feature_supported(__VA_ARGS__, NULL); \
+		int rv = _tethering_check_feature_supported(__VA_ARGS__, NULL); \
 		if(rv != TETHERING_ERROR_NONE) { \
-			ERR("Not supported\n"); \
-			set_last_result(TETHERING_ERROR_NOT_SUPPORT_API); \
-			return TETHERING_ERROR_NOT_SUPPORT_API; \
+			return rv; \
 		} \
 	} while (0)
 
-int tethering_check_feature_supported(const char* feature, ...);
+int _tethering_check_feature_supported(const char* feature, ...);
 
 /**
 * Start of mobileap-agent common values
