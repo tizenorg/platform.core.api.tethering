@@ -783,6 +783,145 @@ int tethering_wifi_get_passphrase(tethering_h tethering, char **passphrase);
 int tethering_wifi_reload_settings(tethering_h tethering, tethering_wifi_settings_reloaded_cb callback, void *user_data);
 
 /**
+ * @brief Gets the mac_filter for Wi-Fi Tethering.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege http://tizen.org/privilege/tethering.admin
+ * @details If you set the mac_filter to enable, then the device can be allowed/blocked based on mac-address.
+ * @details by default mac_filter is set to false.
+ * @param[in]  tethering  The handle of tethering
+ * @param[out]  mac_filter The mac filter: (@c true = enable, @c false = disable)
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORTED  API is not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ * @see  tethering_mobileap_set_mac_filter()
+ */
+int tethering_wifi_get_mac_filter(tethering_h tethering, bool *mac_filter);
+
+/**
+ * @brief Sets the mac-filter for Wi-Fi Tethering.
+ * @details If you set the mac_filter to enable, then the device can be allowed/blocked based on mac-address.
+ * @details By default mac_filter is set to @c false.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege http://tizen.org/privilege/tethering.admin
+ * @remarks This change is applied next time Wi-Fi tethering is enabled.
+ * @param[in]  tethering  The tethering handle
+ * @param[in]  mac_filter  The mac filter: (@c true = enable, @c false = disable)
+ * @return 0 on success, otherwise negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
+ * @retval  #TETHERING_ERROR_NOT_SUPPORTED  API is not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ * @see  tethering_mobileap_get_mac_filter()
+ */
+int tethering_wifi_set_mac_filter(tethering_h tethering, bool mac_filter);
+
+/**
+ * @brief Add the mac-address to the allowed client list.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege http://tizen.org/privilege/tethering.admin
+ * @details AP can allow the client by adding clients mac-address to the allowed list.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  mac  The mac address
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORTED  API is not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ * @see  tethering_mobileap_set_mac_filter()
+ */
+int tethering_wifi_add_allowed_mac_list(tethering_h tethering, const char *mac);
+
+/**
+ * @brief Remove the mac-address from the allowed client list.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege http://tizen.org/privilege/tethering.admin
+ * @details Remove the mac-address from the allowed client list.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  mac  The mac address
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORTED  API is not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ * @see  tethering_mobileap_set_mac_filter()
+ */
+int tethering_wifi_remove_allowed_mac_list(tethering_h tethering, const char *mac);
+/**
+ * @brief Get the mac-addresses from the allowed client list.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege http://tizen.org/privilege/tethering.admin
+ * @details Get the mac-addresses from the allowed client list.
+ * @param[in]  tethering  The handle of tethering
+ * @param[out]  allowed_mac_list  list of allowed mac addresses list
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORTED  API is not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ * @see  tethering_mobileap_set_mac_filter()
+ */
+int tethering_wifi_get_allowed_mac_list(tethering_h tethering, void **allowed_mac_list); 
+
+/**
+ * @brief Add the mac-address to the blocked(black list) client list.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege http://tizen.org/privilege/tethering.admin
+ * @details AP can disallow the client by adding clients mac-address to the blocked list.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  mac  The mac address
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORTED  API is not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ * @see  tethering_mobileap_set_mac_filter()
+ */
+int tethering_wifi_add_blocked_mac_list(tethering_h tethering, const char *mac);
+
+/**
+ * @brief Remove the mac-address from the blocked(black list) client list.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege http://tizen.org/privilege/tethering.admin
+ * @details Remove the mac-address from the blocked client list.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  mac  The mac address
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORTED  API is not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ * @see  tethering_mobileap_set_mac_filter()
+ */
+int tethering_wifi_remove_blocked_mac_list(tethering_h tethering, const char *mac);
+
+/**
+ * @brief Get the mac-addresses from the blocked client list.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege http://tizen.org/privilege/tethering.admin
+ * @details Get the mac-addresses from the blocked client list.
+ * @param[in]  tethering  The handle of tethering
+ * @param[out]  blocked_mac_list  list of blocked mac addresses list
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORTED  API is not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ * @see  tethering_mobileap_set_mac_filter()
+ */
+int tethering_wifi_get_blocked_mac_list(tethering_h tethering, void **blocked_mac_list);
+
+/**
  * @brief Sets the security type of Wi-Fi AP.
  * @details If security type is not set, WPA2_PSK is used.
  * @since_tizen 2.3
