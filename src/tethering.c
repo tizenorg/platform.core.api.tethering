@@ -269,11 +269,11 @@ static tethering_error_e __set_passphrase(const char *passphrase, const unsigned
 
 	alias = __get_key_manager_alias(TETHERING_WIFI_PASSPHRASE_STORE_KEY);
 
-    ret = ckmc_remove_data(alias);
-    if (ret != CKMC_ERROR_NONE) {
-        ERR("Fail to remove old data : %d", ret);
-        return TETHERING_ERROR_OPERATION_FAILED;
-    }
+	ret = ckmc_remove_data(alias);
+	if (ret != CKMC_ERROR_NONE && ret != CKMC_ERROR_DB_ALIAS_UNKNOWN) {
+        	ERR("Fail to remove old data : %d", ret);
+	        return TETHERING_ERROR_OPERATION_FAILED;
+    	}
 
 	ret = ckmc_save_data(alias, ckmc_buf, ckmc_policy);
 	if (ret != CKMC_ERROR_NONE) {
@@ -281,8 +281,8 @@ static tethering_error_e __set_passphrase(const char *passphrase, const unsigned
 		return TETHERING_ERROR_OPERATION_FAILED;
 	}
 
-    if (alias)
-        free(alias);
+	if (alias)
+		free(alias);
 
 	return TETHERING_ERROR_NONE;
 }
