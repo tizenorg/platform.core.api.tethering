@@ -269,11 +269,11 @@ static tethering_error_e __set_passphrase(const char *passphrase, const unsigned
 
 	alias = __get_key_manager_alias(TETHERING_WIFI_PASSPHRASE_STORE_KEY);
 
-    ret = ckmc_remove_data(alias);
-    if (ret != CKMC_ERROR_NONE) {
-        ERR("Fail to remove old data : %d", ret);
-        return TETHERING_ERROR_OPERATION_FAILED;
-    }
+	ret = ckmc_remove_data(alias);
+	if (ret != CKMC_ERROR_NONE) {
+		ERR("Fail to remove old data : %d", ret);
+		return TETHERING_ERROR_OPERATION_FAILED;
+	}
 
 	ret = ckmc_save_data(alias, ckmc_buf, ckmc_policy);
 	if (ret != CKMC_ERROR_NONE) {
@@ -281,26 +281,27 @@ static tethering_error_e __set_passphrase(const char *passphrase, const unsigned
 		return TETHERING_ERROR_OPERATION_FAILED;
 	}
 
-    if (alias)
-        free(alias);
+	if (alias)
+		free(alias);
 
 	return TETHERING_ERROR_NONE;
 }
 
 static char *__get_key_manager_alias(const char* name)
 {
-    size_t alias_len = strlen(name) + strlen(ckmc_owner_id_system) + strlen(ckmc_owner_id_separator);
-    char *ckm_alias = (char *)malloc(alias_len + 1);
-    if (!ckm_alias) {
-        ERR("Fail to allocate memory\n");
-        return NULL;
-    }
-    memset(ckm_alias, 0, alias_len);
-    strncat(ckm_alias, ckmc_owner_id_system, strlen(ckmc_owner_id_system));
-    strncat(ckm_alias, ckmc_owner_id_separator, strlen(ckmc_owner_id_separator));
-    strncat(ckm_alias, name, strlen(name));
+	size_t alias_len = strlen(name) + strlen(ckmc_owner_id_system) + strlen(ckmc_owner_id_separator);
+	char *ckm_alias = (char *)malloc(alias_len + 1);
+	if (!ckm_alias) {
+		ERR("Fail to allocate memory\n");
+		return NULL;
+	}
 
-    return ckm_alias;
+	memset(ckm_alias, 0, alias_len);
+	strncat(ckm_alias, ckmc_owner_id_system, strlen(ckmc_owner_id_system));
+	strncat(ckm_alias, ckmc_owner_id_separator, strlen(ckmc_owner_id_separator));
+	strncat(ckm_alias, name, strlen(name));
+
+	return ckm_alias;
 }
 
 static tethering_error_e __get_passphrase(char *passphrase,
@@ -312,9 +313,9 @@ static tethering_error_e __get_passphrase(char *passphrase,
 	}
 
 	int ret = 0;
-    char *alias = NULL;
-    char *passwd = NULL;
-    char tmp[TETHERING_WIFI_KEY_MAX_LEN + 1] = {0, };
+	char *alias = NULL;
+	char *passwd = NULL;
+	char tmp[TETHERING_WIFI_KEY_MAX_LEN + 1] = {0, };
 	ckmc_raw_buffer_s *ckmc_buf;
 
 	alias = __get_key_manager_alias(TETHERING_WIFI_PASSPHRASE_STORE_KEY);
@@ -340,8 +341,8 @@ static tethering_error_e __get_passphrase(char *passphrase,
 		g_strlcpy(passphrase, (char *)ckmc_buf->data, (*passphrase_len) + 1);
 	}
 
-    if (alias)
-    	free(alias);
+	if (alias)
+		free(alias);
 
 	return TETHERING_ERROR_NONE;
 }

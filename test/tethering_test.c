@@ -166,57 +166,48 @@ static void __register_cbs(tethering_h th, __tethering_cbs *cbs, void *user_data
 
 	ret = tethering_set_enabled_cb(th, TETHERING_TYPE_ALL,
 			cbs->enabled_cb, user_data);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_set_enabled_cb is failed\n");
-	}
 
 	ret = tethering_set_enabled_cb(th, TETHERING_TYPE_RESERVED,
 			cbs->enabled_cb, user_data);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_set_enabled_cb is failed\n");
-	}
 
 	ret = tethering_set_disabled_cb(th, TETHERING_TYPE_ALL,
 			cbs->disabled_cb, user_data);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_set_disabled_cb is failed\n");
-	}
 
 	ret = tethering_set_disabled_cb(th, TETHERING_TYPE_RESERVED,
 			cbs->disabled_cb, user_data);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_set_disabled_cb is failed\n");
-	}
 
 	ret = tethering_set_connection_state_changed_cb(th, TETHERING_TYPE_ALL,
 			cbs->changed_cb, user_data);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_set_connection_state_changed_cb is failed\n");
-	}
 
 	ret = tethering_set_connection_state_changed_cb(th, TETHERING_TYPE_RESERVED,
 			cbs->changed_cb, user_data);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_set_connection_state_changed_cb is failed\n");
-	}
 
 	ret = tethering_wifi_set_security_type_changed_cb(th,
 			cbs->security_type_changed_cb, user_data);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_wifi_set_security_type_changed_cb is failed\n");
-	}
 
 	ret = tethering_wifi_set_ssid_visibility_changed_cb(th,
 			cbs->ssid_visibility_changed_cb, user_data);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_wifi_set_ssid_visibility_changed_cb is failed\n");
-	}
 
 	ret = tethering_wifi_set_passphrase_changed_cb(th,
 			cbs->passphrase_changed_cb, user_data);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_wifi_set_passphrase_changed_cb is failed\n");
-	}
 
 	return;
 }
@@ -226,49 +217,40 @@ static void __deregister_cbs(tethering_h th)
 	tethering_error_e ret = TETHERING_ERROR_NONE;
 
 	ret = tethering_unset_enabled_cb(th, TETHERING_TYPE_ALL);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_unset_enabled_cb is failed\n");
-	}
 
 	ret = tethering_unset_enabled_cb(th, TETHERING_TYPE_RESERVED);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_unset_enabled_cb is failed\n");
-	}
 
 	ret = tethering_unset_disabled_cb(th, TETHERING_TYPE_ALL);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_unset_disabled_cb is failed\n");
-	}
 
 	ret = tethering_unset_disabled_cb(th, TETHERING_TYPE_RESERVED);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_unset_disabled_cb is failed\n");
-	}
 
 	ret = tethering_unset_connection_state_changed_cb(th, TETHERING_TYPE_ALL);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_unset_connection_state_changed_cb is failed\n");
-	}
 
 	ret = tethering_unset_connection_state_changed_cb(th, TETHERING_TYPE_RESERVED);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_unset_connection_state_changed_cb is failed\n");
-	}
 
 	ret = tethering_wifi_unset_security_type_changed_cb(th);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_wifi_unset_security_type_changed_cb is failed\n");
-	}
 
 	ret = tethering_wifi_unset_ssid_visibility_changed_cb(th);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_wifi_unset_ssid_visibility_changed_cb is failed\n");
-	}
 
 	ret = tethering_wifi_unset_passphrase_changed_cb(th);
-	if (__is_err(ret) == true) {
+	if (__is_err(ret) == true)
 		g_print("tethering_wifi_unset_passphrase_changed_cb is failed\n");
-	}
 
 	return;
 }
@@ -277,9 +259,8 @@ static void __deregister_cbs(tethering_h th)
 static void __enabled_cb(tethering_error_e error, tethering_type_e type, bool is_requested, void *data)
 {
 	if (__is_err(error)) {
-		if (!is_requested) {
+		if (!is_requested)
 			return;
-		}
 
 		g_print("## %s is not enabled. error code[0x%X]\n",
 				__convert_tethering_type_to_str(type),
@@ -300,9 +281,8 @@ static void __enabled_cb(tethering_error_e error, tethering_type_e type, bool is
 static void __disabled_cb(tethering_error_e error, tethering_type_e type, tethering_disabled_cause_e code, void *data)
 {
 	if (__is_err(error)) {
-		if (code != TETHERING_DISABLED_BY_REQUEST) {
+		if (code != TETHERING_DISABLED_BY_REQUEST)
 			return;
-		}
 
 		g_print("## %s is not disabled. error code[0x%X]\n",
 				__convert_tethering_type_to_str(type), error);
@@ -403,21 +383,18 @@ static bool __clients_foreach_cb(tethering_client_h client, void *data)
 	}
 
 	/* Get information */
-	if (tethering_client_get_tethering_type(clone, &type) != TETHERING_ERROR_NONE) {
+	if (tethering_client_get_tethering_type(clone, &type) != TETHERING_ERROR_NONE)
 		g_print("tethering_client_get_type is failed\n");
-	}
 
-	if (tethering_client_get_ip_address(clone, TETHERING_ADDRESS_FAMILY_IPV4, &ip_address) != TETHERING_ERROR_NONE) {
+	if (tethering_client_get_ip_address(clone, TETHERING_ADDRESS_FAMILY_IPV4, &ip_address) != TETHERING_ERROR_NONE)
 		g_print("tethering_client_get_ip_address is failed\n");
-	}
 
-	if (tethering_client_get_mac_address(clone, &mac_address) != TETHERING_ERROR_NONE) {
+	if (tethering_client_get_mac_address(clone, &mac_address) != TETHERING_ERROR_NONE)
 		g_print("tethering_client_get_mac_address is failed\n");
-	}
 
-	if (tethering_client_get_name(clone, &hostname) != TETHERING_ERROR_NONE) {
+	if (tethering_client_get_name(clone, &hostname) != TETHERING_ERROR_NONE)
 		g_print("tethering_client_get_hostname is failed\n");
-	}
+
 	/* End of getting information */
 
 	g_print("\n< Client Info. >\n");
@@ -608,24 +585,24 @@ bool __get_tethering_type(tethering_type_e *type)
 	}
 
 	switch (sel) {
-		case 1:
-	        	*type = TETHERING_TYPE_WIFI;
-	                break;
-	        case 2:
-	                *type = TETHERING_TYPE_BT;
-	                break;
-	        case 3:
-	                *type = TETHERING_TYPE_USB;
-	                break;
-		case 4:
-	                *type = TETHERING_TYPE_RESERVED;
-	                break;
-	        case 5:
-	                *type = TETHERING_TYPE_ALL;
-	                break;
-	       default:
-	                printf("Invalid input!!\n");
-	                return false;
+	case 1:
+		*type = TETHERING_TYPE_WIFI;
+		break;
+	case 2:
+		*type = TETHERING_TYPE_BT;
+		break;
+	case 3:
+		*type = TETHERING_TYPE_USB;
+		break;
+	case 4:
+		*type = TETHERING_TYPE_RESERVED;
+		break;
+	case 5:
+		*type = TETHERING_TYPE_ALL;
+		break;
+	default:
+		printf("Invalid input!!\n");
+		return false;
 	}
 
 	return true;
@@ -656,8 +633,7 @@ static int test_tethering_destroy(void)
 	__deregister_cbs(th);
 
 	ret = tethering_destroy(th);
-	if (__is_err(ret) == true)
-	{
+	if (__is_err(ret) == true) {
 		printf("Tethering destroy is failed\n");
 		return -1;
 	}
@@ -860,8 +836,8 @@ static int test_tethering_wifi_ap_set_security_type(void)
 	int ret;
 	int security_type;
 
-        printf("Input security type for Wi-Fi AP tethering (0:NONE, 1:WPA2_PSK)");
-        ret = scanf("%9d", &security_type);
+	printf("Input security type for Wi-Fi AP tethering (0:NONE, 1:WPA2_PSK)");
+	ret = scanf("%9d", &security_type);
 	if (ret < 0) {
 		printf("scanf is failed!!\n");
 		return -1;
@@ -907,11 +883,11 @@ static int test_tethering_wifi_ap_set_passphrase(void)
 		return -1;
 	}
 
-        ret = tethering_wifi_ap_set_passphrase(th, passphrase);
-        if (__is_err(ret) == true) {
-                 printf("Fail to set passphrase!!\n");
-                 return -1;
-        }
+	ret = tethering_wifi_ap_set_passphrase(th, passphrase);
+	if (__is_err(ret) == true) {
+		printf("Fail to set passphrase!!\n");
+		return -1;
+	}
 	return 1;
 }
 
@@ -941,15 +917,15 @@ int main(int argc, char **argv)
 {
 	GMainLoop *mainloop;
 
-#if !GLIB_CHECK_VERSION(2,36,0)
+#if !GLIB_CHECK_VERSION(2, 36, 0)
 	g_type_init();
 #endif
-	mainloop = g_main_loop_new (NULL, false);
+	mainloop = g_main_loop_new(NULL, false);
 
 	GIOChannel *channel = g_io_channel_unix_new(0);
 	g_io_add_watch(channel, (G_IO_IN|G_IO_ERR|G_IO_HUP|G_IO_NVAL), test_thread, NULL);
 	printf("Test Thread created...\n");
-	g_main_loop_run (mainloop);
+	g_main_loop_run(mainloop);
 
 	return 0;
 }
@@ -963,10 +939,8 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 
 	rv = read(0, a, 10);
 
-	if (rv <= 0 || a[0] == '0') {
-		// Finish
+	if (rv <= 0 || a[0] == '0')
 		exit(1);
-	}
 
 	if (a[0] == '\n' || a[0] == '\r') {
 		printf("\n\n Network Connection API Test App\n\n");
@@ -995,64 +969,63 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 	}
 
 	switch (a[0]) {
-		case '1':
-			rv = test_tethering_create();
-			break;
-		case '2':
-			rv = test_tethering_destroy();
-			break;
-		case '3':
-			rv = test_tethering_enable();
-			break;
-		case '4':
-			rv = test_tethering_disable();
-			break;
-		case '5':
-			rv = test_tethering_get_client_info();
-			break;
-		case '6':
-			rv = test_tethering_get_interface_info();
-			break;
-		case '7':
-			rv = test_tethering_get_data_usage();
-			break;
-		case '8':
-			rv = test_tethering_wifi_get_setting();
-			break;
-		case '9':
-			rv = test_tethering_wifi_ap_get_setting();
-			break;
-		case 'a':
-			rv = test_tethering_wifi_set_ssid();
-			break;
-		case 'b':
-			rv = test_tethering_wifi_set_security_type();
-			break;
-		case 'c':
-			rv = test_tethering_wifi_set_visibility();
-			break;
-		case 'd':
-			rv = test_tethering_wifi_set_passphrase();
-			break;
-		case 'e':
-			rv = test_tethering_wifi_ap_set_ssid();
-			break;
-		case 'f':
-			rv = test_tethering_wifi_ap_set_security_type();
-			break;
-		case 'g':
-			rv = test_tethering_wifi_ap_set_visibility();
-			break;
-		case 'h':
-			rv = test_tethering_wifi_ap_set_passphrase();
-			break;
-		case 'i':
-			rv = test_tethering_wifi_reload_settings();
-			break;
-		case 'j':
-			rv = test_tethering_wifi_ap_reload_settings();
-			break;
-
+	case '1':
+		rv = test_tethering_create();
+		break;
+	case '2':
+		rv = test_tethering_destroy();
+		break;
+	case '3':
+		rv = test_tethering_enable();
+		break;
+	case '4':
+		rv = test_tethering_disable();
+		break;
+	case '5':
+		rv = test_tethering_get_client_info();
+		break;
+	case '6':
+		rv = test_tethering_get_interface_info();
+		break;
+	case '7':
+		rv = test_tethering_get_data_usage();
+		break;
+	case '8':
+		rv = test_tethering_wifi_get_setting();
+		break;
+	case '9':
+		rv = test_tethering_wifi_ap_get_setting();
+		break;
+	case 'a':
+		rv = test_tethering_wifi_set_ssid();
+		break;
+	case 'b':
+		rv = test_tethering_wifi_set_security_type();
+		break;
+	case 'c':
+		rv = test_tethering_wifi_set_visibility();
+		break;
+	case 'd':
+		rv = test_tethering_wifi_set_passphrase();
+		break;
+	case 'e':
+		rv = test_tethering_wifi_ap_set_ssid();
+		break;
+	case 'f':
+		rv = test_tethering_wifi_ap_set_security_type();
+		break;
+	case 'g':
+		rv = test_tethering_wifi_ap_set_visibility();
+		break;
+	case 'h':
+		rv = test_tethering_wifi_ap_set_passphrase();
+		break;
+	case 'i':
+		rv = test_tethering_wifi_reload_settings();
+		break;
+	case 'j':
+		rv = test_tethering_wifi_ap_reload_settings();
+		break;
 	}
 
 	if (rv == 1)

@@ -44,19 +44,16 @@ int _tethering_check_feature_supported(const char* feature, ...)
 
 	va_start(list, feature);
 	key = feature;
-	while(1) {
-		if((strcmp(key, TETHERING_FEATURE) == 0)){
+	while (1) {
+		if ((strcmp(key, TETHERING_FEATURE) == 0))
 			value = __check_feature_supported(key, TETHERING_SUPPORTED_FEATURE);
-		}
-		if((strcmp(key, TETHERING_WIFI_FEATURE) == 0)){
+		if ((strcmp(key, TETHERING_WIFI_FEATURE) == 0))
 			value = __check_feature_supported(key, TETHERING_SUPPORTED_FEATURE);
-		}
-		if((strcmp(key, TETHERING_BT_FEATURE) == 0)){
+		if ((strcmp(key, TETHERING_BT_FEATURE) == 0))
 			value = __check_feature_supported(key, TETHERING_SUPPORTED_FEATURE);
-		}
-		if((strcmp(key, TETHERING_USB_FEATURE) == 0)){
+		if ((strcmp(key, TETHERING_USB_FEATURE) == 0))
 			value = __check_feature_supported(key, TETHERING_SUPPORTED_FEATURE);
-		}
+
 		supported |= value;
 		key = va_arg(list, const char *);
 		if (!key) break;
