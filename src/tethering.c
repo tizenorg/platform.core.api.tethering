@@ -272,12 +272,20 @@ static tethering_error_e __set_passphrase(const char *passphrase, const unsigned
 	ret = ckmc_remove_data(alias);
 	if (ret != CKMC_ERROR_NONE) {
 		ERR("Fail to remove old data : %d", ret);
+
+		if (alias)
+			free(alias);
+
 		return TETHERING_ERROR_OPERATION_FAILED;
 	}
 
 	ret = ckmc_save_data(alias, ckmc_buf, ckmc_policy);
 	if (ret != CKMC_ERROR_NONE) {
 		ERR("Fail to save the passphrase : %d", ret);
+
+		if (alias)
+			free(alias);
+
 		return TETHERING_ERROR_OPERATION_FAILED;
 	}
 
@@ -326,6 +334,10 @@ static tethering_error_e __get_passphrase(char *passphrase,
 
 		if (ret == 0) {
 			ERR("generate_initial_passphrase failed : %d\n", *passphrase_len);
+
+			if (alias)
+				free(alias);
+
 			return TETHERING_ERROR_OPERATION_FAILED;
 		} else {
 			*passphrase_len = ret;
@@ -333,6 +345,10 @@ static tethering_error_e __get_passphrase(char *passphrase,
 
 			if (__set_passphrase(passphrase, *passphrase_len) != TETHERING_ERROR_NONE) {
 				DBG("set_passphrase is failed : %s, %d", passphrase, *passphrase_len);
+
+				if (alias)
+					free(alias);
+
 				return TETHERING_ERROR_OPERATION_FAILED;
 			}
 		}
