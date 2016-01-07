@@ -811,6 +811,37 @@ static int test_tethering_wifi_set_passphrase(void)
 	return 1;
 }
 
+static int test_tethering_wifi_set_channel(void){
+	int ret;
+	int channel;
+
+	printf("Input channel for Wi-Fi tethering: ");
+	ret = scanf("%d", &channel);
+
+	ret = tethering_wifi_set_channel(th, channel);
+	if (__is_err(ret) == true) {
+		printf("Fail to set channel!!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
+static int test_tethering_wifi_set_mode(void) {
+	int ret;
+	int type;
+
+	printf("Input hw_mode for Wi-Fi tethering(0-b, 1-g, 2-a, 3-ad): ");
+	ret = scanf("%d", &type);
+
+	ret = tethering_wifi_set_mode(th, type);
+	if (__is_err(ret) == true) {
+		printf("Fail to set mode!!\n");
+		return -1;
+	}
+	return 1;
+}
+
 static int test_tethering_wifi_ap_set_ssid(void)
 {
 	int ret;
@@ -964,6 +995,8 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 		printf("h       - Set Wi-Fi AP passphrase\n");
 		printf("i       - Reload Wi-Fi tethering\n");
 		printf("j       - Reload Wi-Fi AP\n");
+		printf("m       - Set Wi-Fi channel\n");
+		printf("n       - Set Wi-Fi hw_mode\n");
 		printf("0       - Exit \n");
 		printf("ENTER  - Show options menu.......\n");
 	}
@@ -1025,6 +1058,12 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 		break;
 	case 'j':
 		rv = test_tethering_wifi_ap_reload_settings();
+		break;
+	case 'm':
+		rv = test_tethering_wifi_set_channel();
+		break;
+	case 'n':
+		rv = test_tethering_wifi_set_mode();
 		break;
 	}
 
