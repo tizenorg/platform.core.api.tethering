@@ -1325,12 +1325,37 @@ static int __get_common_ssid(char *ssid, unsigned int size)
 	return TETHERING_ERROR_NONE;
 }
 
+static bool __get_wifi_mode_type(tethering_wifi_mode_type_e type, char **buf)
+{
+	_retvm_if(buf == NULL, false, "parameter(buf) is NULL\n");
+
+	switch (type) {
+		case TETHERING_WIFI_MODE_TYPE_B:
+			*buf = g_strdup("b");
+			break;
+		case TETHERING_WIFI_MODE_TYPE_G:
+			*buf = g_strdup("g");
+			break;
+		case TETHERING_WIFI_MODE_TYPE_A:
+			*buf = g_strdup("a");
+			break;
+		case TETHERING_WIFI_MODE_TYPE_AD:
+			*buf = g_strdup("ad");
+			break;
+		default:
+			ERR("Not supported type : %d\n", type);
+			return false;
+	}
+	return true;
+}
+
 static int __prepare_wifi_settings(tethering_h tethering, _softap_settings_t *set)
 {
 	DBG("+\n");
 
 	__tethering_h *th = (__tethering_h *)tethering;
 	tethering_error_e ret = TETHERING_ERROR_NONE;
+	char *ptr = NULL;
 
 	if (th == NULL || set == NULL) {
 		ERR("null parameter\n-\n");
@@ -1349,6 +1374,15 @@ static int __prepare_wifi_settings(tethering_h tethering, _softap_settings_t *se
 	ret = __get_visible(&set->visibility);
 	if (ret != TETHERING_ERROR_NONE)
 		set->visibility = th->visibility;
+
+	set->channel = th->channel;
+
+	__get_wifi_mode_type (th->mode_type, &ptr);
+	if (ptr == NULL) {
+		g_strlcpy(set->mode, "", sizeof(set->mode));
+	} else {
+		g_strlcpy(set->key, th->passphrase, sizeof(set->key));
+	}
 
 	if (set->sec_type == TETHERING_WIFI_SECURITY_TYPE_NONE) {
 		g_strlcpy(set->key, "", sizeof(set->key));
@@ -1474,6 +1508,8 @@ API int tethering_create(tethering_h *tethering)
 	memset(th, 0x00, sizeof(__tethering_h));
 	th->sec_type = TETHERING_WIFI_SECURITY_TYPE_WPA2_PSK;
 	th->visibility = true;
+	th->channel = 6;
+	th->mode_type = TETHERING_WIFI_MODE_TYPE_G;
 
 	if (__generate_initial_passphrase(th->passphrase,
 			sizeof(th->passphrase)) == 0) {
@@ -1621,7 +1657,7 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 		break;
 
 	case TETHERING_TYPE_WIFI: {
-		_softap_settings_t set = {"", "", 0, false};
+		_softap_settings_t set = {"", "", "", 0, false};
 
 		ret = __prepare_wifi_settings(tethering, &set);
 		if (ret != TETHERING_ERROR_NONE) {
@@ -1633,7 +1669,7 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 				sigs[E_SIGNAL_WIFI_TETHER_ON].sig_id);
 
 		g_dbus_proxy_call(proxy, "enable_wifi_tethering",
-				g_variant_new("(ssii)", set.ssid, set.key, set.visibility, set.sec_type),
+				g_variant_new("(sssiii)", set.ssid, set.key, set.mode, set.channel, set.visibility, set.sec_type),
 				G_DBUS_CALL_FLAGS_NONE, -1, th->cancellable,
 				(GAsyncReadyCallback) __wifi_enabled_cfm_cb, (gpointer)tethering);
 		break;
@@ -1650,7 +1686,7 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 		break;
 
 	case TETHERING_TYPE_RESERVED: {
-		_softap_settings_t set = {"", "", 0, false};
+		_softap_settings_t set = {"", "", "", 0, false};
 
 		ret = __prepare_wifi_ap_settings(tethering, &set);
 		if (ret != TETHERING_ERROR_NONE) {
@@ -1667,7 +1703,7 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 		break;
 	}
 	case TETHERING_TYPE_ALL: {
-		_softap_settings_t set = {"", "", 0, false};
+		_softap_settings_t set = {"", "", "", 0, false};
 
 		ret = __prepare_wifi_settings(tethering, &set);
 		if (ret != TETHERING_ERROR_NONE) {
@@ -3056,6 +3092,61 @@ API int tethering_wifi_get_passphrase(tethering_h tethering, char **passphrase)
 	return TETHERING_ERROR_NONE;
 }
 
+API int tethering_wifi_set_channel(tethering_h tethering, int channel)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+	th->channel = channel;
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_get_channel(tethering_h tethering, int *channel)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	_retvm_if(channel == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(channel) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+	*channel = th->channel;
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_set_mode(tethering_h tethering, tethering_wifi_mode_type_e type)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	th->mode_type = type;
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_get_mode(tethering_h tethering, tethering_wifi_mode_type_e *type)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(type == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(type) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+	*type = th->mode_type;
+
+	return TETHERING_ERROR_NONE;
+}
+
+
 /**
  * @internal
  * @brief Reload the settings (SSID / Passphrase / Security type / SSID visibility).
@@ -3082,7 +3173,7 @@ API int tethering_wifi_reload_settings(tethering_h tethering, tethering_wifi_set
 			"parameter(callback) is NULL\n");
 
 	__tethering_h *th = (__tethering_h *)tethering;
-	_softap_settings_t set = {"", "", 0, false};
+	_softap_settings_t set = {"", "", "", 0, false};
 	GDBusProxy *proxy = th->client_bus_proxy;
 	int ret = 0;
 
@@ -3103,7 +3194,7 @@ API int tethering_wifi_reload_settings(tethering_h tethering, tethering_wifi_set
 	th->settings_reloaded_user_data = user_data;
 
 	g_dbus_proxy_call(proxy, "reload_wifi_settings",
-			g_variant_new("(ssii)", set.ssid, set.key, set.visibility, set.sec_type),
+			g_variant_new("(sssiii)", set.ssid, set.key, set.mode, set.channel, set.visibility, set.sec_type),
 			G_DBUS_CALL_FLAGS_NONE, -1, th->cancellable,
 			(GAsyncReadyCallback) __settings_reloaded_cb, (gpointer)tethering);
 
@@ -3405,7 +3496,7 @@ API int tethering_wifi_ap_reload_settings(tethering_h tethering, tethering_wifi_
 			"parameter(callback) is NULL\n");
 
 	__tethering_h *th = (__tethering_h *)tethering;
-	_softap_settings_t set = {"", "", 0, false};
+	_softap_settings_t set = {"", "", "", 0, false};
 	GDBusProxy *proxy = th->client_bus_proxy;
 	int ret = 0;
 
