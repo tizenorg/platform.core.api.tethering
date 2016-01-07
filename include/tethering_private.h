@@ -239,6 +239,8 @@ typedef enum {
 #define TETHERING_WIFI_KEY_MAX_LEN	64	/**< Maximum length of wifi key */
 #define TETHERING_WIFI_HASH_KEY_MAX_LEN	64
 
+#define TETHERING_WIFI_MODE_MAX_LEN 10  /**< Maximum length of mode */
+
 #define VCONFKEY_MOBILE_HOTSPOT_SSID	"memory/private/mobileap-agent/ssid"
 #define TETHERING_PASSPHRASE_PATH	"wifi_tethering.txt"
 #define TETHERING_WIFI_PASSPHRASE_STORE_KEY "tethering_wifi_passphrase"
@@ -293,6 +295,8 @@ typedef struct {
 	char passphrase[TETHERING_WIFI_KEY_MAX_LEN + 1];
 	tethering_wifi_security_type_e sec_type;
 	bool visibility;
+	int channel;
+	tethering_wifi_mode_type_e mode_type;
 } __tethering_h;
 
 typedef struct {
@@ -314,8 +318,10 @@ typedef struct {
 typedef struct {
 	char ssid[TETHERING_WIFI_SSID_MAX_LEN + 1];
 	char key[TETHERING_WIFI_KEY_MAX_LEN + 1];
+	char mode[TETHERING_WIFI_MODE_MAX_LEN + 1];
 	tethering_wifi_security_type_e sec_type;
 	bool visibility;
+	int channel;
 } _softap_settings_t;
 
 #ifdef __cplusplus
