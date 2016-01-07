@@ -922,6 +922,109 @@ int tethering_wifi_remove_blocked_mac_list(tethering_h tethering, const char *ma
 int tethering_wifi_get_blocked_mac_list(tethering_h tethering, void **blocked_mac_list);
 
 /**
+ * @brief Enable/disable the dhcp server.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @details Enable/disable the dhcp server.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  enable  Enable/disable the dhcp server
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ */
+int tethering_wifi_enable_dhcp(tethering_h tethering, bool enable);
+
+/**
+ * @brief Enable the dhcp server with the address range.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @details Enable the dhcp server with the address range.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  rangestart Start address range
+ * @param[in]  rangestop  End address range
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ */
+int tethering_wifi_set_dhcp_range(tethering_h tethering, char *rangestart, char *rangestop);
+
+/**
+ * @brief Checks whether the dhcp is enabled or not.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @param[in]  tethering  The tethering handle
+ * @param[out] dhcp_enabled  @c true if dhcp is enabled, \n @c false if dhcp is disabled
+ * @return  0 on success, otherwise a negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ */
+int tethering_wifi_is_dhcp_enabled(tethering_h tethering, bool *dhcp_enabled);
+
+/**
+ * @brief Sets the Channel for Wi-Fi.
+ * @details The Channel should be in between 1-14. If channel is not set, Wi-Fi sets default channel.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @param[in]  tethering  The tethering handle
+ * @param[in]  channel  The channel number
+ * @return 0 on success, otherwise negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ */
+int tethering_wifi_set_channel(tethering_h tethering, int channel);
+
+/**
+ * @brief Gets the chanenl for Wi-Fi.
+ * @details If channel is not set, Wi-Fi gets default channel.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @param[in]  tethering  The tethering handle
+ * @param[out]  channel  The channel number
+ * @return 0 on success, otherwise negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see  tethering_wifi_ap_set_channel()
+ */
+int tethering_wifi_get_channel(tethering_h tethering, int *channel);
+
+/**
+ * @brief Sets the mode for Wi-Fi.
+ * @details The mobile AP mode (ex: b only, g only, ad, a). If mode is not set, Wi-Fi sets default mode.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @param[in]  tethering  The tethering handle
+ * @param[in]  mode	The mobile AP mode
+ * @return 0 on success, otherwise negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_OUT_OF_MEMORY  Out of memory
+ */
+int tethering_wifi_ap_set_mode(tethering_h tethering, tethering_wifi_ap_mode_type_e type);
+
+/**
+ * @brief Gets the mode for Wi-Fi.
+ * @details If the mode is not set, Wi-Fi gets default mode.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @remarks @a mode must be released using free().
+ * @param[in]  tethering  The tethering handle
+ * @param[out]  mode  The mode of Wi-Fi AP
+ * @return 0 on success, otherwise negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_OUT_OF_MEMORY  Out of memory
+ * @see  tethering_wifi_ap_set_mode()
+ */
+int tethering_wifi_get_mode(tethering_h tethering, tethering_wifi_ap_mode_type_e *type);
+
+/**
  * @brief Sets the security type of Wi-Fi AP.
  * @details If security type is not set, WPA2_PSK is used.
  * @since_tizen 2.3
@@ -1064,7 +1167,6 @@ int tethering_wifi_ap_get_passphrase(tethering_h tethering, char **passphrase);
  * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
  */
 int tethering_wifi_ap_reload_settings(tethering_h tethering, tethering_wifi_ap_settings_reloaded_cb callback, void *user_data);
-
 /**
  * @}
  */
