@@ -95,8 +95,6 @@ static void __handle_dhcp(GDBusConnection *connection, const gchar *sender_name,
 		const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
 		GVariant *parameters, gpointer user_data);
 
-static char *__get_key_manager_alias(const char* alias);
-
 static __tethering_sig_t sigs[] = {
 	{0, SIGNAL_NAME_NET_CLOSED, __handle_net_closed},
 	{0, SIGNAL_NAME_WIFI_TETHER_ON, __handle_wifi_tether_on},
@@ -249,118 +247,6 @@ static unsigned int __generate_initial_passphrase(char *passphrase, unsigned int
 	passphrase[index] = '\0';
 
 	return index;
-}
-
-static tethering_error_e __set_passphrase(const char *passphrase, const unsigned int size)
-{
-	if (passphrase == NULL || size == 0)
-		return TETHERING_ERROR_INVALID_PARAMETER;
-
-	int ret = -1;
-	char *alias;
-	ckmc_raw_buffer_s ckmc_buf;
-	ckmc_policy_s ckmc_policy;
-
-	ckmc_policy.password = NULL;
-	ckmc_policy.extractable = true;
-
-	ckmc_buf.data = (unsigned char *) passphrase;
-	ckmc_buf.size = strlen(passphrase) + 1;
-
-	alias = __get_key_manager_alias(TETHERING_WIFI_PASSPHRASE_STORE_KEY);
-
-	ret = ckmc_remove_data(alias);
-	if (ret != CKMC_ERROR_NONE) {
-		ERR("Fail to remove old data : %d", ret);
-
-		if (alias)
-			free(alias);
-
-		return TETHERING_ERROR_OPERATION_FAILED;
-	}
-
-	ret = ckmc_save_data(alias, ckmc_buf, ckmc_policy);
-	if (ret != CKMC_ERROR_NONE) {
-		ERR("Fail to save the passphrase : %d", ret);
-
-		if (alias)
-			free(alias);
-
-		return TETHERING_ERROR_OPERATION_FAILED;
-	}
-
-	if (alias)
-		free(alias);
-
-	return TETHERING_ERROR_NONE;
-}
-
-static char *__get_key_manager_alias(const char* name)
-{
-	size_t alias_len = strlen(name) + strlen(ckmc_owner_id_system) + strlen(ckmc_owner_id_separator);
-	char *ckm_alias = (char *)malloc(alias_len + 1);
-	if (!ckm_alias) {
-		ERR("Fail to allocate memory\n");
-		return NULL;
-	}
-
-	memset(ckm_alias, 0, alias_len);
-	strncat(ckm_alias, ckmc_owner_id_system, strlen(ckmc_owner_id_system));
-	strncat(ckm_alias, ckmc_owner_id_separator, strlen(ckmc_owner_id_separator));
-	strncat(ckm_alias, name, strlen(name));
-
-	return ckm_alias;
-}
-
-static tethering_error_e __get_passphrase(char *passphrase,
-		unsigned int passphrase_size, unsigned int *passphrase_len)
-{
-	if (passphrase == NULL || passphrase_size == 0) {
-		ERR("Invalid parameter\n");
-		return TETHERING_ERROR_INVALID_PARAMETER;
-	}
-
-	int ret = 0;
-	char *alias = NULL;
-	char *passwd = NULL;
-	char tmp[TETHERING_WIFI_KEY_MAX_LEN + 1] = {0, };
-	ckmc_raw_buffer_s *ckmc_buf;
-
-	alias = __get_key_manager_alias(TETHERING_WIFI_PASSPHRASE_STORE_KEY);
-	ret = ckmc_get_data(alias, passwd, &ckmc_buf);
-	if (ret < 0) {
-		DBG("Create new password\n");
-		ret = __generate_initial_passphrase(tmp, sizeof(tmp));
-
-		if (ret == 0) {
-			ERR("generate_initial_passphrase failed : %d\n", *passphrase_len);
-
-			if (alias)
-				free(alias);
-
-			return TETHERING_ERROR_OPERATION_FAILED;
-		} else {
-			*passphrase_len = ret;
-			g_strlcpy(passphrase, tmp, (*passphrase_len)+1);
-
-			if (__set_passphrase(passphrase, *passphrase_len) != TETHERING_ERROR_NONE) {
-				DBG("set_passphrase is failed : %s, %d", passphrase, *passphrase_len);
-
-				if (alias)
-					free(alias);
-
-				return TETHERING_ERROR_OPERATION_FAILED;
-			}
-		}
-	} else {
-		*passphrase_len = ckmc_buf->size;
-		g_strlcpy(passphrase, (char *)ckmc_buf->data, (*passphrase_len) + 1);
-	}
-
-	if (alias)
-		free(alias);
-
-	return TETHERING_ERROR_NONE;
 }
 
 static tethering_error_e __get_error(int agent_error)
@@ -1426,12 +1312,11 @@ static int __get_common_ssid(char *ssid, unsigned int size)
 
 	ptr = vconf_get_str(VCONFKEY_SETAPPL_DEVICE_NAME_STR);
 	if (ptr == NULL) {
-		ERR("vconf_get_str is failed\n");
-		DBG("-\n");
-		return TETHERING_ERROR_OPERATION_FAILED;
-	}
+		ERR("vconf_get_str is failed and set default ssid");
+		g_strlcpy(ssid, TETHERING_DEFAULT_SSID, size);
+	} else
+		g_strlcpy(ssid, ptr, size);
 
-	g_strlcpy(ssid, ptr, size);
 	free(ptr);
 
 	if (!g_utf8_validate(ssid, -1, (const char **)&ptr_tmp))
@@ -1468,15 +1353,33 @@ static int __prepare_wifi_settings(tethering_h tethering, _softap_settings_t *se
 	if (set->sec_type == TETHERING_WIFI_SECURITY_TYPE_NONE) {
 		g_strlcpy(set->key, "", sizeof(set->key));
 	} else {
-		char pass[TETHERING_WIFI_KEY_MAX_LEN + 1] = {0, };
+		GDBusProxy *proxy = th->client_bus_proxy;
+		GVariant *parameters;
+		GError *error = NULL;
+		char *passphrase = NULL;
 		unsigned int len = 0;
 
-		ret = __get_passphrase(pass, sizeof(pass), &len);
-		if (ret != TETHERING_ERROR_NONE) {
-			ERR("getting passphrase failed\n");
-			return TETHERING_ERROR_OPERATION_FAILED;
+		parameters = g_dbus_proxy_call_sync(proxy, "get_wifi_tethering_passphrase",
+				NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+
+		if (error) {
+			ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
+
+			if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
+				ret = TETHERING_ERROR_PERMISSION_DENIED;
+			else
+				ret = TETHERING_ERROR_OPERATION_FAILED;
+
+			g_error_free(error);
+			return ret;
 		}
-		g_strlcpy(set->key, pass, sizeof(set->key));
+
+		if (parameters != NULL) {
+			g_variant_get(parameters, "(siu)", passphrase, &len, &ret);
+			g_variant_unref(parameters);
+		}
+
+		g_strlcpy(set->key, passphrase, sizeof(set->key));
 	}
 	DBG("-\n");
 	return TETHERING_ERROR_NONE;
@@ -3057,12 +2960,13 @@ API int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphr
 			"parameter(passphrase) is NULL\n");
 
 	__tethering_h *th = (__tethering_h *)tethering;
+	GDBusProxy *proxy = th->client_bus_proxy;
+	GVariant *parameters;
+	GError *error = NULL;
 	int passphrase_len = 0;
+	int ret = 0;
 
-	char old_passphrase[TETHERING_WIFI_KEY_MAX_LEN + 1] = {0, };
-	unsigned int old_len = 0;
-	tethering_error_e ret = TETHERING_ERROR_NONE;
-
+	DBG("+");
 	passphrase_len = strlen(passphrase);
 	if (passphrase_len < TETHERING_WIFI_KEY_MIN_LEN ||
 			passphrase_len > TETHERING_WIFI_KEY_MAX_LEN) {
@@ -3070,17 +2974,30 @@ API int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphr
 		return TETHERING_ERROR_INVALID_PARAMETER;
 	}
 
-	ret = __get_passphrase(old_passphrase, sizeof(old_passphrase), &old_len);
-	if (ret == TETHERING_ERROR_NONE && old_len == passphrase_len &&
-			!g_strcmp0(old_passphrase, passphrase)) {
-		return TETHERING_ERROR_NONE;
+	parameters = g_dbus_proxy_call_sync(proxy, "set_wifi_tethering_passphrase",
+			g_variant_new("(s)", passphrase), G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+
+	if (error) {
+		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
+
+		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
+			ret = TETHERING_ERROR_PERMISSION_DENIED;
+		else
+			ret = TETHERING_ERROR_OPERATION_FAILED;
+
+		g_error_free(error);
+		return ret;
 	}
 
-	ret = __set_passphrase(passphrase, passphrase_len);
+	g_variant_get(parameters, "(u)", &ret);
+	g_variant_unref(parameters);
+
 	if (ret == TETHERING_ERROR_NONE) {
 		__send_dbus_signal(th->client_bus,
 				SIGNAL_NAME_PASSPHRASE_CHANGED, NULL);
 	}
+
+	DBG("-");
 	return ret;
 }
 
@@ -3109,18 +3026,31 @@ API int tethering_wifi_get_passphrase(tethering_h tethering, char **passphrase)
 	_retvm_if(passphrase == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(passphrase) is NULL\n");
 
-	char passphrase_buf[TETHERING_WIFI_KEY_MAX_LEN + 1] = {0, };
+	__tethering_h *th = (__tethering_h *)tethering;
+	GDBusProxy *proxy = th->client_bus_proxy;
+	GVariant *parameters;
+	GError *error = NULL;
 	unsigned int len = 0;
 	tethering_error_e ret = TETHERING_ERROR_NONE;
 
-	ret = __get_passphrase(passphrase_buf, sizeof(passphrase_buf), &len);
-	if (ret != TETHERING_ERROR_NONE)
-		return ret;
+	parameters = g_dbus_proxy_call_sync(proxy, "get_wifi_tethering_passphrase",
+			NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
 
-	*passphrase = strdup(passphrase_buf);
-	if (*passphrase == NULL) {
-		ERR("strdup is failed\n");
-		return TETHERING_ERROR_OUT_OF_MEMORY;
+	if (error) {
+		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
+
+		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
+			ret = TETHERING_ERROR_PERMISSION_DENIED;
+		else
+			ret = TETHERING_ERROR_OPERATION_FAILED;
+
+		g_error_free(error);
+		return ret;
+	}
+
+	if (parameters != NULL) {
+		g_variant_get(parameters, "(siu)", passphrase, &len, &ret);
+		g_variant_unref(parameters);
 	}
 
 	return TETHERING_ERROR_NONE;

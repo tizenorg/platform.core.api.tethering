@@ -248,8 +248,7 @@ typedef enum {
 * End of mobileap-agent common values
 */
 
-#define TETHERING_DEFAULT_SSID				"Redwood"
-#define TETHERING_DEFAULT_PASSPHRASE			"eoiugkl!"
+#define TETHERING_DEFAULT_SSID	"Tizen"
 #define TETHERING_WIFI_SECURITY_TYPE_OPEN_STR		"open"
 #define TETHERING_WIFI_SECURITY_TYPE_WPA2_PSK_STR	"wpa2-psk"
 #define TETHERING_ERROR_RECOVERY_MAX			3
