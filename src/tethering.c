@@ -31,6 +31,12 @@
 #include <ckmc/ckmc-manager.h>
 #include "tethering_private.h"
 
+#define ALLOWED_LIST	"/etc/hostapd.accept"
+#define BLOCKED_LIST	"/etc/hostapd.deny"
+#define TEMP_LIST	"/etc/hostapd_tmp"
+#define MAC_ADDR_LEN	18
+#define MAX_BUF_SIZE	80
+
 static void __handle_wifi_tether_on(GDBusConnection *connection, const gchar *sender_name,
 			const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
 			GVariant *parameters, gpointer user_data);
@@ -1375,6 +1381,7 @@ static int __prepare_wifi_settings(tethering_h tethering, _softap_settings_t *se
 	if (ret != TETHERING_ERROR_NONE)
 		set->visibility = th->visibility;
 
+	set->mac_filter = th->mac_filter;
 	set->channel = th->channel;
 
 	__get_wifi_mode_type (th->mode_type, &ptr);
@@ -1410,7 +1417,7 @@ static int __prepare_wifi_settings(tethering_h tethering, _softap_settings_t *se
 		}
 
 		if (parameters != NULL) {
-			g_variant_get(parameters, "(siu)", passphrase, &len, &ret);
+			g_variant_get(parameters, "(siu)", &passphrase, &len, &ret);
 			g_variant_unref(parameters);
 		}
 
@@ -1509,6 +1516,7 @@ API int tethering_create(tethering_h *tethering)
 	memset(th, 0x00, sizeof(__tethering_h));
 	th->sec_type = TETHERING_WIFI_SECURITY_TYPE_WPA2_PSK;
 	th->visibility = true;
+	th->mac_filter = false;
 	th->channel = 6;
 	th->mode_type = TETHERING_WIFI_MODE_TYPE_G;
 
@@ -1670,7 +1678,7 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 				sigs[E_SIGNAL_WIFI_TETHER_ON].sig_id);
 
 		g_dbus_proxy_call(proxy, "enable_wifi_tethering",
-				g_variant_new("(sssiii)", set.ssid, set.key, set.mode, set.channel, set.visibility, set.sec_type),
+				g_variant_new("(sssiiii)", set.ssid, set.key, set.mode, set.channel, set.visibility, set.mac_filter, set.sec_type),
 				G_DBUS_CALL_FLAGS_NONE, -1, th->cancellable,
 				(GAsyncReadyCallback) __wifi_enabled_cfm_cb, (gpointer)tethering);
 		break;
@@ -3195,11 +3203,144 @@ API int tethering_wifi_reload_settings(tethering_h tethering, tethering_wifi_set
 	th->settings_reloaded_user_data = user_data;
 
 	g_dbus_proxy_call(proxy, "reload_wifi_settings",
-			g_variant_new("(sssiii)", set.ssid, set.key, set.mode, set.channel, set.visibility, set.sec_type),
+			g_variant_new("(sssiiii)", set.ssid, set.key, set.mode, set.channel, set.visibility, set.mac_filter, set.sec_type),
 			G_DBUS_CALL_FLAGS_NONE, -1, th->cancellable,
 			(GAsyncReadyCallback) __settings_reloaded_cb, (gpointer)tethering);
 
 	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_set_mac_filter(tethering_h tethering, bool mac_filter)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+	th->mac_filter = mac_filter;
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_get_mac_filter(tethering_h tethering, bool *mac_filter)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(mac_filter == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(mac_filter) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+	*mac_filter = th->mac_filter;
+
+	return TETHERING_ERROR_NONE;
+}
+
+static int __add_mac_to_file(const char *filepath, const char *mac)
+{
+	FILE *fp = NULL;
+	char line[MAX_BUF_SIZE] = "\0";
+	bool mac_exist = false;
+
+	fp = fopen(filepath, "a+");
+	if (!fp) {
+		ERR("fopen is failed\n");
+		return TETHERING_ERROR_OPERATION_FAILED;
+	}
+
+	while (fgets(line, MAX_BUF_SIZE, fp) != NULL) {
+		if (strncmp(mac, line, 17) == 0) {
+			DBG("MAC %s already exist in the list\n", mac);
+			mac_exist = true;
+			break;
+		}
+	}
+
+	if (!mac_exist)
+		fprintf(fp, "%s\n", mac);
+
+	fclose(fp);
+
+	return TETHERING_ERROR_NONE;
+}
+
+static int __remove_mac_from_file(const char *filepath, const char *mac)
+{
+	FILE *fp = NULL;
+	FILE *fp1 = NULL;
+	char line[MAX_BUF_SIZE] = "\0";
+
+	fp = fopen(filepath, "r");
+	if (!fp) {
+		ERR("fopen is failed\n");
+		return TETHERING_ERROR_OPERATION_FAILED;
+	}
+
+	fp1 = fopen(TEMP_LIST, "w+");
+	if (!fp1) {
+		fclose(fp);
+		ERR("fopen is failed\n");
+		return TETHERING_ERROR_OPERATION_FAILED;
+	}
+
+	while (fgets(line, MAX_BUF_SIZE, fp) != NULL) {
+		if (strncmp(mac, line, 17) == 0)
+			DBG("MAC %s found in the list\n", mac);
+		else
+			fprintf(fp1, "%s", line);
+	}
+
+	fclose(fp);
+	fclose(fp1);
+
+	if ((strcmp(filepath, ALLOWED_LIST) == 0))
+		rename(TEMP_LIST, ALLOWED_LIST);
+	else if ((strcmp(filepath, BLOCKED_LIST) == 0))
+		rename(TEMP_LIST, BLOCKED_LIST);
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_add_allowed_mac_list(tethering_h tethering, const char *mac)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(mac == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(mac) is NULL\n");
+
+	return __add_mac_to_file(ALLOWED_LIST, mac);
+}
+
+API int tethering_wifi_remove_allowed_mac_list(tethering_h tethering, const char *mac)
+{
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(mac == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(mac) is NULL\n");
+
+	return __remove_mac_from_file(ALLOWED_LIST, mac);
+}
+
+API int tethering_wifi_add_blocked_mac_list(tethering_h tethering, const char *mac)
+{
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(mac == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(mac) is NULL\n");
+
+	return __add_mac_to_file(BLOCKED_LIST, mac);
+}
+
+API int tethering_wifi_remove_blocked_mac_list(tethering_h tethering, const char *mac)
+{
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(mac == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(mac) is NULL\n");
+
+	return __remove_mac_from_file(BLOCKED_LIST, mac);
 }
 
 /**
