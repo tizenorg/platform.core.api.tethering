@@ -487,6 +487,7 @@ static void __print_wifi_tethering_setting(tethering_h th)
 	char *ssid = NULL;
 	char *passphrase = NULL;
 	bool visibility = false;
+	bool mac_filter = 0;
 	tethering_wifi_security_type_e security_type = TETHERING_WIFI_SECURITY_TYPE_NONE;
 
 	int error = TETHERING_ERROR_NONE;
@@ -518,6 +519,13 @@ static void __print_wifi_tethering_setting(tethering_h th)
 				security_type ==
 				TETHERING_WIFI_SECURITY_TYPE_NONE ?
 				"open" : "wpa2-psk");
+
+	error = tethering_wifi_get_mac_filter(th, &mac_filter);
+	if (error != TETHERING_ERROR_NONE)
+		__is_err(error);
+	else
+		g_print("\t** WiFi tethering mac filter : %s\n",
+				mac_filter ? "enable" : "disable");
 
 	if (ssid)
 		free(ssid);
@@ -811,7 +819,8 @@ static int test_tethering_wifi_set_passphrase(void)
 	return 1;
 }
 
-static int test_tethering_wifi_set_channel(void){
+static int test_tethering_wifi_set_channel(void)
+{
 	int ret;
 	int channel;
 
@@ -827,7 +836,8 @@ static int test_tethering_wifi_set_channel(void){
 	return 1;
 }
 
-static int test_tethering_wifi_set_mode(void) {
+static int test_tethering_wifi_set_mode(void)
+{
 	int ret;
 	int type;
 
@@ -839,6 +849,66 @@ static int test_tethering_wifi_set_mode(void) {
 		printf("Fail to set mode!!\n");
 		return -1;
 	}
+
+	return 1;
+}
+
+static int test_tethering_wifi_set_mac_filtering(void)
+{
+	int ret;
+	int enable;
+	
+	printf("Input mac filtering option (0: disable, 1: enable): ");
+	ret = scanf("%d", &enable);
+
+	ret = tethering_wifi_set_mac_filter(th, enable);
+	if (__is_err(ret) == true) {
+		printf("Fail to set mac filtering!!\n");
+		return -1;
+	}
+	
+	return 1;
+}
+
+static int test_tethering_manage_mac_list(void)
+{
+	int ret = 0;
+	int list, option;
+	char mac[100];
+
+	printf("Select MAC list to modify (0: allowed mac list, 1: blocked mac list): ");
+	ret = scanf("%d", &list);
+
+	printf("Select option (0: Add, 1: Remove): ");
+	ret = scanf("%d", &option);
+
+	printf("Input MAC Address to add/remove allowed/blocked mac list: ");
+	ret = scanf("%99s", mac);
+	if (ret < 0) {
+		printf("scanf is failed!!\n");
+		return -1;
+	}
+
+	if (!list && !option) { 
+		/* Add to allowed mac list*/
+		ret = tethering_wifi_add_allowed_mac_list(th, mac);
+	} else if (!list && option) {
+		/* Remove from allowed mac list */
+		ret = tethering_wifi_remove_allowed_mac_list(th, mac);
+	} else if (list && !option) {
+		/* Add to blocked mac list */
+		ret = tethering_wifi_add_blocked_mac_list(th, mac);
+	} else if (list && option) {
+		/* Remove from blocked mac list */
+		ret = tethering_wifi_remove_blocked_mac_list(th, mac);
+	} else {
+		printf("Input Failed!!\n");
+		return -1;
+	}
+
+	if (ret < 0)
+		return -1;
+
 	return 1;
 }
 
@@ -989,12 +1059,14 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 		printf("b       - Set Wi-Fi tethering security type\n");
 		printf("c       - Set Wi-Fi tethering visibility\n");
 		printf("d       - Set Wi-Fi tethering passphrase\n");
-		printf("e       - Set Wi-Fi AP SSID\n");
-		printf("f       - Set Wi-Fi AP security type\n");
-		printf("g       - Set Wi-Fi AP visibility\n");
-		printf("h       - Set Wi-Fi AP passphrase\n");
-		printf("i       - Reload Wi-Fi tethering\n");
-		printf("j       - Reload Wi-Fi AP\n");
+		printf("e		- Set Wi-Fi tethering mac filtering\n");
+		printf("f       - Add/Remove MAC adress to/from allowed/blocked list\n");
+		printf("g       - Set Wi-Fi AP SSID\n");
+		printf("h       - Set Wi-Fi AP security type\n");
+		printf("i       - Set Wi-Fi AP visibility\n");
+		printf("j       - Set Wi-Fi AP passphrase\n");
+		printf("k       - Reload Wi-Fi tethering\n");
+		printf("l       - Reload Wi-Fi AP\n");
 		printf("m       - Set Wi-Fi channel\n");
 		printf("n       - Set Wi-Fi hw_mode\n");
 		printf("0       - Exit \n");
@@ -1042,21 +1114,27 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 		rv = test_tethering_wifi_set_passphrase();
 		break;
 	case 'e':
-		rv = test_tethering_wifi_ap_set_ssid();
+		rv = test_tethering_wifi_set_mac_filtering();
 		break;
 	case 'f':
-		rv = test_tethering_wifi_ap_set_security_type();
+		rv = test_tethering_manage_mac_list();
 		break;
 	case 'g':
-		rv = test_tethering_wifi_ap_set_visibility();
+		rv = test_tethering_wifi_ap_set_ssid();
 		break;
 	case 'h':
-		rv = test_tethering_wifi_ap_set_passphrase();
+		rv = test_tethering_wifi_ap_set_security_type();
 		break;
 	case 'i':
-		rv = test_tethering_wifi_reload_settings();
+		rv = test_tethering_wifi_ap_set_visibility();
 		break;
 	case 'j':
+		rv = test_tethering_wifi_ap_set_passphrase();
+		break;
+	case 'k':
+		rv = test_tethering_wifi_reload_settings();
+		break;
+	case 'l':
 		rv = test_tethering_wifi_ap_reload_settings();
 		break;
 	case 'm':
