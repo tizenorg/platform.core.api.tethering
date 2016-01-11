@@ -293,6 +293,7 @@ typedef struct {
 	char passphrase[TETHERING_WIFI_KEY_MAX_LEN + 1];
 	tethering_wifi_security_type_e sec_type;
 	bool visibility;
+	bool mac_filter;
 } __tethering_h;
 
 typedef struct {
@@ -316,6 +317,7 @@ typedef struct {
 	char key[TETHERING_WIFI_KEY_MAX_LEN + 1];
 	tethering_wifi_security_type_e sec_type;
 	bool visibility;
+	bool mac_filter;
 } _softap_settings_t;
 
 #ifdef __cplusplus
