@@ -853,6 +853,41 @@ static int test_tethering_wifi_set_mode(void)
 	return 1;
 }
 
+static int test_tethering_wifi_enable_dhcp(void)
+{
+	int ret;
+	int enable;
+
+	printf("Input (0-Disable, 1-Enable): ");
+	ret = scanf("%d", &enable);
+
+	ret = tethering_wifi_enable_dhcp(th, enable);
+	if (__is_err(ret) == true) {
+		printf("Fail to enable dhcp server!!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
+static int test_tethering_wifi_set_dhcp_range(void)
+{
+	int ret;
+	char rangestart[16], rangestop[16];
+
+	printf("Input range (ex: 192.168.0.50 192.168.0.150): ");
+
+	ret = scanf("%s %s", rangestart, rangestop);
+
+	ret = tethering_wifi_set_dhcp_range(th, rangestart, rangestop);
+	if (__is_err(ret) == true) {
+		printf("Fail to set dhcp range and enable dhcp server!!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
 static int test_tethering_wifi_set_mac_filtering(void)
 {
 	int ret;
@@ -1069,6 +1104,8 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 		printf("l       - Reload Wi-Fi AP\n");
 		printf("m       - Set Wi-Fi channel\n");
 		printf("n       - Set Wi-Fi hw_mode\n");
+		printf("o       - Enable dhcp server\n");
+		printf("p       - Enable dhcp server with range\n");
 		printf("0       - Exit \n");
 		printf("ENTER  - Show options menu.......\n");
 	}
@@ -1142,6 +1179,12 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 		break;
 	case 'n':
 		rv = test_tethering_wifi_set_mode();
+		break;
+	case 'o':
+		rv = test_tethering_wifi_enable_dhcp();
+		break;
+	case 'p':
+		rv = test_tethering_wifi_set_dhcp_range();
 		break;
 	}
 
