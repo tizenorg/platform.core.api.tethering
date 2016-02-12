@@ -3343,6 +3343,108 @@ API int tethering_wifi_remove_blocked_mac_list(tethering_h tethering, const char
 	return __remove_mac_from_file(BLOCKED_LIST, mac);
 }
 
+API int tethering_wifi_enable_dhcp(tethering_h tethering, bool enable)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	GVariant *parameters;
+	GError *error = NULL;
+	guint result;
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	GDBusProxy *proxy = th->client_bus_proxy;
+
+	parameters = g_dbus_proxy_call_sync (proxy, "enable_dhcp",
+			g_variant_new("(b)", enable),
+			G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+
+	if (error) {
+		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
+		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
+			result = TETHERING_ERROR_PERMISSION_DENIED;
+		else
+			result = TETHERING_ERROR_OPERATION_FAILED;
+		
+		g_error_free(error);
+		th->dhcp_enabled = false;
+		
+		return result;
+	}
+
+	g_variant_get (parameters, "(u)", &result);
+	g_variant_unref(parameters);
+
+	if (enable) {
+		th->dhcp_enabled = true;
+	} else {
+		th->dhcp_enabled = false;
+	}
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_set_dhcp_range(tethering_h tethering, char *rangestart, char *rangestop)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(rangestart == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(rangestart) is NULL\n");
+	_retvm_if(rangestop == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(rangestop) is NULL\n");
+
+	GVariant *parameters;
+	GError *error = NULL;
+	guint result;
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	GDBusProxy *proxy = th->client_bus_proxy;
+
+	parameters = g_dbus_proxy_call_sync (proxy, "dhcp_range",
+			g_variant_new("(ss)", rangestart, rangestop),
+			G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+	if (error) {
+		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
+		
+		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
+			result = TETHERING_ERROR_PERMISSION_DENIED;
+		else
+			result = TETHERING_ERROR_OPERATION_FAILED;
+		
+		g_error_free(error);
+		th->dhcp_enabled = false;
+
+		return result;
+	}
+
+	g_variant_get (parameters, "(u)", &result);
+	g_variant_unref(parameters);
+
+	th->dhcp_enabled = true;
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_is_dhcp_enabled(tethering_h tethering, bool *dhcp_enabled)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(dhcp_enabled == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(dhcp_enabled) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+	*dhcp_enabled = th->dhcp_enabled;
+	
+	return TETHERING_ERROR_NONE;
+}
+
 /**
  * @internal
  * @brief Sets the security type of Wi-Fi AP.

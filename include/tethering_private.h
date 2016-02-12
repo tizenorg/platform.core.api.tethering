@@ -294,10 +294,11 @@ typedef struct {
 	char *ap_ssid;
 	char passphrase[TETHERING_WIFI_KEY_MAX_LEN + 1];
 	tethering_wifi_security_type_e sec_type;
+	tethering_wifi_mode_type_e mode_type;
 	bool visibility;
 	bool mac_filter;
+	bool dhcp_enabled;
 	int channel;
-	tethering_wifi_mode_type_e mode_type;
 } __tethering_h;
 
 typedef struct {
