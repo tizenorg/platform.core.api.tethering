@@ -191,8 +191,8 @@ typedef enum {
 	E_SIGNAL_MAX
 } mobile_ap_sig_e;
 
-#define TETHERING_SERVICE_OBJECT_PATH	"/Tethering"
-#define TETHERING_SERVICE_NAME		"org.tizen.tethering"
+#define TETHERING_SERVICE_OBJECT_PATH	"/MobileapAgent"
+#define TETHERING_SERVICE_NAME		"org.tizen.MobileapAgent"
 #define TETHERING_SERVICE_INTERFACE	"org.tizen.tethering"
 
 #define TETHERING_SIGNAL_MATCH_RULE	"type='signal',interface='org.tizen.tethering'"
