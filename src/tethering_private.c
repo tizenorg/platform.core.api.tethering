@@ -62,6 +62,7 @@ int _tethering_check_feature_supported(const char* feature, ...)
 	if (!supported) {
 		ERR("Not supported feature");
 		set_last_result(TETHERING_ERROR_NOT_SUPPORT_API);
+		va_end(list);
 		return TETHERING_ERROR_NOT_SUPPORT_API;
 	}
 	va_end(list);
