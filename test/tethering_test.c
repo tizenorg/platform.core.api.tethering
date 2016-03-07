@@ -891,7 +891,7 @@ static int test_tethering_wifi_set_dhcp_range(void)
 
 	printf("Input range (ex: 192.168.0.50 192.168.0.150): ");
 
-	ret = scanf("%s %s", rangestart, rangestop);
+	ret = scanf("%15s %15s", rangestart, rangestop);
 
 	ret = tethering_wifi_set_dhcp_range(th, rangestart, rangestop);
 	if (__is_err(ret) == true) {
