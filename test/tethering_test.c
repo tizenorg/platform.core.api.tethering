@@ -488,7 +488,9 @@ static void __print_wifi_tethering_setting(tethering_h th)
 	char *passphrase = NULL;
 	bool visibility = false;
 	bool mac_filter = 0;
+	int channel = 0;
 	tethering_wifi_security_type_e security_type = TETHERING_WIFI_SECURITY_TYPE_NONE;
+	tethering_wifi_mode_type_e hw_mode = TETHERING_WIFI_MODE_TYPE_G;
 
 	int error = TETHERING_ERROR_NONE;
 
@@ -526,6 +528,18 @@ static void __print_wifi_tethering_setting(tethering_h th)
 	else
 		g_print("\t** WiFi tethering mac filter : %s\n",
 				mac_filter ? "enable" : "disable");
+
+	error = tethering_wifi_get_mode(th, &hw_mode);
+	if (error != TETHERING_ERROR_NONE)
+		__is_err(error);
+	else
+		 g_print("\t** WiFi tethering mode : %d\n", hw_mode);
+
+	error = tethering_wifi_get_channel(th, &channel);
+	if (error != TETHERING_ERROR_NONE)
+		__is_err(error);
+	else
+		 g_print("\t** WiFi tethering channel : %d\n", channel);
 
 	if (ssid)
 		free(ssid);
