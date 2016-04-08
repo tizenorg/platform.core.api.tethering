@@ -912,9 +912,8 @@ static int test_tethering_wifi_is_dhcp_enabled(void)
 	if (__is_err(ret) == true) {
 		printf("Fail to get dhcp server status!!\n");
 		return -1;
-	}
-	else {
-		printf("DHCP server is %s\n", enabled? "enabled": "disabled");
+	} else {
+		printf("DHCP server is %s\n", enabled ? "enabled" : "disabled");
 	}
 
 	return 1;
