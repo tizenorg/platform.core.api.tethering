@@ -1336,21 +1336,21 @@ static bool __get_wifi_mode_type(tethering_wifi_mode_type_e type, char **buf)
 	_retvm_if(buf == NULL, false, "parameter(buf) is NULL\n");
 
 	switch (type) {
-		case TETHERING_WIFI_MODE_TYPE_B:
-			*buf = g_strdup("b");
-			break;
-		case TETHERING_WIFI_MODE_TYPE_G:
-			*buf = g_strdup("g");
-			break;
-		case TETHERING_WIFI_MODE_TYPE_A:
-			*buf = g_strdup("a");
-			break;
-		case TETHERING_WIFI_MODE_TYPE_AD:
-			*buf = g_strdup("ad");
-			break;
-		default:
-			ERR("Not supported type : %d\n", type);
-			return false;
+	case TETHERING_WIFI_MODE_TYPE_B:
+		*buf = g_strdup("b");
+		break;
+	case TETHERING_WIFI_MODE_TYPE_G:
+		*buf = g_strdup("g");
+		break;
+	case TETHERING_WIFI_MODE_TYPE_A:
+		*buf = g_strdup("a");
+		break;
+	case TETHERING_WIFI_MODE_TYPE_AD:
+		*buf = g_strdup("ad");
+		break;
+	default:
+		ERR("Not supported type : %d\n", type);
+		return false;
 	}
 	return true;
 }
@@ -1384,7 +1384,7 @@ static int __prepare_wifi_settings(tethering_h tethering, _softap_settings_t *se
 	set->mac_filter = th->mac_filter;
 	set->channel = th->channel;
 
-	__get_wifi_mode_type (th->mode_type, &ptr);
+	__get_wifi_mode_type(th->mode_type, &ptr);
 	if (ptr == NULL) {
 		g_strlcpy(set->mode, "", sizeof(set->mode));
 	} else {
@@ -3359,7 +3359,7 @@ API int tethering_wifi_enable_dhcp(tethering_h tethering, bool enable)
 
 	GDBusProxy *proxy = th->client_bus_proxy;
 
-	parameters = g_dbus_proxy_call_sync (proxy, "enable_dhcp",
+	parameters = g_dbus_proxy_call_sync(proxy, "enable_dhcp",
 			g_variant_new("(b)", enable),
 			G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
 
@@ -3376,14 +3376,13 @@ API int tethering_wifi_enable_dhcp(tethering_h tethering, bool enable)
 		return result;
 	}
 
-	g_variant_get (parameters, "(u)", &result);
+	g_variant_get(parameters, "(u)", &result);
 	g_variant_unref(parameters);
 
-	if (enable) {
+	if (enable)
 		th->dhcp_enabled = true;
-	} else {
+	else
 		th->dhcp_enabled = false;
-	}
 
 	return TETHERING_ERROR_NONE;
 }
@@ -3407,7 +3406,7 @@ API int tethering_wifi_set_dhcp_range(tethering_h tethering, char *rangestart, c
 
 	GDBusProxy *proxy = th->client_bus_proxy;
 
-	parameters = g_dbus_proxy_call_sync (proxy, "dhcp_range",
+	parameters = g_dbus_proxy_call_sync(proxy, "dhcp_range",
 			g_variant_new("(ss)", rangestart, rangestop),
 			G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
 	if (error) {
@@ -3424,7 +3423,7 @@ API int tethering_wifi_set_dhcp_range(tethering_h tethering, char *rangestart, c
 		return result;
 	}
 
-	g_variant_get (parameters, "(u)", &result);
+	g_variant_get(parameters, "(u)", &result);
 	g_variant_unref(parameters);
 
 	th->dhcp_enabled = true;
