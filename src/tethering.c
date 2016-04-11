@@ -1560,7 +1560,8 @@ API int tethering_create(tethering_h *tethering)
 			NULL, TETHERING_SERVICE_NAME, TETHERING_SERVICE_OBJECT_PATH,
 			TETHERING_SERVICE_INTERFACE, th->cancellable, &error);
 	if (!th->client_bus_proxy) {
-		ERR("Couldn't create the proxy object because of %s\n", error->message);
+		if (error)
+			ERR("Couldn't create the proxy object because of %s\n", error->message);
 		g_cancellable_cancel(th->cancellable);
 		g_object_unref(th->cancellable);
 		g_object_unref(th->client_bus);
