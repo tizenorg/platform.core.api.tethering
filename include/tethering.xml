@@ -55,32 +55,7 @@
 			<arg type="u" name="result" direction="out"/>
 		</method>
 
-		<method name="enable_wifi_ap">
-			<annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-			<arg type="s" name="ssid" direction="in"/>
-			<arg type="s" name="key" direction="in"/>
-			<arg type="i" name="visibility" direction="in"/>
-			<arg type="i" name="security" direction="in"/>
-			<arg type="u" name="type" direction="out"/>
-			<arg type="u" name="result" direction="out"/>
-		</method>
-
-		<method name="disable_wifi_ap">
-			<annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-			<arg type="u" name="type" direction="out"/>
-			<arg type="u" name="result" direction="out"/>
-		</method>
-
 		<method name="reload_wifi_settings">
-			<annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-			<arg type="s" name="ssid" direction="in"/>
-			<arg type="s" name="key" direction="in"/>
-			<arg type="i" name="visibility" direction="in"/>
-			<arg type="i" name="security" direction="in"/>
-			<arg type="u" name="result" direction="out"/>
-		</method>
-
-		<method name="reload_wifi_ap_settings">
 			<annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
 			<arg type="s" name="ssid" direction="in"/>
 			<arg type="s" name="key" direction="in"/>
@@ -136,14 +111,6 @@
 		</signal>
 
 		<signal name="bluetooth_off">
-			<arg type="s" name="arg1" direction="out"/>
-		</signal>
-
-		<signal name="wifi_ap_on">
-			<arg type="s" name="arg1" direction="out"/>
-		</signal>
-
-		<signal name="wifi_ap_off">
 			<arg type="s" name="arg1" direction="out"/>
 		</signal>
 
