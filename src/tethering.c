@@ -61,14 +61,6 @@ static void __handle_bt_tether_off(GDBusConnection *connection, const gchar *sen
 		const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
 		GVariant *parameters, gpointer user_data);
 
-static void __handle_wifi_ap_on(GDBusConnection *connection, const gchar *sender_name,
-		const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
-		GVariant *parameters, gpointer user_data);
-
-static void __handle_wifi_ap_off(GDBusConnection *connection, const gchar *sender_name,
-		const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
-		GVariant *parameters, gpointer user_data);
-
 static void __handle_net_closed(GDBusConnection *connection, const gchar *sender_name,
 		const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
 		GVariant *parameters, gpointer user_data);
@@ -109,8 +101,6 @@ static __tethering_sig_t sigs[] = {
 	{0, SIGNAL_NAME_USB_TETHER_OFF, __handle_usb_tether_off},
 	{0, SIGNAL_NAME_BT_TETHER_ON, __handle_bt_tether_on},
 	{0, SIGNAL_NAME_BT_TETHER_OFF, __handle_bt_tether_off},
-	{0, SIGNAL_NAME_WIFI_AP_ON, __handle_wifi_ap_on},
-	{0, SIGNAL_NAME_WIFI_AP_OFF, __handle_wifi_ap_off},
 	{0, SIGNAL_NAME_NO_DATA_TIMEOUT, __handle_no_data_timeout},
 	{0, SIGNAL_NAME_LOW_BATTERY_MODE, __handle_low_battery_mode},
 	{0, SIGNAL_NAME_FLIGHT_MODE, __handle_flight_mode},
@@ -146,8 +136,7 @@ static bool __any_tethering_is_enabled(tethering_h tethering)
 {
 	if (tethering_is_enabled(tethering, TETHERING_TYPE_USB) ||
 			tethering_is_enabled(tethering, TETHERING_TYPE_WIFI) ||
-			tethering_is_enabled(tethering, TETHERING_TYPE_BT) ||
-			tethering_is_enabled(tethering, TETHERING_TYPE_RESERVED))
+			tethering_is_enabled(tethering, TETHERING_TYPE_BT))
 		return true;
 
 	return false;
@@ -356,9 +345,7 @@ static void __handle_dhcp(GDBusConnection *connection, const gchar *sender_name,
 		type = TETHERING_TYPE_WIFI;
 	else if (ap_type == MOBILE_AP_TYPE_BT)
 		type = TETHERING_TYPE_BT;
-	else if (ap_type == MOBILE_AP_TYPE_WIFI_AP) {
-		type = TETHERING_TYPE_RESERVED;
-	} else {
+	else {
 		ERR("Not supported tethering type [%d]\n", ap_type);
 		goto DONE;
 	}
@@ -571,60 +558,6 @@ static void __handle_bt_tether_off(GDBusConnection *connection, const gchar *sen
 	DBG("-\n");
 }
 
-static void __handle_wifi_ap_on(GDBusConnection *connection, const gchar *sender_name,
-			const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
-			GVariant *parameters, gpointer user_data)
-{
-	DBG("+\n");
-
-	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
-
-	__tethering_h *th = (__tethering_h *)user_data;
-	tethering_type_e type = TETHERING_TYPE_RESERVED;
-	bool is_requested = false;
-	tethering_enabled_cb ecb = NULL;
-	void *data = NULL;
-
-	ecb = th->enabled_cb[type];
-	if (ecb == NULL)
-		return;
-	data = th->enabled_user_data[type];
-
-	ecb(TETHERING_ERROR_NONE, type, is_requested, data);
-	DBG("-\n");
-}
-
-static void __handle_wifi_ap_off(GDBusConnection *connection, const gchar *sender_name,
-			const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
-			GVariant *parameters, gpointer user_data)
-{
-	DBG("+\n");
-
-	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
-
-	__tethering_h *th = (__tethering_h *)user_data;
-	tethering_type_e type = TETHERING_TYPE_RESERVED;
-	tethering_disabled_cause_e code = TETHERING_DISABLED_BY_OTHERS;
-	tethering_disabled_cb dcb = NULL;
-	void *data = NULL;
-	char *buf = NULL;
-
-	dcb = th->disabled_cb[type];
-	if (dcb == NULL)
-		return;
-	data = th->disabled_user_data[type];
-	g_variant_get(parameters, "(s)", &buf);
-	if (!g_strcmp0(buf, SIGNAL_MSG_NOT_AVAIL_INTERFACE))
-		code = TETHERING_DISABLED_BY_WIFI_ON;
-	else if (!g_strcmp0(buf, SIGNAL_MSG_TIMEOUT))
-		code = TETHERING_DISABLED_BY_TIMEOUT;
-	g_free(buf);
-
-	dcb(TETHERING_ERROR_NONE, type, code, data);
-
-	DBG("-\n");
-}
-
 static void __handle_no_data_timeout(GDBusConnection *connection, const gchar *sender_name,
 			const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
 			GVariant *parameters, gpointer user_data)
@@ -664,7 +597,7 @@ static void __handle_low_battery_mode(GDBusConnection *connection, const gchar *
 	void *data = NULL;
 	tethering_disabled_cause_e code = TETHERING_DISABLED_BY_LOW_BATTERY;
 
-	for (type = TETHERING_TYPE_USB; type <= TETHERING_TYPE_RESERVED; type++) {
+	for (type = TETHERING_TYPE_USB; type <= TETHERING_TYPE_BT; type++) {
 		dcb = th->disabled_cb[type];
 		if (dcb == NULL)
 			continue;
@@ -689,7 +622,7 @@ static void __handle_flight_mode(GDBusConnection *connection, const gchar *sende
 	void *data = NULL;
 	tethering_disabled_cause_e code = TETHERING_DISABLED_BY_FLIGHT_MODE;
 
-	for (type = TETHERING_TYPE_USB; type <= TETHERING_TYPE_RESERVED; type++) {
+	for (type = TETHERING_TYPE_USB; type <= TETHERING_TYPE_BT; type++) {
 		dcb = th->disabled_cb[type];
 		if (dcb == NULL)
 			continue;
@@ -934,56 +867,6 @@ static void __usb_enabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 	DBG("-\n");
 }
 
-static void __wifi_ap_enabled_cfm_cb(GObject *source_object, GAsyncResult *res,
-		gpointer user_data)
-{
-	DBG("+\n");
-
-	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
-	__tethering_h *th = (__tethering_h *)user_data;
-	GError *g_error = NULL;
-	GVariant *g_var;
-	guint info;
-	tethering_error_e error;
-	tethering_enabled_cb ecb = th->enabled_cb[TETHERING_TYPE_RESERVED];
-	void *data = th->enabled_user_data[TETHERING_TYPE_RESERVED];
-
-	g_var  = g_dbus_proxy_call_finish(th->client_bus_proxy, res, &g_error);
-	if (g_error) {
-		ERR("DBus error [%s]\n", g_error->message);
-		if (g_error->code == G_DBUS_ERROR_NO_REPLY &&
-				++retry < TETHERING_ERROR_RECOVERY_MAX) {
-			g_error_free(g_error);
-			tethering_enable((tethering_h)th, TETHERING_TYPE_RESERVED);
-			DBG("-\n");
-			return;
-		}
-		if (g_error->code == G_DBUS_ERROR_ACCESS_DENIED)
-			error = TETHERING_ERROR_PERMISSION_DENIED;
-		else
-			error = TETHERING_ERROR_OPERATION_FAILED;
-		g_error_free(g_error);
-	} else {
-		g_variant_get(g_var, "(u)", &info);
-		g_variant_unref(g_var);
-		error = __get_error(info);
-	}
-	retry = 0;
-
-	sigs[E_SIGNAL_WIFI_AP_ON].sig_id = g_dbus_connection_signal_subscribe(th->client_bus,
-			NULL, TETHERING_SERVICE_INTERFACE, sigs[E_SIGNAL_WIFI_AP_ON].name,
-			TETHERING_SERVICE_OBJECT_PATH, NULL, G_DBUS_SIGNAL_FLAGS_NONE,
-			sigs[E_SIGNAL_WIFI_AP_ON].cb, (gpointer)th, NULL);
-
-	if (!ecb) {
-		DBG("-\n");
-		return;
-	}
-
-	ecb(error, TETHERING_TYPE_RESERVED, true, data);
-	DBG("-\n");
-}
-
 static void __disabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 		gpointer user_data)
 {
@@ -1046,19 +929,6 @@ static void __disabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 				sigs[E_SIGNAL_USB_TETHER_OFF].cb, (gpointer)th, NULL);
 
 		type = TETHERING_TYPE_USB;
-		dcb = th->disabled_cb[type];
-		data = th->disabled_user_data[type];
-		if (dcb)
-			dcb(error, type, code, data);
-		break;
-
-	case MOBILE_AP_DISABLE_WIFI_AP_CFM:
-		sigs[E_SIGNAL_WIFI_AP_OFF].sig_id = g_dbus_connection_signal_subscribe(th->client_bus,
-				NULL, TETHERING_SERVICE_INTERFACE, sigs[E_SIGNAL_WIFI_AP_OFF].name,
-				TETHERING_SERVICE_OBJECT_PATH, NULL, G_DBUS_SIGNAL_FLAGS_NONE,
-				sigs[E_SIGNAL_WIFI_AP_OFF].cb, (gpointer)th, NULL);
-
-		type = TETHERING_TYPE_RESERVED;
 		dcb = th->disabled_cb[type];
 		data = th->disabled_user_data[type];
 		if (dcb)
@@ -1177,43 +1047,6 @@ static void __settings_reloaded_cb(GObject *source_object, GAsyncResult *res,
 	DBG("-\n");
 }
 
-static void __ap_settings_reloaded_cb(GObject *source_object, GAsyncResult *res,
-		gpointer user_data)
-{
-	DBG("+\n");
-
-	_retm_if(user_data == NULL, "parameter(user_data) is NULL\n");
-	GError *g_error = NULL;
-	GVariant *g_var;
-	guint info;
-	__tethering_h *th = (__tethering_h *)user_data;
-	tethering_error_e tethering_error;
-
-	g_var  = g_dbus_proxy_call_finish(th->client_bus_proxy, res, &g_error);
-	if (g_error) {
-		ERR("DBus fail [%s]\n", g_error->message);
-		if (g_error->code == G_DBUS_ERROR_ACCESS_DENIED)
-			tethering_error = TETHERING_ERROR_PERMISSION_DENIED;
-		else
-			tethering_error = TETHERING_ERROR_OPERATION_FAILED;
-		g_error_free(g_error);
-	}
-	if (th->ap_settings_reloaded_cb == NULL) {
-		DBG("There is no settings_reloaded_cb\n-\n");
-		return;
-	}
-	g_variant_get(g_var, "(u)", &info);
-	tethering_error = __get_error(info);
-	g_variant_unref(g_var);
-
-	th->ap_settings_reloaded_cb(tethering_error,
-			th->ap_settings_reloaded_user_data);
-
-	th->ap_settings_reloaded_cb = NULL;
-	th->ap_settings_reloaded_user_data = NULL;
-	DBG("-\n");
-}
-
 static void __connect_signals(tethering_h tethering)
 {
 	DBG("+\n");
@@ -1267,10 +1100,6 @@ static bool __get_intf_name(tethering_type_e type, char *buf, unsigned int len)
 		g_strlcpy(buf, TETHERING_BT_IF, len);
 		break;
 
-	case TETHERING_TYPE_RESERVED:
-		g_strlcpy(buf, TETHERING_WIFI_IF, len);
-		break;
-
 	default:
 		ERR("Not supported type : %d\n", type);
 		return false;
@@ -1293,10 +1122,6 @@ static bool __get_gateway_addr(tethering_type_e type, char *buf, unsigned int le
 
 	case TETHERING_TYPE_BT:
 		g_strlcpy(buf, TETHERING_BT_GATEWAY, len);
-		break;
-
-	case TETHERING_TYPE_RESERVED:
-		g_strlcpy(buf, TETHERING_WIFI_GATEWAY, len);
 		break;
 
 	default:
@@ -1427,30 +1252,6 @@ static int __prepare_wifi_settings(tethering_h tethering, _softap_settings_t *se
 	return TETHERING_ERROR_NONE;
 }
 
-static int __prepare_wifi_ap_settings(tethering_h tethering, _softap_settings_t *set)
-{
-	DBG("+\n");
-
-	__tethering_h *th = (__tethering_h *)tethering;
-
-	if (th == NULL || set == NULL) {
-		ERR("null parameter\n");
-		return TETHERING_ERROR_INVALID_PARAMETER;
-	}
-
-	g_strlcpy(set->ssid, th->ap_ssid, sizeof(set->ssid));
-	set->sec_type = th->sec_type;
-	set->visibility = th->visibility;
-
-	if (set->sec_type == TETHERING_WIFI_SECURITY_TYPE_NONE)
-		g_strlcpy(set->key, "", sizeof(set->key));
-	else
-		g_strlcpy(set->key, th->passphrase, sizeof(set->key));
-
-	DBG("-\n");
-	return TETHERING_ERROR_NONE;
-}
-
 static bool __check_precondition(tethering_type_e type)
 {
 	int dnet_state = 0;
@@ -1533,13 +1334,6 @@ API int tethering_create(tethering_h *tethering)
 		return TETHERING_ERROR_OPERATION_FAILED;
 	}
 
-	th->ap_ssid = g_strdup(ssid);
-	if (th->ap_ssid == NULL) {
-		ERR("g_strdup failed\n");
-		free(th);
-		return TETHERING_ERROR_OPERATION_FAILED;
-	}
-
 #if !GLIB_CHECK_VERSION(2, 36, 0)
 	g_type_init();
 #endif
@@ -1550,7 +1344,6 @@ API int tethering_create(tethering_h *tethering)
 		g_error_free(error);
 		g_cancellable_cancel(cancellable);
 		g_object_unref(cancellable);
-		g_free(th->ap_ssid);
 		free(th);
 		return TETHERING_ERROR_OPERATION_FAILED;
 	}
@@ -1565,7 +1358,6 @@ API int tethering_create(tethering_h *tethering)
 		g_cancellable_cancel(th->cancellable);
 		g_object_unref(th->cancellable);
 		g_object_unref(th->client_bus);
-		g_free(th->ap_ssid);
 		free(th);
 		return TETHERING_ERROR_OPERATION_FAILED;
 	}
@@ -1604,8 +1396,6 @@ API int tethering_destroy(tethering_h tethering)
 
 	if (th->ssid)
 		free(th->ssid);
-	if (th->ap_ssid)
-		free(th->ap_ssid);
 
 	g_object_unref(th->cancellable);
 	g_object_unref(th->client_bus_proxy);
@@ -1650,8 +1440,7 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 
 	g_dbus_proxy_set_default_timeout(proxy, DBUS_TIMEOUT_INFINITE);
 
-	if (type != TETHERING_TYPE_RESERVED
-		&& __check_precondition(type) == FALSE) {
+	if (__check_precondition(type) == FALSE) {
 		DBG("-\n");
 		return TETHERING_ERROR_OPERATION_FAILED;
 	}
@@ -1695,23 +1484,6 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 
 		break;
 
-	case TETHERING_TYPE_RESERVED: {
-		_softap_settings_t set = {"", "", "", 0, false};
-
-		ret = __prepare_wifi_ap_settings(tethering, &set);
-		if (ret != TETHERING_ERROR_NONE) {
-			ERR("softap settings initialization failed\n");
-			return TETHERING_ERROR_OPERATION_FAILED;
-		}
-
-		g_dbus_connection_signal_unsubscribe(connection,
-				sigs[E_SIGNAL_WIFI_AP_ON].sig_id);
-
-		g_dbus_proxy_call(proxy, "enable_wifi_ap",
-				g_variant_new("(ssii)", set.ssid, set.key, set.visibility, set.sec_type),
-				G_DBUS_CALL_FLAGS_NONE, -1, th->cancellable, (GAsyncReadyCallback) __wifi_ap_enabled_cfm_cb, (gpointer)tethering);
-		break;
-	}
 	case TETHERING_TYPE_ALL: {
 		_softap_settings_t set = {"", "", "", 0, false};
 
@@ -1821,15 +1593,6 @@ API int tethering_disable(tethering_h tethering, tethering_type_e type)
 				(GAsyncReadyCallback) __disabled_cfm_cb, (gpointer)tethering);
 		break;
 
-	case TETHERING_TYPE_RESERVED:
-		g_dbus_connection_signal_unsubscribe(connection,
-				sigs[E_SIGNAL_WIFI_AP_OFF].sig_id);
-
-		g_dbus_proxy_call(proxy, "disable_wifi_ap",
-				NULL, G_DBUS_CALL_FLAGS_NONE, -1, th->cancellable,
-				(GAsyncReadyCallback) __disabled_cfm_cb, (gpointer)tethering);
-		break;
-
 	case TETHERING_TYPE_ALL:
 		g_dbus_connection_signal_unsubscribe(connection,
 				sigs[E_SIGNAL_USB_TETHER_OFF].sig_id);
@@ -1893,10 +1656,6 @@ API bool tethering_is_enabled(tethering_h tethering, tethering_type_e type)
 
 	case TETHERING_TYPE_BT:
 		vconf_type = VCONFKEY_MOBILE_HOTSPOT_MODE_BT;
-		break;
-
-	case TETHERING_TYPE_RESERVED:
-		vconf_type = VCONFKEY_MOBILE_HOTSPOT_MODE_WIFI_AP;
 		break;
 
 	default:
@@ -2278,8 +2037,6 @@ API int tethering_foreach_connected_clients(tethering_h tethering, tethering_typ
 					client.interface = TETHERING_TYPE_WIFI;
 				else if (interface == MOBILE_AP_TYPE_BT)
 					client.interface = TETHERING_TYPE_BT;
-				else if (interface == MOBILE_AP_TYPE_WIFI_AP)
-					client.interface = TETHERING_TYPE_RESERVED;
 				else {
 					ERR("Invalid interface\n");
 					g_free(key);
@@ -2287,8 +2044,7 @@ API int tethering_foreach_connected_clients(tethering_h tethering, tethering_typ
 					break;
 				}
 				DBG("interface is %d\n", client.interface);
-				if (client.interface != type && (TETHERING_TYPE_ALL != type &&
-							client.interface != TETHERING_TYPE_RESERVED)) {
+				if (client.interface != type && (TETHERING_TYPE_ALL != type)) {
 					g_free(key);
 					g_variant_unref(value);
 					break;
@@ -3441,329 +3197,6 @@ API int tethering_wifi_is_dhcp_enabled(tethering_h tethering, bool *dhcp_enabled
 
 	__tethering_h *th = (__tethering_h *)tethering;
 	*dhcp_enabled = th->dhcp_enabled;
-
-	return TETHERING_ERROR_NONE;
-}
-
-/**
- * @internal
- * @brief Sets the security type of Wi-Fi AP.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege http://tizen.org/privilege/tethering.admin
- * @details If security type is not set, WPA2_PSK is used
- * @param[in]  tethering  The handle of tethering
- * @param[in]  type  The security type
- * @return 0 on success, otherwise negative error value.
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
- * @see  tethering_wifi_ap_get_security_type()
- */
-API int tethering_wifi_ap_set_security_type(tethering_h tethering, tethering_wifi_security_type_e type)
-{
-	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
-
-	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-		"parameter(tethering) is NULL\n");
-
-	__tethering_h *th = (__tethering_h *)tethering;
-	th->sec_type = type;
-	return TETHERING_ERROR_NONE;
-}
-
-/**
- * @internal
- * @brief Gets the security type of Wi-Fi AP.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege http://tizen.org/privilege/tethering.admin
- * @details If security type is not set, WPA2_PSK is used
- * @param[in]  tethering  The handle of tethering
- * @param[out]  type  The security type
- * @return 0 on success, otherwise negative error value.
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @see  tethering_wifi_ap_set_security_type()
- */
-API int tethering_wifi_ap_get_security_type(tethering_h tethering, tethering_wifi_security_type_e *type)
-{
-	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
-
-	_retvm_if(type == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-		"parameter(type) is NULL\n");
-
-	__tethering_h *th = (__tethering_h *)tethering;
-
-	*type = th->sec_type;
-	return TETHERING_ERROR_NONE;
-}
-
-/**
- * @internal
- * @brief Sets the SSID (service set identifier) for Wi-Fi AP. The SSID cannot exceed 32 bytes.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege http://tizen.org/privilege/tethering.admin
- * @details If SSID is not set, Device name is used as SSID
- * @param[in]  tethering  The handle of tethering
- * @param[in]  ssid  The SSID
- * @return 0 on success, otherwise negative error value.
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @retval  #TETHERING_ERROR_OUT_OF_MEMORY  Out of memory
- */
-API int tethering_wifi_ap_set_ssid(tethering_h tethering, const char *ssid)
-{
-	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
-
-	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-			"parameter(tethering) is NULL\n");
-	_retvm_if(ssid == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-			"parameter(ssid) is NULL\n");
-
-	__tethering_h *th = (__tethering_h *)tethering;
-	char *p_ssid = NULL;
-	int ssid_len = 0;
-
-	ssid_len = strlen(ssid);
-	if (ssid_len > TETHERING_WIFI_SSID_MAX_LEN) {
-		ERR("parameter(ssid) is too long");
-		return TETHERING_ERROR_INVALID_PARAMETER;
-	}
-
-	p_ssid = strdup(ssid);
-	if (p_ssid == NULL) {
-		ERR("strdup failed\n");
-		return TETHERING_ERROR_OUT_OF_MEMORY;
-	}
-
-	if (th->ap_ssid)
-		g_free(th->ap_ssid);
-	th->ap_ssid = p_ssid;
-
-	return TETHERING_ERROR_NONE;
-}
-
-/**
- * @internal
- * @brief Gets the SSID (service set identifier) for Wi-Fi AP.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege http://tizen.org/privilege/tethering.admin
- * @details If SSID is not set, Device name is used as SSID
- * @remarks @a ssid must be released with free() by you.
- * @param[in]  tethering  The handle of tethering
- * @param[out]  ssid  The SSID
- * @return 0 on success, otherwise negative error value.
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @retval  #TETHERING_ERROR_OUT_OF_MEMORY  Out of memory
- */
-API int tethering_wifi_ap_get_ssid(tethering_h tethering, char **ssid)
-{
-	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
-
-	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-			"parameter(tethering) is NULL\n");
-	_retvm_if(ssid == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-			"parameter(ssid) is NULL\n");
-
-	__tethering_h *th = (__tethering_h *)tethering;
-
-	*ssid = g_strdup(th->ap_ssid);
-	if (*ssid == NULL) {
-		ERR("strdup failed\n");
-		return TETHERING_ERROR_OUT_OF_MEMORY;
-	}
-
-	return TETHERING_ERROR_NONE;
-}
-
-/**
- * @internal
- * @brief Sets the visibility of SSID(service set identifier) for Wi-Fi AP.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege http://tizen.org/privilege/tethering.admin
- * @details If you set the visibility invisible, then the SSID of this device is hidden. So, Wi-Fi scan can't find your device.
- * @details by default visibility is set to true.
- * @remarks This change is applied next time Wi-Fi tethering is enabled
- * @param[in]  tethering  The handle of tethering
- * @param[in]  visible  The visibility of SSID: (@c true = visible, @c false = invisible)
- * @return 0 on success, otherwise negative error value.
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
- * @see  tethering_wifi_ap_get_ssid_visibility()
- */
-API int tethering_wifi_ap_set_ssid_visibility(tethering_h tethering, bool visible)
-{
-	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
-
-	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-		"parameter(tethering) is NULL\n");
-
-	__tethering_h *th = (__tethering_h *)tethering;
-	th->visibility = visible;
-	return TETHERING_ERROR_NONE;
-}
-
-/**
- * @internal
- * @brief Gets the visibility of SSID(service set identifier) for Wi-Fi AP.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege http://tizen.org/privilege/tethering.admin
- * @details If the visibility is set invisible, then the SSID of this device is hidden. So, Wi-Fi scan can't find your device.
- * @details by default visibility is set to true.
- * @param[in]  tethering  The handle of tethering
- * @param[out]  visible  The visibility of SSID: (@c true = visible, @c false = invisible)
- * @return 0 on success, otherwise negative error value.
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @see  tethering_wifi_ap_set_ssid_visibility()
- */
-API int tethering_wifi_ap_get_ssid_visibility(tethering_h tethering, bool *visible)
-{
-	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
-
-	_retvm_if(visible == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-			"parameter(visible) is NULL\n");
-
-	__tethering_h *th = (__tethering_h *)tethering;
-
-	*visible = th->visibility;
-	return TETHERING_ERROR_NONE;
-}
-
-/**
- * @internal
- * @brief Sets the passphrase for Wi-Fi AP.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege http://tizen.org/privilege/tethering.admin
- * @details If the passphrase is not set, random string of 8 alphabets will be used.
- * @param[in]  tethering  The handle of tethering
- * @param[in]  passphrase  The passphrase
- * @return 0 on success, otherwise negative error value.
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @see  tethering_wifi_ap_get_passphrase()
- */
-API int tethering_wifi_ap_set_passphrase(tethering_h tethering, const char *passphrase)
-{
-	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
-
-	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-		"parameter(tethering) is NULL\n");
-	_retvm_if(passphrase == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-		"parameter(passphrase) is NULL\n");
-
-	__tethering_h *th = (__tethering_h *)tethering;
-	int passphrase_len = 0;
-
-	passphrase_len = strlen(passphrase);
-
-	if (passphrase_len < TETHERING_WIFI_KEY_MIN_LEN ||
-			passphrase_len > TETHERING_WIFI_KEY_MAX_LEN) {
-		ERR("parameter(passphrase) is too short or long\n");
-		return TETHERING_ERROR_INVALID_PARAMETER;
-	}
-
-	if (!g_strcmp0(passphrase, th->passphrase))
-		return TETHERING_ERROR_NONE;
-
-	g_strlcpy(th->passphrase, passphrase, sizeof(th->passphrase));
-	return TETHERING_ERROR_NONE;
-}
-
-/**
- * @internal
- * @brief Gets the passphrase for Wi-Fi AP.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege http://tizen.org/privilege/tethering.admin
- * @details If the passphrase is not set, random string of 8 alphabets will be used.
- * @remarks @a passphrase must be released with free() by you.
- * @param[in]  tethering  The handle of tethering
- * @param[out]  passphrase  The passphrase
- * @return 0 on success, otherwise negative error value.
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @retval  #TETHERING_ERROR_OUT_OF_MEMORY  Out of memory
- * @see  tethering_wifi_ap_set_passphrase()
- */
-API int tethering_wifi_ap_get_passphrase(tethering_h tethering, char **passphrase)
-{
-	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
-
-	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-			"parameter(tethering) is NULL\n");
-	_retvm_if(passphrase == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-			"parameter(passphrase) is NULL\n");
-
-	__tethering_h *th = (__tethering_h *)tethering;
-
-	*passphrase = g_strdup(th->passphrase);
-	if (*passphrase == NULL) {
-		ERR("strdup is failed\n");
-		return TETHERING_ERROR_OUT_OF_MEMORY;
-	}
-
-	return TETHERING_ERROR_NONE;
-}
-
-/**
- * @internal
- * @brief Reload the settings (SSID / Passphrase / Security type / SSID visibility) for Wi-Fi AP.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege http://tizen.org/privilege/tethering.admin
- * @remarks Connected devices via MobileAP will be disconnected when the settings are reloaded
- * @param[in]  tethering  The handle of tethering
- * @param[in]  callback  The callback function to invoke
- * @param[in]  user_data  The user data to be passed to the callback function
- * @return 0 on success, otherwise negative error value.
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
- */
-API int tethering_wifi_ap_reload_settings(tethering_h tethering, tethering_wifi_ap_settings_reloaded_cb callback, void *user_data)
-
-{
-	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
-
-	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-			"parameter(tethering) is NULL\n");
-	_retvm_if(callback == NULL, TETHERING_ERROR_INVALID_PARAMETER,
-			"parameter(callback) is NULL\n");
-
-	__tethering_h *th = (__tethering_h *)tethering;
-	_softap_settings_t set = {"", "", "", 0, false};
-	GDBusProxy *proxy = th->client_bus_proxy;
-	int ret = 0;
-
-	DBG("+\n");
-
-	if (th->ap_settings_reloaded_cb) {
-		ERR("Operation in progress\n");
-		return TETHERING_ERROR_OPERATION_FAILED;
-	}
-
-	ret = __prepare_wifi_ap_settings(tethering, &set);
-	if (ret != TETHERING_ERROR_NONE) {
-		ERR("softap settings initialization failed\n");
-		return TETHERING_ERROR_OPERATION_FAILED;
-	}
-
-	th->ap_settings_reloaded_cb = callback;
-	th->ap_settings_reloaded_user_data = user_data;
-
-	g_dbus_proxy_call(proxy, "reload_wifi_ap_settings",
-			g_variant_new("(ssii)", set.ssid, set.key, set.visibility, set.sec_type),
-			G_DBUS_CALL_FLAGS_NONE, -1, th->cancellable,
-			(GAsyncReadyCallback) __ap_settings_reloaded_cb, (gpointer)tethering);
 
 	return TETHERING_ERROR_NONE;
 }

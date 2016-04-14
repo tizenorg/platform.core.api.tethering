@@ -61,11 +61,10 @@ typedef enum {
  * @since_tizen 2.3
  */
 typedef enum {
-    TETHERING_TYPE_ALL = 0,  /**< All type except for TETHERING_TYPE_RESERVED */
+    TETHERING_TYPE_ALL = 0,  /**< All type */
     TETHERING_TYPE_USB,  /**< USB type */
     TETHERING_TYPE_WIFI,  /**< Wi-Fi type */
     TETHERING_TYPE_BT,  /**< BT type */
-    TETHERING_TYPE_RESERVED,  /**< Reserved type */
 } tethering_type_e;
 
 /**
@@ -248,15 +247,6 @@ typedef void (*tethering_wifi_passphrase_changed_cb)(void *user_data);
  * @pre  tethering_wifi_reload_settings() will invoke this callback.
  */
 typedef void (*tethering_wifi_settings_reloaded_cb)(tethering_error_e result, void *user_data);
-
-/**
- * @brief Called when Wi-Fi AP settings are reloaded.
- * @since_tizen 2.3
- * @param[in]  result  The result of reloading the settings
- * @param[in]  user_data  The user data passed from the request function
- * @pre  tethering_wifi_ap_reload_settings() will invoke this callback.
- */
-typedef void (*tethering_wifi_ap_settings_reloaded_cb)(tethering_error_e result, void *user_data);
 
 /**
  * @brief Creates the handle for tethering.
@@ -999,7 +989,7 @@ int tethering_wifi_set_channel(tethering_h tethering, int channel);
  * @return 0 on success, otherwise negative error value
  * @retval  #TETHERING_ERROR_NONE  Successful
  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @see  tethering_wifi_ap_set_channel()
+ * @see  tethering_wifi_set_channel()
  */
 int tethering_wifi_get_channel(tethering_h tethering, int *channel);
 
@@ -1033,149 +1023,6 @@ int tethering_wifi_set_mode(tethering_h tethering, tethering_wifi_mode_type_e ty
  */
 int tethering_wifi_get_mode(tethering_h tethering, tethering_wifi_mode_type_e *type);
 
-/**
- * @brief Sets the security type of Wi-Fi AP.
- * @details If security type is not set, WPA2_PSK is used.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege %http://tizen.org/privilege/tethering.admin
- * @param[in]  tethering  The tethering handle
- * @param[in]  type  The security type
- * @return 0 on success, otherwise negative error value
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
- * @see  tethering_wifi_ap_get_security_type()
- */
-int tethering_wifi_ap_set_security_type(tethering_h tethering, tethering_wifi_security_type_e type);
-
-/**
- * @brief Gets the security type of Wi-Fi AP.
- * @details If security type is not set, WPA2_PSK is used.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege %http://tizen.org/privilege/tethering.admin
- * @param[in]  tethering  The tethering handle
- * @param[out]  type  The security type
- * @return 0 on success, otherwise negative error value
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @see  tethering_wifi_ap_set_security_type()
- */
-int tethering_wifi_ap_get_security_type(tethering_h tethering, tethering_wifi_security_type_e *type);
-
-/**
- * @brief Sets the SSID (service set identifier) for Wi-Fi AP.
- * @details The SSID cannot exceed 32 bytes. If SSID is not set, device name is used as SSID.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege %http://tizen.org/privilege/tethering.admin
- * @param[in]  tethering  The tethering handle
- * @param[in]  ssid  The SSID
- * @return 0 on success, otherwise negative error value
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @retval  #TETHERING_ERROR_OUT_OF_MEMORY  Out of memory
- */
-int tethering_wifi_ap_set_ssid(tethering_h tethering, const char *ssid);
-
-/**
- * @brief Gets the SSID (service set identifier) for Wi-Fi AP.
- * @details If SSID is not set, Device name is used as SSID.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege %http://tizen.org/privilege/tethering.admin
- * @remarks @a ssid must be released using free().
- * @param[in]  tethering  The tethering handle
- * @param[out]  ssid  The SSID
- * @return 0 on success, otherwise negative error value
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @retval  #TETHERING_ERROR_OUT_OF_MEMORY  Out of memory
- */
-int tethering_wifi_ap_get_ssid(tethering_h tethering, char **ssid);
-
-/**
- * @brief Sets the visibility of SSID (service set identifier) for Wi-Fi AP.
- * @details If you set the visibility to invisible, then the SSID of this device is hidden and Wi-Fi scan won't find your device.
- * @details By default visibility is set to @c true.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege %http://tizen.org/privilege/tethering.admin
- * @remarks This change is applied next time Wi-Fi tethering is enabled.
- * @param[in]  tethering  The tethering handle
- * @param[in]  visible  The visibility of SSID: (@c true = visible, @c false = invisible)
- * @return 0 on success, otherwise negative error value
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
- * @see  tethering_wifi_ap_get_ssid_visibility()
- */
-int tethering_wifi_ap_set_ssid_visibility(tethering_h tethering, bool visible);
-
-/**
- * @brief Gets the visibility of SSID (service set identifier) for Wi-Fi AP.
- * @details If the visibility is set to invisible, then the SSID of this device is hidden and Wi-Fi scan won't find your device.
- * @details By default visibility is set to @c true.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege %http://tizen.org/privilege/tethering.admin
- * @param[in]  tethering  The tethering handle
- * @param[out]  visible  The visibility of SSID: (@c true = visible, @c false = invisible)
- * @return 0 on success, otherwise negative error value
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @see  tethering_wifi_ap_set_ssid_visibility()
- */
-int tethering_wifi_ap_get_ssid_visibility(tethering_h tethering, bool *visible);
-
-/**
- * @brief Sets the passphrase for Wi-Fi AP.
- * @details If the passphrase is not set, random string of 8 characters will be used.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege %http://tizen.org/privilege/tethering.admin
- * @param[in]  tethering  The tethering handle
- * @param[in]  passphrase  The passphrase
- * @return 0 on success, otherwise negative error value
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @see  tethering_wifi_ap_get_passphrase()
- */
-int tethering_wifi_ap_set_passphrase(tethering_h tethering, const char *passphrase);
-
-/**
- * @brief Gets the passphrase for Wi-Fi AP.
- * @details If the passphrase is not set, random string of 8 characters will be used.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege %http://tizen.org/privilege/tethering.admin
- * @remarks @a passphrase must be released using free().
- * @param[in]  tethering  The tethering handle
- * @param[out]  passphrase  The passphrase
- * @return 0 on success, otherwise negative error value
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @retval  #TETHERING_ERROR_OUT_OF_MEMORY  Out of memory
- * @see  tethering_wifi_ap_set_passphrase()
- */
-int tethering_wifi_ap_get_passphrase(tethering_h tethering, char **passphrase);
-
-/**
- * @brief Reloads the settings (SSID / Passphrase / Security type / SSID visibility) for Wi-Fi AP.
- * @since_tizen 2.3
- * @privlevel platform
- * @privilege %http://tizen.org/privilege/tethering.admin
- * @remarks Devices connected via MobileAP will be disconnected when the settings are reloaded.
- * @param[in]  tethering  The tethering handle
- * @param[in]  callback  The callback function to invoke
- * @param[in]  user_data  The user data to be passed to the callback function
- * @return 0 on success, otherwise negative error value
- * @retval  #TETHERING_ERROR_NONE  Successful
- * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
- * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
- */
-int tethering_wifi_ap_reload_settings(tethering_h tethering, tethering_wifi_ap_settings_reloaded_cb callback, void *user_data);
 /**
  * @}
  */
