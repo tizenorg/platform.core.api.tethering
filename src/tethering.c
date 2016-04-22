@@ -1556,7 +1556,7 @@ API int tethering_create(tethering_h *tethering)
 	}
 	th->cancellable = cancellable;
 
-	th->client_bus_proxy = g_dbus_proxy_new_sync(th->client_bus, G_DBUS_PROXY_FLAGS_NONE,
+	th->client_bus_proxy = g_dbus_proxy_new_sync(th->client_bus, G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START_AT_CONSTRUCTION,
 			NULL, TETHERING_SERVICE_NAME, TETHERING_SERVICE_OBJECT_PATH,
 			TETHERING_SERVICE_INTERFACE, th->cancellable, &error);
 	if (!th->client_bus_proxy) {
