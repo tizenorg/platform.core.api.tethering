@@ -155,9 +155,6 @@ typedef enum {
 	MOBILE_AP_ENABLE_BT_TETHERING_CFM,
 	MOBILE_AP_DISABLE_BT_TETHERING_CFM,
 
-	MOBILE_AP_ENABLE_WIFI_AP_CFM,
-	MOBILE_AP_DISABLE_WIFI_AP_CFM,
-
 	MOBILE_AP_GET_STATION_INFO_CFM,
 	MOBILE_AP_GET_DATA_PACKET_USAGE_CFM
 } mobile_ap_event_e;
@@ -166,7 +163,6 @@ typedef enum {
 	MOBILE_AP_TYPE_WIFI,
 	MOBILE_AP_TYPE_USB,
 	MOBILE_AP_TYPE_BT,
-	MOBILE_AP_TYPE_WIFI_AP,
 	MOBILE_AP_TYPE_MAX,
 } mobile_ap_type_e;
 
@@ -178,8 +174,6 @@ typedef enum {
 	E_SIGNAL_USB_TETHER_OFF,
 	E_SIGNAL_BT_TETHER_ON,
 	E_SIGNAL_BT_TETHER_OFF,
-	E_SIGNAL_WIFI_AP_ON,
-	E_SIGNAL_WIFI_AP_OFF,
 	E_SIGNAL_NO_DATA_TIMEOUT,
 	E_SIGNAL_LOW_BATTERY_MODE,
 	E_SIGNAL_FLIGHT_MODE,
@@ -207,8 +201,6 @@ typedef enum {
 #define SIGNAL_NAME_USB_TETHER_OFF	"usb_off"
 #define SIGNAL_NAME_BT_TETHER_ON	"bluetooth_on"
 #define SIGNAL_NAME_BT_TETHER_OFF	"bluetooth_off"
-#define SIGNAL_NAME_WIFI_AP_ON		"wifi_ap_on"
-#define SIGNAL_NAME_WIFI_AP_OFF		"wifi_ap_off"
 #define SIGNAL_NAME_NO_DATA_TIMEOUT	"no_data_timeout"
 #define SIGNAL_NAME_LOW_BATTERY_MODE	"low_batt_mode"
 #define SIGNAL_NAME_FLIGHT_MODE		"flight_mode"
@@ -288,10 +280,7 @@ typedef struct {
 	void *passphrase_user_data;
 	tethering_wifi_settings_reloaded_cb settings_reloaded_cb;
 	void *settings_reloaded_user_data;
-	tethering_wifi_ap_settings_reloaded_cb ap_settings_reloaded_cb;
-	void *ap_settings_reloaded_user_data;
 	char *ssid;
-	char *ap_ssid;
 	char passphrase[TETHERING_WIFI_KEY_MAX_LEN + 1];
 	tethering_wifi_security_type_e sec_type;
 	tethering_wifi_mode_type_e mode_type;
