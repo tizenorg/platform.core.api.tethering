@@ -107,8 +107,7 @@ static __tethering_sig_t sigs[] = {
 	{0, SIGNAL_NAME_SECURITY_TYPE_CHANGED, __handle_security_type_changed},
 	{0, SIGNAL_NAME_SSID_VISIBILITY_CHANGED, __handle_ssid_visibility_changed},
 	{0, SIGNAL_NAME_PASSPHRASE_CHANGED, __handle_passphrase_changed},
-	{0, SIGNAL_NAME_DHCP_STATUS, __handle_dhcp},
-	{0, "", NULL} };
+	{0, SIGNAL_NAME_DHCP_STATUS, __handle_dhcp} };
 
 static int retry = 0;
 
