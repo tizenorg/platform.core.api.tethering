@@ -26,8 +26,10 @@ bool __check_feature_supported(const char *key, tethering_supported_feature_e fe
 {
 	if (!is_feature_checked[feature]) {
 		if (system_info_get_platform_bool(key, &feature_supported[feature]) < 0) {
+			//LCOV_EXCL_START
 			ERR("Get feature is failed");
 			return false;
+			//LCOV_EXCL_STOP
 		}
 
 		feature_supported[feature] = true;
@@ -60,10 +62,12 @@ int _tethering_check_feature_supported(const char* feature, ...)
 	}
 
 	if (!supported) {
+		//LCOV_EXCL_START
 		ERR("Not supported feature");
 		set_last_result(TETHERING_ERROR_NOT_SUPPORT_API);
 		va_end(list);
 		return TETHERING_ERROR_NOT_SUPPORT_API;
+		//LCOV_EXCL_STOP
 	}
 	va_end(list);
 	set_last_result(TETHERING_ERROR_NONE);

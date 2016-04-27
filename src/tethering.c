@@ -115,7 +115,7 @@ static int retry = 0;
 static void __send_dbus_signal(GDBusConnection *conn, const char *signal_name, const char *arg)
 {
 	if (conn == NULL || signal_name == NULL)
-		return;
+		return; //LCOV_EXCL_LINE
 
 	GVariant *message = NULL;
 	GError *error = NULL;
@@ -126,8 +126,8 @@ static void __send_dbus_signal(GDBusConnection *conn, const char *signal_name, c
 	g_dbus_connection_emit_signal(conn, NULL, TETHERING_SERVICE_OBJECT_PATH,
 					TETHERING_SERVICE_INTERFACE, signal_name, message, &error);
 	if (error) {
-		ERR("g_dbus_connection_emit_signal is failed because  %s\n", error->message);
-		g_error_free(error);
+		ERR("g_dbus_connection_emit_signal is failed because  %s\n", error->message); //LCOV_EXCL_LINE
+		g_error_free(error); //LCOV_EXCL_LINE
 	}
 	g_variant_unref(message);
 }
@@ -151,7 +151,7 @@ static tethering_error_e __set_security_type(const tethering_wifi_security_type_
 	}
 
 	if (vconf_set_int(VCONFKEY_MOBILE_HOTSPOT_SECURITY, security_type) < 0) {
-		ERR("vconf_set_int is failed\n");
+		ERR("vconf_set_int is failed\n"); 
 		return TETHERING_ERROR_OPERATION_FAILED;
 	}
 
@@ -253,9 +253,11 @@ static tethering_error_e __get_error(int agent_error)
 		err = TETHERING_ERROR_NONE;
 		break;
 
+	//LCOV_EXCL_START
 	case MOBILE_AP_ERROR_RESOURCE:
 		err = TETHERING_ERROR_OUT_OF_MEMORY;
 		break;
+	//LCOV_EXCL_STOP
 
 	case MOBILE_AP_ERROR_INTERNAL:
 		err = TETHERING_ERROR_OPERATION_FAILED;
@@ -289,6 +291,7 @@ static tethering_error_e __get_error(int agent_error)
 		err = TETHERING_ERROR_OPERATION_FAILED;
 		break;
 
+	//LCOV_EXCL_START
 	case MOBILE_AP_ERROR_NOT_PERMITTED:
 		err = TETHERING_ERROR_NOT_PERMITTED;
 		break;
@@ -296,7 +299,7 @@ static tethering_error_e __get_error(int agent_error)
 	case MOBILE_AP_ERROR_PERMISSION_DENIED:
 		err = TETHERING_ERROR_PERMISSION_DENIED;
 		break;
-
+	//LCOV_EXCL_STOP
 	default:
 		ERR("Not defined error : %d\n", agent_error);
 		err = TETHERING_ERROR_OPERATION_FAILED;
@@ -306,6 +309,7 @@ static tethering_error_e __get_error(int agent_error)
 	return err;
 }
 
+//LCOV_EXCL_START
 static void __handle_dhcp(GDBusConnection *connection, const gchar *sender_name,
 		const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
 		GVariant *parameters, gpointer user_data)
@@ -371,7 +375,9 @@ DONE:
 	g_free(name);
 	DBG("-\n");
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START
 static void __handle_net_closed(GDBusConnection *connection, const gchar *sender_name,
 		const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
 		GVariant *parameters, gpointer user_data)
@@ -397,6 +403,7 @@ static void __handle_net_closed(GDBusConnection *connection, const gchar *sender
 
 	DBG("-\n");
 }
+//LCOV_EXCL_STOP
 
 static void __handle_wifi_tether_on(GDBusConnection *connection, const gchar *sender_name,
 			const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
@@ -452,6 +459,7 @@ static void __handle_wifi_tether_off(GDBusConnection *connection, const gchar *s
 	DBG("-\n");
 }
 
+//LCOV_EXCL_START
 static void __handle_usb_tether_on(GDBusConnection *connection, const gchar *sender_name,
 			const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
 			GVariant *parameters, gpointer user_data)
@@ -503,6 +511,7 @@ static void __handle_usb_tether_off(GDBusConnection *connection, const gchar *se
 	g_free(buf);
 	DBG("-\n");
 }
+//LCOV_EXCL_STOP
 
 static void __handle_bt_tether_on(GDBusConnection *connection, const gchar *sender_name,
 			const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
@@ -558,6 +567,7 @@ static void __handle_bt_tether_off(GDBusConnection *connection, const gchar *sen
 	DBG("-\n");
 }
 
+//LCOV_EXCL_START
 static void __handle_no_data_timeout(GDBusConnection *connection, const gchar *sender_name,
 			const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
 			GVariant *parameters, gpointer user_data)
@@ -632,6 +642,7 @@ static void __handle_flight_mode(GDBusConnection *connection, const gchar *sende
 	}
 	DBG("-\n");
 }
+//LCOV_EXCL_STOP
 
 static void __handle_security_type_changed(GDBusConnection *connection, const gchar *sender_name,
 		const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
@@ -736,6 +747,7 @@ static void __wifi_enabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 
 	g_var  = g_dbus_proxy_call_finish(th->client_bus_proxy, res, &g_error);
 	if (g_error) {
+		//LCOV_EXCL_START
 		ERR("DBus error [%s]\n", g_error->message);
 		if (g_error->code == G_DBUS_ERROR_NO_REPLY &&
 				++retry < TETHERING_ERROR_RECOVERY_MAX) {
@@ -747,6 +759,7 @@ static void __wifi_enabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 		else
 			error = TETHERING_ERROR_OPERATION_FAILED;
 		g_error_free(g_error);
+		//LCOV_EXCL_STOP
 	} else {
 		g_variant_get(g_var, "(u)", &info);
 		error = __get_error(info);
@@ -783,6 +796,7 @@ static void __bt_enabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 
 	g_var  = g_dbus_proxy_call_finish(th->client_bus_proxy, res, &g_error);
 	if (g_error) {
+		//LCOV_EXCL_START
 		ERR("DBus error [%s]\n", g_error->message);
 		if (g_error->code == G_DBUS_ERROR_NO_REPLY &&
 				++retry < TETHERING_ERROR_RECOVERY_MAX) {
@@ -796,6 +810,7 @@ static void __bt_enabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 		else
 			error = TETHERING_ERROR_OPERATION_FAILED;
 		g_error_free(g_error);
+		//LCOV_EXCL_STOP
 	} else {
 		g_variant_get(g_var, "(u)", &info);
 		g_variant_unref(g_var);
@@ -817,6 +832,7 @@ static void __bt_enabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 	DBG("-\n");
 }
 
+//LCOV_EXCL_START
 static void __usb_enabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 					gpointer user_data)
 {
@@ -866,6 +882,7 @@ static void __usb_enabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 	ecb(error, TETHERING_TYPE_USB, true, data);
 	DBG("-\n");
 }
+//LCOV_EXCL_STOP
 
 static void __disabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 		gpointer user_data)
@@ -886,9 +903,11 @@ static void __disabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 
 	g_var  = g_dbus_proxy_call_finish(th->client_bus_proxy, res, &g_error);
 	if (g_error) {
+		//LCOV_EXCL_START
 		ERR("DBus error [%s]\n", g_error->message);
 		g_error_free(g_error);
 		return;
+		//LCOV_EXCL_STOP
 	}
 	g_variant_get(g_var, "(uu)", &event_type, &info);
 	DBG("cfm event : %d info : %d\n", event_type, info);
@@ -922,6 +941,7 @@ static void __disabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 			dcb(error, type, code, data);
 		break;
 
+	//LCOV_EXCL_START
 	case MOBILE_AP_DISABLE_USB_TETHERING_CFM:
 		sigs[E_SIGNAL_USB_TETHER_OFF].sig_id = g_dbus_connection_signal_subscribe(th->client_bus,
 				NULL, TETHERING_SERVICE_INTERFACE, sigs[E_SIGNAL_USB_TETHER_OFF].name,
@@ -934,6 +954,7 @@ static void __disabled_cfm_cb(GObject *source_object, GAsyncResult *res,
 		if (dcb)
 			dcb(error, type, code, data);
 		break;
+	//LCOV_EXCL_STOP
 
 	case MOBILE_AP_DISABLE_CFM:
 
@@ -984,6 +1005,7 @@ static void __get_data_usage_cb(GObject *source_object, GAsyncResult *res,
 
 	g_var = g_dbus_proxy_call_finish(th->client_bus_proxy, res, &g_error);
 	if (g_error) {
+		//LCOV_EXCL_START
 		ERR("DBus fail [%s]\n", g_error->message);
 		if (g_error->code == G_DBUS_ERROR_ACCESS_DENIED)
 			tethering_error = TETHERING_ERROR_PERMISSION_DENIED;
@@ -991,6 +1013,7 @@ static void __get_data_usage_cb(GObject *source_object, GAsyncResult *res,
 			tethering_error = TETHERING_ERROR_OPERATION_FAILED;
 
 		flag = true;
+		//LCOV_EXCL_STOP
 	}
 	if (th->data_usage_cb == NULL) {
 		ERR("There is no data_usage_cb\n");
@@ -1088,10 +1111,11 @@ static bool __get_intf_name(tethering_type_e type, char *buf, unsigned int len)
 	_retvm_if(buf == NULL, false, "parameter(buf) is NULL\n");
 
 	switch (type) {
+	//LCOV_EXCL_START
 	case TETHERING_TYPE_USB:
 		g_strlcpy(buf, TETHERING_USB_IF, len);
 		break;
-
+	//LCOV_EXCL_STOP
 	case TETHERING_TYPE_WIFI:
 		g_strlcpy(buf, TETHERING_WIFI_IF, len);
 		break;
@@ -1134,7 +1158,7 @@ static bool __get_gateway_addr(tethering_type_e type, char *buf, unsigned int le
 static int __get_common_ssid(char *ssid, unsigned int size)
 {
 	if (ssid == NULL) {
-		ERR("ssid is null\n");
+		ERR("ssid is null\n"); //LCOV_EXCL_LINE
 		return TETHERING_ERROR_INVALID_PARAMETER;
 	}
 
@@ -1230,6 +1254,7 @@ static int __prepare_wifi_settings(tethering_h tethering, _softap_settings_t *se
 				NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
 
 		if (error) {
+			//LCOV_EXCL_START
 			ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
 
 			if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
@@ -1239,6 +1264,7 @@ static int __prepare_wifi_settings(tethering_h tethering, _softap_settings_t *se
 
 			g_error_free(error);
 			return ret;
+			//LCOV_EXCL_STOP
 		}
 
 		if (parameters != NULL) {
@@ -1323,13 +1349,13 @@ API int tethering_create(tethering_h *tethering)
 
 	if (__generate_initial_passphrase(th->passphrase,
 			sizeof(th->passphrase)) == 0) {
-		ERR("random passphrase generation failed\n");
+		ERR("random passphrase generation failed\n"); //LCOV_EXCL_LINE
 		free(th);
 		return TETHERING_ERROR_OPERATION_FAILED;
 	}
 
 	if (__get_common_ssid(ssid, sizeof(ssid)) != TETHERING_ERROR_NONE) {
-		ERR("common ssid get failed\n");
+		ERR("common ssid get failed\n"); //LCOV_EXCL_LINE
 		free(th);
 		return TETHERING_ERROR_OPERATION_FAILED;
 	}
@@ -1340,12 +1366,14 @@ API int tethering_create(tethering_h *tethering)
 	GCancellable *cancellable = g_cancellable_new();
 	th->client_bus = g_bus_get_sync(DBUS_BUS_SYSTEM, cancellable, &error);
 	if (error) {
+		//LCOV_EXCL_START
 		ERR("Couldn't connect to the System bus[%s]", error->message);
 		g_error_free(error);
 		g_cancellable_cancel(cancellable);
 		g_object_unref(cancellable);
 		free(th);
 		return TETHERING_ERROR_OPERATION_FAILED;
+		//LCOV_EXCL_STOP
 	}
 	th->cancellable = cancellable;
 
@@ -1353,6 +1381,7 @@ API int tethering_create(tethering_h *tethering)
 			NULL, TETHERING_SERVICE_NAME, TETHERING_SERVICE_OBJECT_PATH,
 			TETHERING_SERVICE_INTERFACE, th->cancellable, &error);
 	if (!th->client_bus_proxy) {
+		//LCOV_EXCL_START
 		if (error)
 			ERR("Couldn't create the proxy object because of %s\n", error->message);
 		g_cancellable_cancel(th->cancellable);
@@ -1360,6 +1389,7 @@ API int tethering_create(tethering_h *tethering)
 		g_object_unref(th->client_bus);
 		free(th);
 		return TETHERING_ERROR_OPERATION_FAILED;
+		//LCOV_EXCL_STOP
 	}
 
 	__connect_signals((tethering_h)th);
@@ -1441,11 +1471,14 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 	g_dbus_proxy_set_default_timeout(proxy, DBUS_TIMEOUT_INFINITE);
 
 	if (__check_precondition(type) == FALSE) {
+		//LCOV_EXCL_START
 		DBG("-\n");
 		return TETHERING_ERROR_OPERATION_FAILED;
+		//LCOV_EXCL_STOP
 	}
 
 	switch (type) {
+	//LCOV_EXCL_START
 	case TETHERING_TYPE_USB:
 		g_dbus_connection_signal_unsubscribe(connection,
 				sigs[E_SIGNAL_USB_TETHER_ON].sig_id);
@@ -1454,6 +1487,7 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 				G_DBUS_CALL_FLAGS_NONE, -1, th->cancellable,
 				(GAsyncReadyCallback) __usb_enabled_cfm_cb, (gpointer)tethering);
 		break;
+	//LCOV_EXCL_STOP
 
 	case TETHERING_TYPE_WIFI: {
 		_softap_settings_t set = {"", "", "", 0, false};
@@ -1484,6 +1518,7 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 
 		break;
 
+	//LCOV_EXCL_START
 	case TETHERING_TYPE_ALL: {
 		_softap_settings_t set = {"", "", "", 0, false};
 
@@ -1518,6 +1553,7 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 				G_DBUS_CALL_FLAGS_NONE, -1, th->cancellable,
 				(GAsyncReadyCallback) __bt_enabled_cfm_cb, (gpointer)tethering);
 		break;
+		//LCOV_EXCL_STOP
 	}
 	default:
 		ERR("Unknown type : %d\n", type);
@@ -2780,6 +2816,7 @@ API int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphr
 			g_variant_new("(s)", passphrase), G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
 
 	if (error) {
+		//LCOV_EXCL_START
 		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
 
 		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
@@ -2789,6 +2826,7 @@ API int tethering_wifi_set_passphrase(tethering_h tethering, const char *passphr
 
 		g_error_free(error);
 		return ret;
+		//LCOV_EXCL_STOP
 	}
 
 	g_variant_get(parameters, "(u)", &ret);
@@ -2839,6 +2877,7 @@ API int tethering_wifi_get_passphrase(tethering_h tethering, char **passphrase)
 			NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
 
 	if (error) {
+		//LCOV_EXCL_START
 		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
 
 		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
@@ -2848,6 +2887,7 @@ API int tethering_wifi_get_passphrase(tethering_h tethering, char **passphrase)
 
 		g_error_free(error);
 		return ret;
+		//LCOV_EXCL_STOP
 	}
 
 	if (parameters != NULL) {
@@ -2984,6 +3024,8 @@ API int tethering_wifi_get_mac_filter(tethering_h tethering, bool *mac_filter)
 {
 	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
 
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(mac_filter) is NULL\n");
 	_retvm_if(mac_filter == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(mac_filter) is NULL\n");
 
