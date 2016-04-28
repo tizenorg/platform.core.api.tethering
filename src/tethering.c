@@ -37,6 +37,9 @@
 #define MAC_ADDR_LEN	18
 #define MAX_BUF_SIZE	80
 
+static GSList *allowed_list = NULL;
+static GSList *blocked_list = NULL;
+
 static void __handle_wifi_tether_on(GDBusConnection *connection, const gchar *sender_name,
 			const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
 			GVariant *parameters, gpointer user_data);
@@ -2998,6 +3001,13 @@ static int __add_mac_to_file(const char *filepath, const char *mac)
 	FILE *fp = NULL;
 	char line[MAX_BUF_SIZE] = "\0";
 	bool mac_exist = false;
+	char *p_mac = NULL;
+
+	p_mac = strdup(mac);
+	if (p_mac == NULL) {
+		ERR("strdup failed\n");
+		return TETHERING_ERROR_OUT_OF_MEMORY;
+	}
 
 	fp = fopen(filepath, "a+");
 	if (!fp) {
@@ -3013,8 +3023,14 @@ static int __add_mac_to_file(const char *filepath, const char *mac)
 		}
 	}
 
-	if (!mac_exist)
+	if (!mac_exist) {
 		fprintf(fp, "%s\n", mac);
+
+		if ((strcmp(filepath, ALLOWED_LIST) == 0))
+			allowed_list = g_slist_append(allowed_list, p_mac);
+		else if ((strcmp(filepath, BLOCKED_LIST) == 0))
+			blocked_list = g_slist_append(blocked_list, p_mac);
+	}
 
 	fclose(fp);
 
@@ -3041,10 +3057,27 @@ static int __remove_mac_from_file(const char *filepath, const char *mac)
 	}
 
 	while (fgets(line, MAX_BUF_SIZE, fp) != NULL) {
-		if (strncmp(mac, line, 17) == 0)
+		if (strncmp(mac, line, 17) == 0) {
 			DBG("MAC %s found in the list\n", mac);
-		else
+
+			if ((strcmp(filepath, ALLOWED_LIST) == 0)) {
+				GSList *list = NULL;
+				for (list = allowed_list; list != NULL; list = list->next) {
+					char *p_mac = (char *)list->data;
+					if (strncmp(mac, p_mac, strlen(mac)) == 0)
+						allowed_list = g_slist_remove(allowed_list, p_mac);
+				}
+			} else if ((strcmp(filepath, BLOCKED_LIST) == 0)) {
+				GSList *list = NULL;
+				for (list = blocked_list; list != NULL; list = list->next) {
+					char *p_mac = (char *)list->data;
+					if (strncmp(mac, p_mac, strlen(mac)) == 0)
+						blocked_list = g_slist_remove(blocked_list, p_mac);
+				}
+			}
+		} else {
 			fprintf(fp1, "%s", line);
+		}
 	}
 
 	fclose(fp);
@@ -3072,6 +3105,7 @@ API int tethering_wifi_add_allowed_mac_list(tethering_h tethering, const char *m
 
 API int tethering_wifi_remove_allowed_mac_list(tethering_h tethering, const char *mac)
 {
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
 	_retvm_if(mac == NULL, TETHERING_ERROR_INVALID_PARAMETER,
@@ -3080,8 +3114,21 @@ API int tethering_wifi_remove_allowed_mac_list(tethering_h tethering, const char
 	return __remove_mac_from_file(ALLOWED_LIST, mac);
 }
 
+API int tethering_wifi_get_allowed_mac_list(tethering_h tethering, void **allowed_mac_list)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(allowed_mac_list == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(allowed_mac_list) is NULL\n");
+
+	*allowed_mac_list = g_slist_copy(allowed_list);
+	return TETHERING_ERROR_NONE;
+}
+
 API int tethering_wifi_add_blocked_mac_list(tethering_h tethering, const char *mac)
 {
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
 	_retvm_if(mac == NULL, TETHERING_ERROR_INVALID_PARAMETER,
@@ -3098,6 +3145,19 @@ API int tethering_wifi_remove_blocked_mac_list(tethering_h tethering, const char
 			"parameter(mac) is NULL\n");
 
 	return __remove_mac_from_file(BLOCKED_LIST, mac);
+}
+
+API int tethering_wifi_get_blocked_mac_list(tethering_h tethering, void **blocked_mac_list)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(blocked_mac_list == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(blocked_mac_list) is NULL\n");
+
+	*blocked_mac_list = g_slist_copy(blocked_list);
+	return TETHERING_ERROR_NONE;
 }
 
 API int tethering_wifi_enable_dhcp(tethering_h tethering, bool enable)
