@@ -518,6 +518,14 @@ static void __print_wifi_tethering_setting(tethering_h th)
 	return;
 }
 
+void __display_list(GSList *list)
+{
+	GSList *iterator = NULL;
+	
+	for (iterator = list; iterator; iterator = iterator->next)
+		printf("%s\n", (char*)iterator->data);
+}
+
 bool __get_tethering_type(tethering_type_e *type)
 {
 	int sel;
@@ -883,12 +891,41 @@ static int test_tethering_manage_mac_list(void)
 		/* Remove from blocked mac list */
 		ret = tethering_wifi_remove_blocked_mac_list(th, mac);
 	} else {
-		printf("Input Failed!!\n");
+		printf("Input failed!!\n");
 		return -1;
 	}
 
 	if (ret < 0)
 		return -1;
+
+	return 1;
+}
+
+static int test_tethering_get_mac_list(void)
+{
+	int ret = 0;
+	int list = 0;
+	void *mac_list = NULL;
+
+	printf("Select MAC list to get (0: allowed mac list, 1: blocked mac list): ");
+	ret = scanf("%d", &list);
+
+	switch(list) {
+	case 0:
+		ret = tethering_wifi_get_allowed_mac_list(th, &mac_list);
+		break;
+	case 1:
+		ret = tethering_wifi_get_blocked_mac_list(th, &mac_list);
+		break;
+	default:
+		printf("Input failed!!\n");
+		break;
+	}
+
+	if (ret < 0)
+		return -1;
+
+	__display_list(mac_list);
 
 	return 1;
 }
@@ -950,6 +987,7 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 		printf("d       - Set Wi-Fi tethering passphrase\n");
 		printf("e       - Set Wi-Fi tethering mac filtering\n");
 		printf("f       - Add/Remove MAC adress to/from allowed/blocked list\n");
+		printf("g       - Get allowed/blocked list\n");
 		printf("k       - Reload Wi-Fi tethering\n");
 		printf("m       - Set Wi-Fi channel\n");
 		printf("n       - Set Wi-Fi hw_mode\n");
@@ -1002,6 +1040,9 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 		break;
 	case 'f':
 		rv = test_tethering_manage_mac_list();
+		break;
+	case 'g':
+		rv = test_tethering_get_mac_list();
 		break;
 	case 'k':
 		rv = test_tethering_wifi_reload_settings();
