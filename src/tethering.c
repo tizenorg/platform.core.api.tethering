@@ -29,11 +29,12 @@
 #include <openssl/evp.h>
 #include <openssl/sha.h>
 #include <ckmc/ckmc-manager.h>
+#include <tzplatform_config.h>
 #include "tethering_private.h"
 
-#define ALLOWED_LIST	"/etc/hostapd.accept"
-#define BLOCKED_LIST	"/etc/hostapd.deny"
-#define TEMP_LIST	"/etc/hostapd_tmp"
+#define ALLOWED_LIST	tzplatform_mkpath(TZ_SYS_VAR, "/lib/hostapd/hostapd.accept")
+#define BLOCKED_LIST	tzplatform_mkpath(TZ_SYS_VAR, "/lib/hostapd/hostapd.deny")
+#define TEMP_LIST		tzplatform_mkpath(TZ_SYS_VAR, "/lib/hostapd/.hostapd_tmp")
 #define MAC_ADDR_LEN	18
 #define MAX_BUF_SIZE	80
 
