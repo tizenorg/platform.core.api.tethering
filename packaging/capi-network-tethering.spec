@@ -1,6 +1,6 @@
 Name:		capi-network-tethering
 Summary:	Tethering Framework
-Version:	1.0.35
+Version:	1.0.36
 Release:	1
 Group:		System/Network
 License:	Apache-2.0
@@ -14,6 +14,7 @@ BuildRequires:	pkgconfig(vconf)
 BuildRequires:	pkgconfig(key-manager)
 BuildRequires:	pkgconfig(libssl)
 BuildRequires:	pkgconfig(capi-system-info)
+BuildRequires:	pkgconfig(libtzplatform-config)
 BuildRequires:	cmake
 Requires(post):		/sbin/ldconfig
 Requires(postun):	/sbin/ldconfig
