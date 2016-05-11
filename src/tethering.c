@@ -33,7 +33,7 @@
 
 #define ALLOWED_LIST	"/etc/hostapd.accept"
 #define BLOCKED_LIST	"/etc/hostapd.deny"
-#define TEMP_LIST	"/etc/hostapd_tmp"
+#define TEMP_LIST	"/tmp/.hostapd_tmp"
 #define MAC_ADDR_LEN	18
 #define MAX_BUF_SIZE	80
 
