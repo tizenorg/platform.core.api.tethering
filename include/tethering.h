@@ -1024,6 +1024,38 @@ int tethering_wifi_set_mode(tethering_h tethering, tethering_wifi_mode_type_e ty
 int tethering_wifi_get_mode(tethering_h tethering, tethering_wifi_mode_type_e *type);
 
 /**
+ * @brief Sets txpower for Wi-Fi tethering.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege http://tizen.org/privilege/tethering.admin
+ * @param[in] tethering The tethering handle
+ * @param[in] txpower  value of txpower to be set
+ * @return  0 on success, otherwise a negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ * @see tethering_wifi_get_txpower()
+ */
+int tethering_wifi_set_txpower(tethering_h tethering, unsigned int txpower);
+
+/**
+ * @brief Gets txpower for Wi-Fi tethering.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege http://tizen.org/privilege/tethering.admin
+ * @param[in] tethering The tethering handle
+ * @param[in] txpower  value of txpower to be set
+ * @return  0 on success, otherwise a negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ * @see tethering_wifi_set_txpower()
+ */
+int tethering_wifi_get_txpower(tethering_h tethering, unsigned int *txpower);
+
+/**
  * @}
  */
 
