@@ -941,6 +941,36 @@ static int test_tethering_wifi_reload_settings(void)
 	return 1;
 }
 
+static int test_tethering_wifi_get_txpower(void)
+{
+	int ret = TETHERING_ERROR_NONE;
+
+	unsigned int txpower = 0;
+	ret = tethering_wifi_get_txpower(th, &txpower);
+	if (__is_err(ret) == true) {
+		printf("Fail to get txpower!!\n");
+		return -1;
+	}
+	g_print("tethering_hostapd_get_txpower received [%d]\n",txpower);
+	return 1;
+}
+static int test_tethering_wifi_set_txpower(void)
+{
+	int ret;
+	unsigned int txpower = 0;
+
+	printf("Input tx power for Wi-Fi tethering: ");
+	ret = scanf("%d", &txpower);
+
+	ret = tethering_wifi_set_txpower(th, txpower);
+	if (__is_err(ret) == true) {
+		printf("Fail to set txpower!!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
 int main(int argc, char **argv)
 {
 	GMainLoop *mainloop;
@@ -994,6 +1024,8 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 		printf("o       - Enable dhcp server\n");
 		printf("p       - Enable dhcp server with range\n");
 		printf("q       - Is dhcp server enabled?\n");
+		printf("r       - Get Wi-Fi txpower\n");
+		printf("s       - Set Wi-Fi txpower\n");
 		printf("0       - Exit \n");
 		printf("ENTER  - Show options menu.......\n");
 	}
@@ -1061,6 +1093,12 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 		break;
 	case 'q':
 		rv = test_tethering_wifi_is_dhcp_enabled();
+		break;
+	case 'r':
+		rv = test_tethering_wifi_get_txpower();
+		break;
+	case 's':
+		rv = test_tethering_wifi_set_txpower();
 		break;
 	}
 
