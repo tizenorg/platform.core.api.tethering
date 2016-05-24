@@ -3303,3 +3303,70 @@ API int tethering_wifi_is_dhcp_enabled(tethering_h tethering, bool *dhcp_enabled
 
 	return TETHERING_ERROR_NONE;
 }
+
+API int tethering_wifi_set_txpower(tethering_h tethering, unsigned int txpower)
+{
+#if defined TIZEN_TV
+	GError *error = NULL;
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(tethering_is_enabled(tethering, TETHERING_TYPE_WIFI) == false,
+			TETHERING_ERROR_NOT_ENABLED,
+			"tethering type[%d] is not enabled\n", TETHERING_TYPE_WIFI);
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	g_dbus_proxy_call_sync(th->client_bus_proxy, "hostapd_set_txpower",
+			g_variant_new("(u)", txpower),
+			G_DBUS_CALL_FLAGS_NONE,
+			-1, th->cancellable, &error);
+	if (error) {
+		ERR("g_dbus_proxy_call_sync is failed and error is %s\n", error->message);
+		g_clear_error(&error);
+		return TETHERING_ERROR_OPERATION_FAILED;
+	}
+	return TETHERING_ERROR_NONE;
+#else
+	return TETHERING_ERROR_NOT_SUPPORT_API;
+#endif // TIZEN_TV
+}
+
+API int tethering_wifi_get_txpower(tethering_h tethering, unsigned int *txpower)
+{
+#if defined TIZEN_TV
+	GError *error = NULL;
+	GVariant *result = NULL;
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(tethering_is_enabled(tethering, TETHERING_TYPE_WIFI) == false,
+			TETHERING_ERROR_NOT_ENABLED,
+			"tethering type[%d] is not enabled\n", TETHERING_TYPE_WIFI);
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	result = g_dbus_proxy_call_sync(th->client_bus_proxy, "hostapd_get_txpower",
+			NULL,
+			G_DBUS_CALL_FLAGS_NONE,
+			-1, th->cancellable, &error);
+
+	if (result != NULL){
+		g_variant_get(result, "(u)", txpower);
+		g_variant_unref(result);
+	}
+	else {
+		if(error){
+			ERR("g_dbus_proxy_call_sync is failed and error is %s\n", error->message);
+		}
+		g_clear_error(&error);
+		return TETHERING_ERROR_OPERATION_FAILED;
+	}
+	g_clear_error(&error);
+	return TETHERING_ERROR_NONE;
+#else
+	return TETHERING_ERROR_NOT_SUPPORT_API;
+#endif // TIZEN_TV
+}
+
