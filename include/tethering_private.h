@@ -286,6 +286,9 @@ typedef struct {
 	tethering_wifi_mode_type_e mode_type;
 	bool visibility;
 	bool mac_filter;
+	bool wifi_max_connected;
+	bool port_forwarding;
+	bool port_filtering;
 	bool dhcp_enabled;
 	int channel;
 } __tethering_h;
