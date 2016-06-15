@@ -457,7 +457,10 @@ static void __print_wifi_tethering_setting(tethering_h th)
 	char *passphrase = NULL;
 	bool visibility = false;
 	bool mac_filter = 0;
+	bool forwarding_enabled = false;
+	bool filtering_enabled = false;
 	int channel = 0;
+	int max_connected = 0;
 	tethering_wifi_security_type_e security_type = TETHERING_WIFI_SECURITY_TYPE_NONE;
 	tethering_wifi_mode_type_e hw_mode = TETHERING_WIFI_MODE_TYPE_G;
 
@@ -491,13 +494,6 @@ static void __print_wifi_tethering_setting(tethering_h th)
 				TETHERING_WIFI_SECURITY_TYPE_NONE ?
 				"open" : "wpa2-psk");
 
-	error = tethering_wifi_get_mac_filter(th, &mac_filter);
-	if (error != TETHERING_ERROR_NONE)
-		__is_err(error);
-	else
-		g_print("\t** WiFi tethering mac filter : %s\n",
-				mac_filter ? "enable" : "disable");
-
 	error = tethering_wifi_get_mode(th, &hw_mode);
 	if (error != TETHERING_ERROR_NONE)
 		__is_err(error);
@@ -509,6 +505,33 @@ static void __print_wifi_tethering_setting(tethering_h th)
 		__is_err(error);
 	else
 		 g_print("\t** WiFi tethering channel : %d\n", channel);
+
+	error = tethering_wifi_get_max_connected_device(th, &max_connected);
+	if (error != TETHERING_ERROR_NONE)
+		__is_err(error);
+	else
+		 g_print("\t** WiFi tethering max connected device : %d\n", max_connected);
+
+	error = tethering_wifi_get_mac_filter(th, &mac_filter);
+	if (error != TETHERING_ERROR_NONE)
+		__is_err(error);
+	else
+		g_print("\t** WiFi tethering mac filter : %s\n",
+				mac_filter ? "enable" : "disable");
+
+	error = tethering_wifi_is_port_filtering_enabled(th, &filtering_enabled);
+	if (error != TETHERING_ERROR_NONE)
+		__is_err(error);
+	else
+		g_print("\t** WiFi tethering port filtering : %s\n",
+				filtering_enabled ? "enable" : "disable");
+
+	error = tethering_wifi_is_port_forwarding_enabled(th, &forwarding_enabled);
+	if (error != TETHERING_ERROR_NONE)
+		__is_err(error);
+	else
+		g_print("\t** WiFi tethering port forwarding : %s\n",
+				forwarding_enabled ? "enable" : "disable");
 
 	if (ssid)
 		free(ssid);
@@ -954,6 +977,7 @@ static int test_tethering_wifi_get_txpower(void)
 	g_print("tethering_hostapd_get_txpower received [%d]\n",txpower);
 	return 1;
 }
+
 static int test_tethering_wifi_set_txpower(void)
 {
 	int ret;
@@ -965,6 +989,239 @@ static int test_tethering_wifi_set_txpower(void)
 	ret = tethering_wifi_set_txpower(th, txpower);
 	if (__is_err(ret) == true) {
 		printf("Fail to set txpower!!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
+static int test_tethering_wifi_set_mtu(void)
+{
+	int ret;
+	unsigned int mtu = 0;
+
+	printf("Input mtu for Wi-Fi tethering: ");
+	ret = scanf("%d", &mtu);
+
+	ret = tethering_wifi_set_mtu(th, mtu);
+	if (__is_err(ret) == true) {
+		printf("Fail to set mtu!!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
+static int test_tethering_wifi_change_mac(void)
+{
+	int ret;
+	char mac[18];
+
+	printf("Input mac address: ");
+	ret = scanf("%17s", mac);
+
+	ret = tethering_wifi_change_mac(th, mac);
+	if (__is_err(ret) == true) {
+		printf("Fail to change mac!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
+static int test_tethering_wifi_set_max_connected_device(void)
+{
+	int ret;
+	int max_connected;
+
+	printf("Input max connected device: ");
+	ret = scanf("%d", &max_connected);
+
+	ret = tethering_wifi_set_max_connected_device(th, max_connected);
+	if (__is_err(ret) == true) {
+		printf("Fail to set max connected device!\n");
+		return -1;
+	}
+
+	return 1;
+
+}
+
+static int test_tethering_wifi_enable_port_forwarding(void)
+{
+	int ret;
+	int enable = false;
+
+	printf("Wi-Fi tethring port forwarding(0:disable 1:enable): ");
+	ret = scanf("%d", &enable);
+
+	ret =tethering_wifi_enable_port_forwarding(th, enable);
+	if (__is_err(ret) == true) {
+		printf("Fail to enable port forwarding!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
+static int test_tethering_wifi_add_port_forwarding_rule(void)
+{
+	int ret;
+	char ifname[20];
+	char proto[20];
+	char org_ip[16];
+	char final_ip[16];
+	int org_port, final_port;
+
+	printf("Input ifname, protocol, original ip/port, final ip/port: ");
+	ret = scanf("%19s", ifname);
+	ret = scanf("%19s", proto);
+	ret = scanf("%15s", org_ip);
+	ret = scanf("%d", &org_port);
+	ret = scanf("%15s", final_ip);
+	ret = scanf("%d", &final_port);
+
+	ret = tethering_wifi_add_port_forwarding_rule(th, ifname, proto, org_ip, org_port, final_ip, final_port);
+	if (__is_err(ret) == true) {
+		printf("Fail to add port forwarding rule!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
+static int test_tethering_wifi_reset_port_forwarding_rule(void)
+{
+	int ret;
+
+	ret = tethering_wifi_reset_port_forwarding_rule(th);
+	if (__is_err(ret) == true) {
+		printf("Fail to reset port forwarding rule!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
+static int test_tethering_wifi_get_port_forwarding_rule(void)
+{
+	int ret = 0;
+	void *pf_list = NULL;
+
+	ret = tethering_wifi_get_port_forwarding_rule(th, &pf_list);
+	if (__is_err(ret) == true) {
+		printf("Fail to get port forwarding rule!\n");
+		return -1;
+	}
+
+	__display_list(pf_list);
+
+	return 1;
+}
+
+static int test_tethering_wifi_enable_port_filtering(void)
+{
+	int ret;
+	int enable = false;
+
+	printf("Wi-Fi tethring port filtering(0:disable 1:enable): ");
+	ret = scanf("%d", &enable);
+
+	ret =tethering_wifi_enable_port_filtering(th, enable);
+	if (__is_err(ret) == true) {
+		printf("Fail to enable port filtering!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
+static int test_tethering_wifi_add_port_filtering_rule(void)
+{
+	int ret;
+	char proto[20];
+	int port;
+	int allow;
+
+	printf("Input protocol, port, allow: ");
+	ret = scanf("%19s", proto);
+	ret = scanf("%d", &port);
+	ret = scanf("%d", &allow);
+
+	ret = tethering_wifi_add_port_filtering_rule(th, port, proto, allow);
+	if (__is_err(ret) == true) {
+		printf("Fail to add port forwarding rule!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
+static int test_tethering_wifi_add_custom_port_filtering_rule(void)
+{
+	int ret;
+	char proto[20];
+	int port1, port2;
+	int allow;
+
+	printf("Input protocol, port1, port2, allow: ");
+	ret = scanf("%19s", proto);
+	ret = scanf("%d", &port1);
+	ret = scanf("%d", &port2);
+	ret = scanf("%d", &allow);
+
+	ret = tethering_wifi_add_custom_port_filtering_rule(th, port1, port2, proto, allow);
+	if (__is_err(ret) == true) {
+		printf("Fail to add custom port forwarding rule!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
+static int test_tethering_wifi_get_port_filtering_rule(void)
+{
+	int ret = 0;
+	void *pf_list = NULL;
+
+	ret = tethering_wifi_get_port_filtering_rule(th, &pf_list);
+	if (__is_err(ret) == true) {
+		printf("Fail to get port filtering rule!\n");
+		return -1;
+	}
+
+	__display_list(pf_list);
+
+	return 1;
+}
+
+static int test_tethering_wifi_get_custom_port_filtering_rule(void)
+{
+	int ret = 0;
+	void *pf_list = NULL;
+
+	ret = tethering_wifi_get_custom_port_filtering_rule(th, &pf_list);
+	if (__is_err(ret) == true) {
+		printf("Fail to get port filtering rule!\n");
+		return -1;
+	}
+
+	__display_list(pf_list);
+
+	return 1;
+}
+
+static int test_tethering_wifi_set_vpn_passthrough_rule(void)
+{
+	int ret = 0;
+	int type;
+
+	printf("Select vpn passthrough type (0:IPSEC 1:PPTP 2:L2TP): ");
+	ret = scanf("%d", &type);
+	
+	ret = tethering_wifi_set_vpn_passthrough_rule(th, (tethering_vpn_passthrough_type_e)type, true);
+	if (__is_err(ret) == true) {
+		printf("Fail to get port filtering rule!\n");
 		return -1;
 	}
 
@@ -1026,7 +1283,20 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 		printf("q       - Is dhcp server enabled?\n");
 		printf("r       - Get Wi-Fi txpower\n");
 		printf("s       - Set Wi-Fi txpower\n");
-		printf("0       - Exit \n");
+		printf("t       - Set Wi-Fi mtu\n");
+		printf("u       - Change mac address\n");
+		printf("v       - Set max connected device(Wi-Fi tethering)\n");
+		printf("w       - Enable port forwarding\n");
+		printf("x       - Add port forwarding rule\n");
+		printf("y       - Reset port forwarding rule\n");
+		printf("z       - Get port forwarding rule\n");
+		printf("A       - Enable port filtering\n");
+		printf("B       - Add port filtering rule\n");
+		printf("C       - Add custom port filtering rule\n");
+		printf("D       - Get port filtering rule\n");
+		printf("E       - Get custom port filtering rule\n");
+		printf("F       - Set vpn passthrough rule\n");
+		printf("0       - \n");
 		printf("ENTER  - Show options menu.......\n");
 	}
 
@@ -1099,6 +1369,45 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 		break;
 	case 's':
 		rv = test_tethering_wifi_set_txpower();
+		break;
+	case 't':
+		rv = test_tethering_wifi_set_mtu();
+		break;
+	case 'u':
+		rv = test_tethering_wifi_change_mac();
+		break;
+	case 'v':
+		rv = test_tethering_wifi_set_max_connected_device();
+		break;
+	case 'w':
+		rv = test_tethering_wifi_enable_port_forwarding();
+		break;
+	case 'x':
+		rv = test_tethering_wifi_add_port_forwarding_rule();
+		break;
+	case 'y':
+		rv = test_tethering_wifi_reset_port_forwarding_rule();
+		break;
+	case 'z':
+		rv = test_tethering_wifi_get_port_forwarding_rule();
+		break;
+	case 'A':
+		rv = test_tethering_wifi_enable_port_filtering();
+		break;
+	case 'B':
+		rv = test_tethering_wifi_add_port_filtering_rule();
+		break;
+	case 'C':
+		rv = test_tethering_wifi_add_custom_port_filtering_rule();
+		break;
+	case 'D':
+		rv = test_tethering_wifi_get_port_filtering_rule();
+		break;
+	case 'E':
+		rv = test_tethering_wifi_get_custom_port_filtering_rule();
+		break;
+	case 'F':
+		rv = test_tethering_wifi_set_vpn_passthrough_rule();
 		break;
 	}
 
