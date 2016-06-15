@@ -38,8 +38,22 @@
 #define MAC_ADDR_LEN	18
 #define MAX_BUF_SIZE	80
 
+#define IPTABLES        "/usr/sbin/iptables"
+#define TABLE_NAT       "nat"
+#define TETH_NAT_PRE        "teth_nat_pre"
+#define TABLE_FILTER        "filter"
+#define TETH_FILTER_FW      "teth_filter_fw"
+#define ACTION_DROP     "DROP"
+#define ACTION_ACCEPT       "ACCEPT"
+#define PORT_FORWARD_RULE_STR   "-t %s -A %s -i %s -p %s -d %s --dport %d -j DNAT --to %s:%d"
+#define FILTERING_MULTIPORT_RULE_STR    "-t %s -A %s -p %s -m multiport --dport %d,%d -j %s"
+#define FILTERING_RULE_STR  "-t %s -A %s -p %s --dport %d -j %s"
+
 static GSList *allowed_list = NULL;
 static GSList *blocked_list = NULL;
+static GSList *port_forwarding = NULL;
+static GSList *port_filtering = NULL;
+static GSList *custom_port_filtering = NULL;
 
 static void __handle_wifi_tether_on(GDBusConnection *connection, const gchar *sender_name,
 			const gchar *object_path, const gchar *interface_name, const gchar *signal_name,
@@ -155,7 +169,7 @@ static tethering_error_e __set_security_type(const tethering_wifi_security_type_
 	}
 
 	if (vconf_set_int(VCONFKEY_MOBILE_HOTSPOT_SECURITY, security_type) < 0) {
-		ERR("vconf_set_int is failed\n"); 
+		ERR("vconf_set_int is failed\n");
 		return TETHERING_ERROR_OPERATION_FAILED;
 	}
 
@@ -304,7 +318,7 @@ static tethering_error_e __get_error(int agent_error)
 		err = TETHERING_ERROR_PERMISSION_DENIED;
 		break;
 	//LCOV_EXCL_STOP
-	default:
+	default :
 		ERR("Not defined error : %d\n", agent_error);
 		err = TETHERING_ERROR_OPERATION_FAILED;
 		break;
@@ -1235,6 +1249,7 @@ static int __prepare_wifi_settings(tethering_h tethering, _softap_settings_t *se
 		set->visibility = th->visibility;
 
 	set->mac_filter = th->mac_filter;
+	set->max_connected = th->wifi_max_connected;
 	set->channel = th->channel;
 
 	__get_wifi_mode_type(th->mode_type, &ptr);
@@ -1350,6 +1365,7 @@ API int tethering_create(tethering_h *tethering)
 	th->mac_filter = false;
 	th->channel = 6;
 	th->mode_type = TETHERING_WIFI_MODE_TYPE_G;
+	th->wifi_max_connected = TETHERING_WIFI_MAX_STA;
 
 	if (__generate_initial_passphrase(th->passphrase,
 			sizeof(th->passphrase)) == 0) {
@@ -1506,7 +1522,7 @@ API int tethering_enable(tethering_h tethering, tethering_type_e type)
 				sigs[E_SIGNAL_WIFI_TETHER_ON].sig_id);
 
 		g_dbus_proxy_call(proxy, "enable_wifi_tethering",
-				g_variant_new("(sssiiii)", set.ssid, set.key, set.mode, set.channel, set.visibility, set.mac_filter, set.sec_type),
+				g_variant_new("(sssiiiii)", set.ssid, set.key, set.mode, set.channel, set.visibility, set.mac_filter, set.max_connected, set.sec_type),
 				G_DBUS_CALL_FLAGS_NONE, -1, th->cancellable,
 				(GAsyncReadyCallback) __wifi_enabled_cfm_cb, (gpointer)tethering);
 		break;
@@ -3004,7 +3020,7 @@ API int tethering_wifi_reload_settings(tethering_h tethering, tethering_wifi_set
 	th->settings_reloaded_user_data = user_data;
 
 	g_dbus_proxy_call(proxy, "reload_wifi_settings",
-			g_variant_new("(sssiiii)", set.ssid, set.key, set.mode, set.channel, set.visibility, set.mac_filter, set.sec_type),
+			g_variant_new("(sssiiii)", set.ssid, set.key, set.mode, set.channel, set.visibility, set.mac_filter, set.max_connected, set.sec_type),
 			G_DBUS_CALL_FLAGS_NONE, -1, th->cancellable,
 			(GAsyncReadyCallback) __settings_reloaded_cb, (gpointer)tethering);
 
@@ -3358,6 +3374,491 @@ API int tethering_wifi_get_txpower(tethering_h tethering, unsigned int *txpower)
 		return TETHERING_ERROR_OPERATION_FAILED;
 	}
 	g_clear_error(&error);
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_set_mtu(tethering_h tethering, unsigned int mtu)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	GVariant *parameters;
+	GError *error = NULL;
+	guint result;
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	GDBusProxy *proxy = th->client_bus_proxy;
+
+	parameters = g_dbus_proxy_call_sync(proxy, "set_mtu",
+			g_variant_new("(u)", mtu),
+			G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+	if (error) {
+		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
+
+		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
+			result = TETHERING_ERROR_PERMISSION_DENIED;
+		else
+			result = TETHERING_ERROR_OPERATION_FAILED;
+
+		g_error_free(error);
+		return result;
+	}
+
+	g_variant_get(parameters, "(u)", &result);
+
+	g_variant_unref(parameters);
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_change_mac(tethering_h tethering, char *mac)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(mac == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(mac) is NULL\n");
+
+	GVariant *parameters;
+	GError *error = NULL;
+	guint result;
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	GDBusProxy *proxy = th->client_bus_proxy;
+
+	parameters = g_dbus_proxy_call_sync(proxy, "change_mac",
+			g_variant_new("(s)", mac),
+			G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+	if (error) {
+		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
+
+		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
+			result = TETHERING_ERROR_PERMISSION_DENIED;
+		else
+			result = TETHERING_ERROR_OPERATION_FAILED;
+
+		g_error_free(error);
+		return result;
+	}
+
+	g_variant_get(parameters, "(u)", &result);
+
+	g_variant_unref(parameters);
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_set_max_connected_device(tethering_h tethering, int max_device)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	th->wifi_max_connected = max_device;
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_get_max_connected_device(tethering_h tethering, int *max_device)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(max_device == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(max_device) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	*max_device = th->wifi_max_connected;
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_enable_port_forwarding(tethering_h tethering, bool enable)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	GVariant *parameters;
+	GError *error = NULL;
+	guint result;
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	GDBusProxy *proxy = th->client_bus_proxy;
+
+	parameters = g_dbus_proxy_call_sync(proxy, "enable_port_forwarding",
+			g_variant_new("(b)", enable),
+			G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+	if (error) {
+		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
+
+		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
+			result = TETHERING_ERROR_PERMISSION_DENIED;
+		else
+			result = TETHERING_ERROR_OPERATION_FAILED;
+
+		g_error_free(error);
+		return result;
+	}
+
+	g_variant_get(parameters, "(u)", &result);
+	g_variant_unref(parameters);
+
+	th->port_forwarding = true;
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_add_port_forwarding_rule(tethering_h tethering, char *ifname, char *protocol, char *org_ip, int org_port, char *final_ip, int final_port)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(protocol == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(protocol) is NULL\n");
+
+	GVariant *parameters;
+	GError *error = NULL;
+	guint result;
+	char cmd[MAX_BUF_SIZE] = { 0, };
+	char *list = NULL;
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	GDBusProxy *proxy = th->client_bus_proxy;
+
+	parameters = g_dbus_proxy_call_sync(proxy, "add_port_forwarding_rule",
+			g_variant_new("(sssisi)", ifname, protocol, org_ip, org_port, final_ip, final_port),
+			G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+	if (error) {
+		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
+
+		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
+			result = TETHERING_ERROR_PERMISSION_DENIED;
+		else
+			result = TETHERING_ERROR_OPERATION_FAILED;
+
+		g_error_free(error);
+		return result;
+	}
+
+	g_variant_get(parameters, "(u)", &result);
+	g_variant_unref(parameters);
+
+	snprintf(cmd, sizeof(cmd), "%s "PORT_FORWARD_RULE_STR, IPTABLES, TABLE_NAT, TETH_NAT_PRE, ifname, protocol, org_ip, org_port, final_ip, final_port);
+
+	list = strdup(cmd);
+	if (list == NULL) {
+		ERR("strdup failed\n");
+		return TETHERING_ERROR_OUT_OF_MEMORY;
+	}
+
+	port_forwarding = g_slist_append(port_forwarding, list);
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_reset_port_forwarding_rule(tethering_h tethering)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	GVariant *parameters;
+	GError *error = NULL;
+	guint result;
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	GDBusProxy *proxy = th->client_bus_proxy;
+
+	parameters = g_dbus_proxy_call_sync(proxy, "reset_port_forwarding_rule",
+			NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+	if (error) {
+		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
+
+		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
+			result = TETHERING_ERROR_PERMISSION_DENIED;
+		else
+			result = TETHERING_ERROR_OPERATION_FAILED;
+
+		g_error_free(error);
+		return result;
+	}
+
+	g_variant_get(parameters, "(u)", &result);
+
+	g_variant_unref(parameters);
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_is_port_forwarding_enabled(tethering_h tethering, bool* forwarding_enabled)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(forwarding_enabled == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(forwarding_enabled) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	*forwarding_enabled = th->port_forwarding;
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_get_port_forwarding_rule(tethering_h tethering, void **port_forwarding_list)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(port_forwarding_list == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(port_forwarding_list) is NULL\n");
+
+	*port_forwarding_list = g_slist_copy(port_forwarding);
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_enable_port_filtering(tethering_h tethering, bool enable)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	GVariant *parameters;
+	GError *error = NULL;
+	guint result;
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	GDBusProxy *proxy = th->client_bus_proxy;
+
+	parameters = g_dbus_proxy_call_sync(proxy, "enable_port_filtering",
+			g_variant_new("(b)", enable),
+			G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+	if (error) {
+		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
+
+		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
+			result = TETHERING_ERROR_PERMISSION_DENIED;
+		else
+			result = TETHERING_ERROR_OPERATION_FAILED;
+
+		g_error_free(error);
+		return result;
+	}
+
+	g_variant_get(parameters, "(u)", &result);
+	g_variant_unref(parameters);
+
+	th->port_filtering = true;
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_add_port_filtering_rule(tethering_h tethering, int port, char *protocol, bool allow)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(protocol == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(protocol) is NULL\n");
+
+	GVariant *parameters;
+	GError *error = NULL;
+	guint result;
+	char cmd[MAX_BUF_SIZE] = { 0, };
+	char *list = NULL;
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	GDBusProxy *proxy = th->client_bus_proxy;
+
+	parameters = g_dbus_proxy_call_sync(proxy, "add_port_filtering_rule",
+			g_variant_new("(isb)", port, protocol, allow),
+			G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+	if (error) {
+		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
+
+		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
+			result = TETHERING_ERROR_PERMISSION_DENIED;
+		else
+			result = TETHERING_ERROR_OPERATION_FAILED;
+
+		g_error_free(error);
+		return result;
+	}
+
+	g_variant_get(parameters, "(u)", &result);
+	g_variant_unref(parameters);
+
+	if (allow)
+		snprintf(cmd, sizeof(cmd), "%s "FILTERING_RULE_STR, IPTABLES, TABLE_FILTER, TETH_FILTER_FW, protocol, port, ACTION_ACCEPT);
+	else
+		snprintf(cmd, sizeof(cmd), "%s "FILTERING_RULE_STR, IPTABLES, TABLE_FILTER, TETH_FILTER_FW, protocol, port, ACTION_DROP);
+
+	DBG("cmd:%s", cmd);
+
+	list = strdup(cmd);
+	if (list == NULL) {
+		ERR("strdup failed\n");
+		return TETHERING_ERROR_OUT_OF_MEMORY;
+	}
+
+	port_filtering = g_slist_append(port_filtering, list);
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_add_custom_port_filtering_rule(tethering_h tethering, int port1, int port2, char *protocol, bool allow)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(protocol == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(protocol) is NULL\n");
+
+	GVariant *parameters;
+	GError *error = NULL;
+	guint result;
+	char cmd[MAX_BUF_SIZE] = { 0, };
+	char *list = NULL;
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	GDBusProxy *proxy = th->client_bus_proxy;
+
+	parameters = g_dbus_proxy_call_sync(proxy, "add_custom_port_filtering_rule",
+			g_variant_new("(iisb)", port1, port2, protocol, allow),
+			G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+	if (error) {
+		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
+
+		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
+			result = TETHERING_ERROR_PERMISSION_DENIED;
+		else
+			result = TETHERING_ERROR_OPERATION_FAILED;
+
+		g_error_free(error);
+		return result;
+	}
+
+	g_variant_get(parameters, "(u)", &result);
+	g_variant_unref(parameters);
+
+	if (allow)
+		snprintf(cmd, sizeof(cmd), "%s "FILTERING_MULTIPORT_RULE_STR, IPTABLES, TABLE_FILTER, TETH_FILTER_FW, protocol, port1, port2, ACTION_ACCEPT);
+	else
+		snprintf(cmd, sizeof(cmd), "%s "FILTERING_MULTIPORT_RULE_STR, IPTABLES, TABLE_FILTER, TETH_FILTER_FW, protocol, port1, port2, ACTION_DROP);
+
+	DBG("cmd:%s", cmd);
+
+	list = strdup(cmd);
+	if (list == NULL) {
+		ERR("strdup failed\n");
+		return TETHERING_ERROR_OUT_OF_MEMORY;
+	}
+
+	custom_port_filtering = g_slist_append(custom_port_filtering, list);
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_get_port_filtering_rule(tethering_h tethering, void **port_filtering_list)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(port_filtering_list == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(port_filtering_list) is NULL\n");
+
+	*port_filtering_list = g_slist_copy(port_filtering);
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_get_custom_port_filtering_rule(tethering_h tethering, void **custom_port_filtering_list)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(custom_port_filtering_list == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(custom_port_filtering_list) is NULL\n");
+
+	*custom_port_filtering_list = g_slist_copy(custom_port_filtering);
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_is_port_filtering_enabled(tethering_h tethering, bool* filtering_enabled)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+	_retvm_if(filtering_enabled == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(filtering_enabled) is NULL\n");
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	*filtering_enabled = th->port_filtering;
+
+	return TETHERING_ERROR_NONE;
+}
+
+API int tethering_wifi_set_vpn_passthrough_rule(tethering_h tethering, tethering_vpn_passthrough_type_e type, bool enable)
+{
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
+
+	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
+			"parameter(tethering) is NULL\n");
+
+	GVariant *parameters;
+	GError *error = NULL;
+	guint result;
+
+	__tethering_h *th = (__tethering_h *)tethering;
+
+	GDBusProxy *proxy = th->client_bus_proxy;
+
+	parameters = g_dbus_proxy_call_sync(proxy, "set_vpn_passthrough_rule",
+			g_variant_new("(ib)", type, enable),
+			G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+	if (error) {
+		ERR("g_dbus_proxy_call_sync failed because  %s\n", error->message);
+
+		if (error->code == G_DBUS_ERROR_ACCESS_DENIED)
+			result = TETHERING_ERROR_PERMISSION_DENIED;
+		else
+			result = TETHERING_ERROR_OPERATION_FAILED;
+
+		g_error_free(error);
+		return result;
+	}
+
+	g_variant_get(parameters, "(u)", &result);
+
+	g_variant_unref(parameters);
+
 	return TETHERING_ERROR_NONE;
 }
 
