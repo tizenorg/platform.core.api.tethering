@@ -230,6 +230,7 @@ typedef enum {
 #define TETHERING_WIFI_KEY_MIN_LEN	8	/**< Minimum length of wifi key */
 #define TETHERING_WIFI_KEY_MAX_LEN	64	/**< Maximum length of wifi key */
 #define TETHERING_WIFI_HASH_KEY_MAX_LEN	64
+#define TETHERING_WIFI_MAX_STA 10		/**< Maximum Wi-Fi tethering station */
 
 #define TETHERING_WIFI_MODE_MAX_LEN 10  /**< Maximum length of mode */
 
@@ -286,8 +287,11 @@ typedef struct {
 	tethering_wifi_mode_type_e mode_type;
 	bool visibility;
 	bool mac_filter;
+	bool port_forwarding;
+	bool port_filtering;
 	bool dhcp_enabled;
 	int channel;
+	int wifi_max_connected;
 } __tethering_h;
 
 typedef struct {
@@ -313,6 +317,7 @@ typedef struct {
 	tethering_wifi_security_type_e sec_type;
 	bool visibility;
 	bool mac_filter;
+	int max_connected;
 	int channel;
 } _softap_settings_t;
 

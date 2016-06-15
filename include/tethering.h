@@ -114,6 +114,12 @@ typedef enum {
 	TETHERING_WIFI_MODE_TYPE_AD, /**< mode ad */
 } tethering_wifi_mode_type_e;
 
+typedef enum {
+	TETHERING_TYPE_IPSEC_PASSTHROUGH = 0,  /**< IPSEC */
+	TETHERING_TYPE_PPTP_PASSTHROUGH,  /**< PPTP type */
+	TETHERING_TYPE_L2TP_PASSTHROUGH,  /**< L2TP type */
+} tethering_vpn_passthrough_type_e;
+
 /**
  * @}
  */
@@ -1015,7 +1021,7 @@ int tethering_wifi_set_mode(tethering_h tethering, tethering_wifi_mode_type_e ty
  * @privilege %http://tizen.org/privilege/tethering.admin
  * @remarks @a mode must be released using free().
  * @param[in]  tethering  The tethering handle
- * @param[out]  type  The mode of Wi-Fi AP
+ * @param[out]  type  The mode of Wi-Fi tethering
  * @return 0 on success, otherwise negative error value
  * @retval  #TETHERING_ERROR_NONE  Successful
  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
@@ -1054,6 +1060,265 @@ int tethering_wifi_set_txpower(tethering_h tethering, unsigned int txpower);
  * @see tethering_wifi_set_txpower()
  */
 int tethering_wifi_get_txpower(tethering_h tethering, unsigned int *txpower);
+
+/**
+  * @brief Sets mtu for Wi-Fi tethering.
+  * @since_tizen 3.0
+  * @privlevel platform
+  * @privilege %http://tizen.org/privilege/tethering.admin
+  * @param[in] tethering The tethering handle
+  * @param[in] mtu value of mtu to be set
+  * @return  0 on success, otherwise a negative error value
+  * @retval  #TETHERING_ERROR_NONE  Successful
+  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+  * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+  * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+  */
+int tethering_wifi_set_mtu(tethering_h tethering, unsigned int mtu);
+
+/**
+  * @brief Changes mac address for Wi-Fi tethering.
+  * @since_tizen 3.0
+  * @privlevel platform
+  * @privilege %http://tizen.org/privilege/tethering.admin
+  * @param[in] tethering The client handle
+  * @param[in]  mac  The mac address
+  * @return  0 on success, otherwise a negative error value
+  * @retval  #TETHERING_ERROR_NONE  Successful
+  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+  * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+  * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+  */
+int tethering_wifi_change_mac(tethering_h tethering, char *mac);
+
+/**
+  * @brief Sets max connected devices for Wi-Fi tethering.
+  * @since_tizen 3.0
+  * @privlevel platform
+  * @privilege %http://tizen.org/privilege/tethering.admin
+  * @param[in] tethering The client handle
+  * @param[in] max_device value of max_device to be set
+  * @return  0 on success, otherwise a negative error value
+  * @retval  #TETHERING_ERROR_NONE  Successful
+  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+  * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+  * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+  * @see tethering_wifi_get_max_connected_device()
+  */
+int tethering_wifi_set_max_connected_device(tethering_h tethering, int max_device);
+
+/**
+  * @brief Gets max connected devices for Wi-Fi tethering.
+  * @since_tizen 3.0
+  * @privlevel platform
+  * @privilege %http://tizen.org/privilege/tethering.admin
+  * @param[in] tethering The client handle
+  * @param[out] max_device value of max_device
+  * @return  0 on success, otherwise a negative error value
+  * @retval  #TETHERING_ERROR_NONE  Successful
+  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+  * @see tethering_wifi_set_max_connected_device()
+  */
+int tethering_wifi_get_max_connected_device(tethering_h tethering, int *max_device);
+
+/**
+  * @brief Enables port forwarding feature.
+  * @since_tizen 3.0
+  * @privlevel platform
+  * @privilege %http://tizen.org/privilege/tethering.admin
+  * @details enable/disable port forwarding feature.
+  * @param[in]  tethering  The handle of tethering
+  * @param[in]  enable Enable/Disable port forwarding
+  * @return 0 on success, otherwise negative error value.
+  * @retval  #TETHERING_ERROR_NONE  Successful
+  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+  * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+  * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+  */
+int tethering_wifi_enable_port_forwarding(tethering_h tethering, bool enable);
+
+/**
+  * @brief Sets port forwarding rule.
+  * @since_tizen 3.0
+  * @privlevel platform
+  * @privilege %http://tizen.org/privilege/tethering.admin
+  * @details Set port forwarding rule.
+  * @param[in]  tethering  The handle of tethering
+  * @param[in]  ifname interface name
+  * @param[in]  protocol protocol (tcp/udp)
+  * @param[in]  org_ip original destination ip where packet was meant to sent
+  * @param[in]  org_port original destination port where packet was meant to sent
+  * @param[in]  final_ip new destination ip where packet will be forwarded
+  * @param[in]  final_port new destination port where packet will be forwarded
+  * @return 0 on success, otherwise negative error value.
+  * @retval  #TETHERING_ERROR_NONE  Successful
+  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+  * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+  * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+  */
+int tethering_wifi_add_port_forwarding_rule(tethering_h tethering, char *ifname, char *protocol, char *org_ip, int org_port, char *final_ip, int final_port);
+
+/**
+  * @brief Resets port forwarding rule.
+  * @since_tizen 3.0
+  * @privlevel platform
+  * @privilege %http://tizen.org/privilege/tethering.admin
+  * @details Reset port forwarding rule.
+  * @param[in]  tethering  The handle of tethering
+  * @return 0 on success, otherwise negative error value.
+  * @retval  #TETHERING_ERROR_NONE  Successful
+  * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+  * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+  * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+  */
+int tethering_wifi_reset_port_forwarding_rule(tethering_h tethering);
+
+/**
+ * @brief Checks whether the port forwarding is enabled or not.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @param[in]  tethering  The tethering handle
+ * @param[out] forwarding_enabled  @c true if port forwarding is enabled, \n @c false if port forwarding is disabled
+ * @return  0 on success, otherwise a negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ */
+int tethering_wifi_is_port_forwarding_enabled(tethering_h tethering, bool* forwarding_enabled);
+
+/**
+ * @brief Gets the port forwarding rule for Wi-Fi tethering.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @param[in] tethering The client handle
+ * @param[out] port_forwarding_list list of port forwarding rules
+ * @return  0 on success, otherwise a negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ */
+int tethering_wifi_get_port_forwarding_rule(tethering_h tethering, void **port_forwarding_list);
+
+/**
+ * @brief Enables port filtering feature.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @details enable/disable port filtering feature.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  enable Enable/Disable port filtering
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ */
+int tethering_wifi_enable_port_filtering(tethering_h tethering, bool enable);
+
+/**
+ * @brief Sets port filtering rule.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @details Set port filtering rule.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  port to be filtered
+ * @param[in]  protocol protocol (tcp/udp)
+ * @param[in]  allow allow/disallow port filtering
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ */
+int tethering_wifi_add_port_filtering_rule(tethering_h tethering, int port, char *protocol, bool allow);
+
+/**
+ * @brief Sets custom port filtering rule.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @details Set custom port filtering rule.
+ * @param[in]  tethering  The handle of tethering
+ * @param[in]  port1 to be filtered
+ * @param[in]  port2 to be filtered
+ * @param[in]  protocol protocol (tcp/udp)
+ * @param[in]  allow allow/disallow port filtering
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ */
+int tethering_wifi_add_custom_port_filtering_rule(tethering_h tethering, int port1, int port2, char *protocol, bool allow);
+
+/**
+ * @brief Gets the port filtering rule for Wi-Fi tethering.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @param[in] tethering The client handle
+ * @param[out] port_filtering_list list of port filtering rules
+ * @return  0 on success, otherwise a negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ */
+int tethering_wifi_get_port_filtering_rule(tethering_h tethering, void **port_filtering_list);
+
+/**
+ * @brief Gets the custom port filtering rule for Wi-Fi tethering.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @param[in] tethering The client handle
+ * @param[out] custom_port_filtering_list list of custom port filtering rules
+ * @return  0 on success, otherwise a negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ */
+int tethering_wifi_get_custom_port_filtering_rule(tethering_h tethering, void **custom_port_filtering_list);
+
+/**
+ * @brief Checks whether the port filtering is enabled or not.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @param[in]  tethering  The tethering handle
+ * @param[out] filtering_enabled  @c true if port filtering is enabled, \n @c false if port filtering is disabled
+ * @return  0 on success, otherwise a negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ */
+int tethering_wifi_is_port_filtering_enabled(tethering_h tethering, bool* filtering_enabled);
+
+/**
+ * @brief Sets vpn passthrough rule.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/tethering.admin
+ * @details Set vpn passthrough rule.
+ * @param[in]  tethering	The handle of tethering
+ * @param[in]  type			vpn passthrough type
+ * @param[in]  enable		@c true if vpn passthrough is enabled, \n @c false if vpn passthrough is disabled
+ * @return 0 on success, otherwise negative error value.
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_NOT_SUPPORT_API  API not supported
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
+ */
+int tethering_wifi_set_vpn_passthrough_rule(tethering_h tethering, tethering_vpn_passthrough_type_e type, bool enable);
 
 /**
  * @}
