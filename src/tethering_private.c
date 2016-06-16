@@ -32,7 +32,7 @@ bool __check_feature_supported(const char *key, tethering_supported_feature_e fe
 			//LCOV_EXCL_STOP
 		}
 
-		feature_supported[feature] = true;
+		is_feature_checked[feature] = true;
 	}
 	return feature_supported[feature];
 }
@@ -46,15 +46,16 @@ int _tethering_check_feature_supported(const char* feature, ...)
 
 	va_start(list, feature);
 	key = feature;
+
 	while (1) {
 		if ((strcmp(key, TETHERING_FEATURE) == 0))
 			value = __check_feature_supported(key, TETHERING_SUPPORTED_FEATURE);
 		if ((strcmp(key, TETHERING_WIFI_FEATURE) == 0))
-			value = __check_feature_supported(key, TETHERING_SUPPORTED_FEATURE);
+			value = __check_feature_supported(key, TETHERING_SUPPORTED_FEATURE_WIFI);
 		if ((strcmp(key, TETHERING_BT_FEATURE) == 0))
-			value = __check_feature_supported(key, TETHERING_SUPPORTED_FEATURE);
+			value = __check_feature_supported(key, TETHERING_SUPPORTED_FEATURE_BT);
 		if ((strcmp(key, TETHERING_USB_FEATURE) == 0))
-			value = __check_feature_supported(key, TETHERING_SUPPORTED_FEATURE);
+			value = __check_feature_supported(key, TETHERING_SUPPORTED_FEATURE_USB);
 
 		supported |= value;
 		key = va_arg(list, const char *);
