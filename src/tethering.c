@@ -3182,6 +3182,7 @@ API int tethering_wifi_add_blocked_mac_list(tethering_h tethering, const char *m
 
 API int tethering_wifi_remove_blocked_mac_list(tethering_h tethering, const char *mac)
 {
+	CHECK_FEATURE_SUPPORTED(TETHERING_FEATURE, TETHERING_WIFI_FEATURE);
 	_retvm_if(tethering == NULL, TETHERING_ERROR_INVALID_PARAMETER,
 			"parameter(tethering) is NULL\n");
 	_retvm_if(mac == NULL, TETHERING_ERROR_INVALID_PARAMETER,

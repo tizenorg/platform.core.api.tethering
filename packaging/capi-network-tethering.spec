@@ -1,6 +1,6 @@
 Name:		capi-network-tethering
 Summary:	Tethering Framework
-Version:	1.0.38
+Version:	1.0.39
 Release:	1
 Group:		System/Network
 License:	Apache-2.0
