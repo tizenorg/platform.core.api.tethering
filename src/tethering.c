@@ -3020,7 +3020,7 @@ API int tethering_wifi_reload_settings(tethering_h tethering, tethering_wifi_set
 	th->settings_reloaded_user_data = user_data;
 
 	g_dbus_proxy_call(proxy, "reload_wifi_settings",
-			g_variant_new("(sssiiii)", set.ssid, set.key, set.mode, set.channel, set.visibility, set.mac_filter, set.max_connected, set.sec_type),
+			g_variant_new("(sssiiiii)", set.ssid, set.key, set.mode, set.channel, set.visibility, set.mac_filter, set.max_connected, set.sec_type),
 			G_DBUS_CALL_FLAGS_NONE, -1, th->cancellable,
 			(GAsyncReadyCallback) __settings_reloaded_cb, (gpointer)tethering);
 
