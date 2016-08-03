@@ -388,9 +388,25 @@ static bool __clients_foreach_cb(tethering_client_h client, void *data)
 
 static void __security_type_changed_cb(tethering_wifi_security_type_e changed_type, void *user_data)
 {
-	g_print("Wi-Fi Tethering Security type is changed to [%s]\n",
-			changed_type == TETHERING_WIFI_SECURITY_TYPE_NONE ?
-			"open" : "wpa2-psk");
+
+	char *sec_str = NULL;
+
+	switch (changed_type) {
+	case TETHERING_WIFI_SECURITY_TYPE_NONE:
+		sec_str = "open";
+		break;
+	case TETHERING_WIFI_SECURITY_TYPE_WPA2_PSK:
+		sec_str = "wpa2-psk";
+		break;
+	case TETHERING_WIFI_SECURITY_TYPE_WPS:
+		sec_str = "wps";
+		break;
+	default:
+		sec_str = "unknown";
+		break;
+	}
+	g_print("Wi-Fi Tethering Security type is changed to [%s]\n", sec_str);
+
 	return;
 }
 
@@ -455,6 +471,7 @@ static void __print_wifi_tethering_setting(tethering_h th)
 {
 	char *ssid = NULL;
 	char *passphrase = NULL;
+	char *sec_str = NULL;
 	bool visibility = false;
 	bool mac_filter = 0;
 	bool forwarding_enabled = false;
@@ -488,11 +505,23 @@ static void __print_wifi_tethering_setting(tethering_h th)
 	error = tethering_wifi_get_security_type(th, &security_type);
 	if (error != TETHERING_ERROR_NONE)
 		__is_err(error);
-	else
-		g_print("\t** WiFi tethering security_type : %s\n",
-				security_type ==
-				TETHERING_WIFI_SECURITY_TYPE_NONE ?
-				"open" : "wpa2-psk");
+	else {
+		switch (security_type) {
+		case TETHERING_WIFI_SECURITY_TYPE_NONE:
+			sec_str = "open";
+			break;
+		case TETHERING_WIFI_SECURITY_TYPE_WPA2_PSK:
+			sec_str = "wpa2-psk";
+			break;
+		case TETHERING_WIFI_SECURITY_TYPE_WPS:
+			sec_str = "wps";
+			break;
+		default:
+			sec_str = "unknown";
+			break;
+		}
+		g_print("\t** WiFi tethering security_type : %s\n", sec_str);
+	}
 
 	error = tethering_wifi_get_mode(th, &hw_mode);
 	if (error != TETHERING_ERROR_NONE)
@@ -721,7 +750,7 @@ static int test_tethering_wifi_set_security_type(void)
 	int ret;
 	int security_type;
 
-	printf("Input security type for Wi-Fi tethering (0:NONE, 1:WPA2_PSK)");
+	printf("Input security type for Wi-Fi tethering (0:NONE, 1:WPA2_PSK, 2:WPS)");
 	ret = scanf("%9d", &security_type);
 	if (ret < 0) {
 		printf("scanf is failed!!\n");
@@ -974,7 +1003,7 @@ static int test_tethering_wifi_get_txpower(void)
 		printf("Fail to get txpower!!\n");
 		return -1;
 	}
-	g_print("tethering_hostapd_get_txpower received [%d]\n",txpower);
+	g_print("tethering_hostapd_get_txpower received [%d]\n", txpower);
 	return 1;
 }
 
@@ -1055,7 +1084,7 @@ static int test_tethering_wifi_enable_port_forwarding(void)
 	printf("Wi-Fi tethring port forwarding(0:disable 1:enable): ");
 	ret = scanf("%d", &enable);
 
-	ret =tethering_wifi_enable_port_forwarding(th, enable);
+	ret = tethering_wifi_enable_port_forwarding(th, enable);
 	if (__is_err(ret) == true) {
 		printf("Fail to enable port forwarding!\n");
 		return -1;
@@ -1127,7 +1156,7 @@ static int test_tethering_wifi_enable_port_filtering(void)
 	printf("Wi-Fi tethring port filtering(0:disable 1:enable): ");
 	ret = scanf("%d", &enable);
 
-	ret =tethering_wifi_enable_port_filtering(th, enable);
+	ret = tethering_wifi_enable_port_filtering(th, enable);
 	if (__is_err(ret) == true) {
 		printf("Fail to enable port filtering!\n");
 		return -1;
@@ -1228,6 +1257,36 @@ static int test_tethering_wifi_set_vpn_passthrough_rule(void)
 	return 1;
 }
 
+static int test_tethering_wifi_push_wps_button(void)
+{
+	int ret = 0;
+
+	ret = tethering_wifi_push_wps_button(th);
+	if (__is_err(ret) == true) {
+		printf("Fail to get port filtering rule!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
+static int test_tethering_wifi_set_wps_pin(void)
+{
+	int ret = 0;
+	char wps_pin[128];
+
+	printf("Input WPS PIN: ");
+	ret = scanf("%127s", wps_pin);
+
+	ret = tethering_wifi_set_wps_pin(th, wps_pin);
+	if (__is_err(ret) == true) {
+		printf("Fail to get port filtering rule!\n");
+		return -1;
+	}
+
+	return 1;
+}
+
 int main(int argc, char **argv)
 {
 	GMainLoop *mainloop;
@@ -1296,6 +1355,8 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 		printf("D       - Get port filtering rule\n");
 		printf("E       - Get custom port filtering rule\n");
 		printf("F       - Set vpn passthrough rule\n");
+		printf("G       - Push WPS button\n");
+		printf("H       - Set WPS PIN\n");
 		printf("0       - \n");
 		printf("ENTER  - Show options menu.......\n");
 	}
@@ -1408,6 +1469,12 @@ gboolean test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 		break;
 	case 'F':
 		rv = test_tethering_wifi_set_vpn_passthrough_rule();
+		break;
+	case 'G':
+		rv = test_tethering_wifi_push_wps_button();
+		break;
+	case 'H':
+		rv = test_tethering_wifi_set_wps_pin();
 		break;
 	}
 

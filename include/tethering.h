@@ -101,6 +101,7 @@ typedef enum
 typedef enum {
     TETHERING_WIFI_SECURITY_TYPE_NONE = 0,  /**< No Security type */
     TETHERING_WIFI_SECURITY_TYPE_WPA2_PSK,  /**< WPA2_PSK */
+	TETHERING_WIFI_SECURITY_TYPE_WPS,  /**< WPA2_PSK */
 } tethering_wifi_security_type_e;
 
 /**
@@ -1319,6 +1320,36 @@ int tethering_wifi_is_port_filtering_enabled(tethering_h tethering, bool* filter
  * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission Denied
  */
 int tethering_wifi_set_vpn_passthrough_rule(tethering_h tethering, tethering_vpn_passthrough_type_e type, bool enable);
+
+/**
+ * @brief Pushes the WPS button to connect with Wi-Fi Tethering client. (WPS PBC)
+ * @since_tizen 3.0
+ * @remarks The WPS button should be pushed when client tries to connect with Soft AP by using WPS PBC.
+ * @param[in]  tethering  The tethering handle
+ * @return 0 on success, otherwise negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission denied
+ * @retval  #TETHERING_ERROR_NOT_SUPPORTED  API is not supported
+ */
+int tethering_wifi_push_wps_button(tethering_h tethering);
+
+/**
+ * @brief Sets the WPS PIN to connect with Wi-Fi Tethering client. (WPS PIN)
+ * @since_tizen 3.0
+ * @remarks The WPS PIN should be inserted when client tries to connect with Soft AP by using WPS PIN.
+ * @param[in]  tethering  The tethering handle
+ * @param[in]  wps_pin  The WPS PIN
+ * @return 0 on success, otherwise negative error value
+ * @retval  #TETHERING_ERROR_NONE  Successful
+ * @retval  #TETHERING_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @retval  #TETHERING_ERROR_OPERATION_FAILED  Operation failed
+ * @retval  #TETHERING_ERROR_PERMISSION_DENIED  Permission denied
+ * @retval  #TETHERING_ERROR_NOT_SUPPORTED  API is not supported
+ */
+int tethering_wifi_set_wps_pin(tethering_h tethering, const char *wps_pin);
+
 
 /**
  * @}
